@@ -54,13 +54,24 @@ const Careers = () => {
 
   const handleFileChange = (e) => {
     const file = e.target.files[0]
-    if (file && file.type === 'application/pdf') {
+    const allowedTypes = [
+      'application/pdf',
+      'application/msword',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      'image/jpeg',
+      'image/jpg',
+      'image/png'
+    ]
+    
+    if (file && allowedTypes.includes(file.type)) {
       setFormData(prev => ({
         ...prev,
         resume: file
       }))
     } else {
-      alert(isRTL ? 'يرجى رفع ملف PDF فقط' : 'Please upload PDF file only')
+      alert(isRTL 
+        ? 'يرجى رفع ملف PDF أو Word أو صورة فقط' 
+        : 'Please upload PDF, Word, or Image file only')
     }
   }
 
@@ -77,6 +88,19 @@ const Careers = () => {
     // Simulate API call
     setTimeout(() => {
       const code = generateEmployeeCode()
+      const applicationData = {
+        id: Date.now(),
+        ...formData,
+        employeeCode: code,
+        status: 'pending',
+        submittedAt: new Date().toISOString()
+      }
+
+      // Save to localStorage (temporary - will be replaced with API)
+      const existing = JSON.parse(localStorage.getItem('scq_applications') || '[]')
+      existing.push(applicationData)
+      localStorage.setItem('scq_applications', JSON.stringify(existing))
+
       setEmployeeCode(code)
       setSubmitSuccess(true)
       setIsSubmitting(false)
@@ -298,14 +322,13 @@ const Careers = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-slate-700 mb-2">
-                        {isRTL ? 'المؤهل الدراسي' : 'Education'} *
+                        {isRTL ? 'المؤهل الدراسي' : 'Education'}
                       </label>
                       <select
                         name="education"
                         value={formData.education}
                         onChange={handleInputChange}
                         className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
-                        required
                       >
                         <option value="">{isRTL ? 'اختر...' : 'Select...'}</option>
                         <option value="high-school">{isRTL ? 'ثانوية عامة' : 'High School'}</option>
@@ -400,7 +423,7 @@ const Careers = () => {
                     <div className="relative">
                       <input
                         type="file"
-                        accept=".pdf"
+                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                         onChange={handleFileChange}
                         className="hidden"
                         id="resume-upload"
@@ -414,7 +437,7 @@ const Careers = () => {
                         <span className="text-slate-600">
                           {formData.resume 
                             ? formData.resume.name 
-                            : (isRTL ? 'اضغط لرفع السيرة الذاتية (PDF)' : 'Click to upload resume (PDF)')}
+                            : (isRTL ? 'اضغط لرفع السيرة الذاتية (PDF, Word, صورة)' : 'Click to upload resume (PDF, Word, Image)')}
                         </span>
                       </label>
                     </div>

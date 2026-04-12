@@ -13,6 +13,9 @@ import Careers from './pages/Careers'
 import Contact from './pages/Contact'
 import Blog from './pages/Blog'
 import NotFound from './pages/NotFound'
+import AdminLogin from './pages/admin/Login'
+import AdminDashboard from './pages/admin/Dashboard'
+import CareersManagement from './pages/admin/CareersManagement'
 
 function App() {
   const [loading, setLoading] = useState(() => {
@@ -33,22 +36,32 @@ function App() {
       </AnimatePresence>
       
       <Router>
-        <div className="min-h-screen flex flex-col">
-          <Navbar />
-          <main className="flex-grow">
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/services" element={<Services />} />
-              <Route path="/careers" element={<Careers />} />
-              <Route path="/contact" element={<Contact />} />
-              <Route path="/blog" element={<Blog />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-          <Footer />
-          <AIChat />
-        </div>
+        <Routes>
+          {/* Admin Routes - No Navbar/Footer */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/careers" element={<CareersManagement />} />
+
+          {/* Public Routes - With Navbar/Footer */}
+          <Route path="*" element={
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-grow">
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/about" element={<About />} />
+                  <Route path="/services" element={<Services />} />
+                  <Route path="/careers" element={<Careers />} />
+                  <Route path="/contact" element={<Contact />} />
+                  <Route path="/blog" element={<Blog />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </main>
+              <Footer />
+              <AIChat />
+            </div>
+          } />
+        </Routes>
       </Router>
     </ErrorBoundary>
   )
