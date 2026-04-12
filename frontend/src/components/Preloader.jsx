@@ -9,12 +9,12 @@ const Preloader = ({ onComplete }) => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(timer)
-          setTimeout(() => onComplete(), 1200)
+          setTimeout(() => onComplete(), 500)
           return 100
         }
-        return prev + 0.5 // Much slower progress for longer display
+        return prev + 2 // Faster progress
       })
-    }, 80) // Longer interval for extended wait time
+    }, 30) // Shorter interval
 
     return () => clearInterval(timer)
   }, [onComplete])

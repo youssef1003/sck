@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
+import ErrorBoundary from './components/ErrorBoundary'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
 import AIChat from './components/AIChat'
@@ -14,14 +15,19 @@ import Blog from './pages/Blog'
 import NotFound from './pages/NotFound'
 
 function App() {
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(() => {
+    // Show preloader only on first visit
+    const hasVisited = sessionStorage.getItem('hasVisited')
+    return !hasVisited
+  })
 
   const handlePreloaderComplete = () => {
+    sessionStorage.setItem('hasVisited', 'true')
     setLoading(false)
   }
 
   return (
-    <>
+    <ErrorBoundary>
       <AnimatePresence mode="wait">
         {loading && <Preloader key="preloader" onComplete={handlePreloaderComplete} />}
       </AnimatePresence>
@@ -44,7 +50,7 @@ function App() {
           <AIChat />
         </div>
       </Router>
-    </>
+    </ErrorBoundary>
   )
 }
 
