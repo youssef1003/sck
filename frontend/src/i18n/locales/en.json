@@ -7,30 +7,38 @@
     "contact": "Contact"
   },
   "hero": {
-    "title": "Smart Consulting Solutions",
-    "subtitle": "Transforming Ideas into Reality",
-    "description": "We provide comprehensive consulting solutions for companies in Egypt and Saudi Arabia, with a special focus on digital transformation and institutional development",
-    "cta": "Book Free Consultation",
-    "learn_more": "Learn More"
+    "title": "Takmeel Consulting Company",
+    "subtitle": "Building Policies, Procedures, Feasibility Studies and ISO Certification",
+    "description": "We provide comprehensive consulting solutions for companies and organizations in Saudi Arabia and Egypt",
+    "cta": "Request Service",
+    "learn_more": "Explore Our Services"
   },
   "services": {
-    "title": "Our Services",
-    "subtitle": "Comprehensive Solutions for Your Business Growth",
-    "business_consulting": {
-      "title": "Business Consulting",
-      "description": "We help you build strong business strategies, market analysis, and develop business models"
-    },
-    "hr_consulting": {
-      "title": "HR Consulting",
-      "description": "Advanced recruitment systems, performance evaluation, and customized training programs"
-    },
-    "organizational_dev": {
-      "title": "Organizational Development",
-      "description": "Improving organizational structures, process development, and increasing efficiency"
+    "title": "Takmeel Services",
+    "subtitle": "Comprehensive Consulting Solutions for Your Organization's Success",
+    "feasibility_studies": {
+      "title": "Economic Feasibility Studies",
+      "description": "Comprehensive market, profitability and risk analysis to prepare accurate investment studies supporting sound investment decisions and implementation follow-up"
     },
     "strategic_planning": {
       "title": "Strategic Planning",
-      "description": "Long-term plans, KPI identification, and risk management"
+      "description": "Developing governance frameworks, development outcomes and procedural systems to ensure effectiveness, transparency and decision-making"
+    },
+    "organizational_dev": {
+      "title": "Institutional Building and Organizational Development",
+      "description": "Redesigning structures, processes and business models to build a more effective organization with clearer roles and higher operational expertise"
+    },
+    "hr_resources": {
+      "title": "Human Resources",
+      "description": "Comprehensive human resources solutions"
+    },
+    "iso_certification": {
+      "title": "ISO Certification Qualification",
+      "description": "Comprehensive qualification services to obtain ISO certificates easily"
+    },
+    "business_engineering": {
+      "title": "Company Establishment and Business Engineering",
+      "description": "Company establishment and business model engineering"
     }
   },
   "stats": {
@@ -40,15 +48,15 @@
     "satisfaction": "Client Satisfaction"
   },
   "why_choose_us": {
-    "title": "Why Choose SCK?",
-    "subtitle": "Combining Experience with Innovation",
+    "title": "Why Choose SCQ?",
+    "subtitle": "Combining Experience with Professionalism",
     "expertise": {
       "title": "Local Expertise",
-      "description": "Deep understanding of Egyptian and Saudi markets"
+      "description": "Deep understanding of Saudi and Egyptian markets"
     },
-    "ai_powered": {
-      "title": "AI-Powered",
-      "description": "Instant consultations available 24/7"
+    "quality": {
+      "title": "High Quality",
+      "description": "Professional standards in every project"
     },
     "proven": {
       "title": "Proven Results",
@@ -69,18 +77,18 @@
     "button": "Get Started"
   },
   "footer": {
-    "description": "Smart administrative consulting platform helping companies grow and develop",
+    "description": "Takmeel Consulting Company - Your Partner in Success and Development",
     "quick_links": "Quick Links",
     "services_title": "Services",
     "contact_title": "Contact Us",
     "egypt": "Egypt",
     "saudi": "Saudi Arabia",
-    "rights": "All Rights Reserved"
+    "rights": "All Rights Reserved © 2025 — SCQ"
   },
   "about": {
     "title": "About Us",
-    "subtitle": "We are SCK - Your Partner in Success",
-    "description": "A smart administrative consulting platform combining traditional expertise with modern technology",
+    "subtitle": "We are SCQ - Your Partner in Success",
+    "description": "Takmeel Consulting Company - Combining experience and professionalism to provide the best consulting solutions",
     "vision": {
       "title": "Our Vision",
       "description": "To be the first choice for administrative consulting in Egypt and Saudi Arabia"
@@ -165,7 +173,7 @@
     }
   },
   "ai_chat": {
-    "title": "SCK Smart Assistant",
+    "title": "SCQ Smart Assistant",
     "subtitle": "Ask any question about our services",
     "placeholder": "Type your question here...",
     "send": "Send",

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X, ChevronDown } from 'lucide-react'
+import { Menu, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import BookingModal from './BookingModal'
@@ -11,7 +11,8 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isBookingOpen, setIsBookingOpen] = useState(false)
   const location = useLocation()
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const isRTL = i18n.language === 'ar'
 
   useEffect(() => {
     const handleScroll = () => {
@@ -34,39 +35,43 @@ const Navbar = () => {
       className={`fixed w-full z-50 transition-all duration-300 ${
         isScrolled
           ? 'bg-white/95 backdrop-blur-md shadow-lg'
-          : 'bg-transparent'
+          : 'bg-blue-950/80 backdrop-blur-sm'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-3 space-x-reverse">
-            <div className="w-12 h-12 bg-gradient-to-br from-primary to-secondary rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-xl">SCK</span>
+          <Link to="/" className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
+            <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
+              <span className="text-white font-bold text-xl">SCQ</span>
             </div>
             <div className="hidden md:block">
-              <h1 className="text-xl font-bold text-primary">SCK</h1>
-              <p className="text-xs text-secondary">Smart Consulting</p>
+              <h1 className={`text-xl font-bold ${isScrolled ? 'text-blue-900' : 'text-white'}`}>
+                SCQ
+              </h1>
+              <p className={`text-xs ${isScrolled ? 'text-blue-600' : 'text-blue-200'}`}>
+                {isRTL ? 'تكميل للاستشارات' : 'Takmeel Consulting'}
+              </p>
             </div>
           </Link>
 
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-8 space-x-reverse">
+          <div className={`hidden md:flex items-center gap-8 ${isRTL ? 'flex-row-reverse' : ''}`}>
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
                 className={`text-sm font-medium transition-colors relative group ${
                   location.pathname === link.path
-                    ? 'text-secondary'
+                    ? isScrolled ? 'text-blue-600' : 'text-cyan-400'
                     : isScrolled
-                    ? 'text-gray-700 hover:text-secondary'
-                    : 'text-white hover:text-secondary'
+                    ? 'text-gray-700 hover:text-blue-600'
+                    : 'text-white hover:text-cyan-400'
                 }`}
               >
                 {link.name}
                 <span
-                  className={`absolute -bottom-1 right-0 h-0.5 bg-secondary transition-all duration-300 ${
+                  className={`absolute -bottom-1 ${isRTL ? 'right-0' : 'left-0'} h-0.5 bg-blue-600 transition-all duration-300 ${
                     location.pathname === link.path ? 'w-full' : 'w-0 group-hover:w-full'
                   }`}
                 />
@@ -75,21 +80,21 @@ const Navbar = () => {
             <LanguageSwitcher />
             <button 
               onClick={() => setIsBookingOpen(true)}
-              className="px-6 py-2.5 bg-gradient-to-r from-secondary to-yellow-600 text-white rounded-lg font-medium hover:shadow-lg hover:scale-105 transition-all duration-300"
+              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg font-medium shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 transition-all duration-300"
             >
-              {t('booking.title')}
+              {t('hero.cta')}
             </button>
           </div>
 
           {/* Mobile Menu Button */}
           <button
             onClick={() => setIsOpen(!isOpen)}
-            className="md:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors"
+            className="md:hidden p-2 rounded-lg hover:bg-gray-100/10 transition-colors"
           >
             {isOpen ? (
-              <X className={isScrolled ? 'text-primary' : 'text-white'} size={24} />
+              <X className={isScrolled ? 'text-blue-900' : 'text-white'} size={24} />
             ) : (
-              <Menu className={isScrolled ? 'text-primary' : 'text-white'} size={24} />
+              <Menu className={isScrolled ? 'text-blue-900' : 'text-white'} size={24} />
             )}
           </button>
         </div>
@@ -112,8 +117,8 @@ const Navbar = () => {
                   onClick={() => setIsOpen(false)}
                   className={`block py-2 text-base font-medium ${
                     location.pathname === link.path
-                      ? 'text-secondary'
-                      : 'text-gray-700 hover:text-secondary'
+                      ? 'text-blue-600'
+                      : 'text-gray-700 hover:text-blue-600'
                   }`}
                 >
                   {link.name}
@@ -127,9 +132,9 @@ const Navbar = () => {
                   setIsBookingOpen(true)
                   setIsOpen(false)
                 }}
-                className="w-full px-6 py-3 bg-gradient-to-r from-secondary to-yellow-600 text-white rounded-lg font-medium"
+                className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg font-medium shadow-lg"
               >
-                {t('booking.title')}
+                {t('hero.cta')}
               </button>
             </div>
           </motion.div>

@@ -1,177 +1,106 @@
 import { motion } from 'framer-motion'
-import { Shield, Zap, Globe, Award, Users, TrendingUp } from 'lucide-react'
+import { Shield, Award, TrendingUp, HeadphonesIcon } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 const WhyChooseUs = () => {
+  const { t, i18n } = useTranslation()
+  const isRTL = i18n.language === 'ar'
+
   const reasons = [
     {
       icon: Shield,
-      title: 'Proven Expertise',
-      description: '15+ years of delivering exceptional results across diverse industries in Saudi Arabia and Egypt.',
-    },
-    {
-      icon: Zap,
-      title: 'Fast Results',
-      description: 'Agile methodologies and rapid implementation strategies that deliver measurable outcomes quickly.',
-    },
-    {
-      icon: Globe,
-      title: 'Regional Focus',
-      description: 'Deep understanding of Saudi and Egyptian markets with localized strategies that work.',
+      key: 'expertise',
     },
     {
       icon: Award,
-      title: 'Excellence Driven',
-      description: 'Commitment to the highest standards of quality and continuous improvement in every project.',
-    },
-    {
-      icon: Users,
-      title: 'Client-Centric',
-      description: 'Your success is our priority. We build long-term partnerships based on trust and results.',
+      key: 'quality',
     },
     {
       icon: TrendingUp,
-      title: 'Growth Focused',
-      description: 'Strategic solutions designed to scale your business and maximize sustainable growth.',
+      key: 'proven',
+    },
+    {
+      icon: HeadphonesIcon,
+      key: 'support',
     },
   ]
 
   return (
-    <section className="relative py-32 overflow-hidden bg-gradient-to-b from-slate-950 via-slate-900 to-slate-950">
-      {/* Background Elements */}
+    <section className="relative py-24 overflow-hidden bg-gradient-to-b from-blue-50 via-slate-50 to-blue-50">
+      {/* Background Pattern */}
       <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(59,130,246,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(59,130,246,0.03)_1px,transparent_1px)] bg-[size:80px_80px]" />
         <motion.div
           animate={{
             scale: [1, 1.2, 1],
-            x: [0, 50, 0],
+            opacity: [0.1, 0.2, 0.1],
           }}
           transition={{
-            duration: 20,
+            duration: 15,
             repeat: Infinity,
             ease: "easeInOut"
           }}
-          className="absolute top-1/3 left-1/4 w-96 h-96 bg-amber-500/5 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{
-            scale: [1.2, 1, 1.2],
-            x: [0, -50, 0],
-          }}
-          transition={{
-            duration: 25,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-yellow-500/5 rounded-full blur-3xl"
+          className="absolute top-1/3 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"
         />
       </div>
 
       <div className="relative container mx-auto px-6">
-        <div className="grid lg:grid-cols-2 gap-16 items-center max-w-7xl mx-auto">
-          {/* Left Side - Content */}
-          <motion.div
-            initial={{ opacity: 0, x: -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-          >
+        {/* Section Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4">
+            {t('why_choose_us.title')}
+          </h2>
+          <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+            {t('why_choose_us.subtitle')}
+          </p>
+        </motion.div>
+
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+          {reasons.map((reason, index) => (
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
+              key={index}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="inline-block px-6 py-2 rounded-full glass-gold mb-6"
+              transition={{ delay: index * 0.1 }}
+              whileHover={{ y: -10, scale: 1.02 }}
+              className="group relative p-8 rounded-2xl bg-white border-2 border-blue-100 hover:border-blue-300 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden text-center"
             >
-              <span className="text-amber-400 text-sm font-light tracking-wider">
-                WHY CHOOSE US
-              </span>
-            </motion.div>
-
-            <h2 className="text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
-              Your Success
-              <br />
-              <span className="text-gradient">Is Our Mission</span>
-            </h2>
-
-            <p className="text-xl text-white/70 mb-8 font-light leading-relaxed">
-              We combine deep market expertise with innovative strategies to deliver 
-              transformative results that exceed expectations.
-            </p>
-
-            <div className="space-y-6">
-              {[
-                { label: 'Market Understanding', value: 'Saudi Arabia & Egypt' },
-                { label: 'Success Rate', value: '98% Client Satisfaction' },
-                { label: 'Response Time', value: '24/7 Support Available' },
-              ].map((item, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: index * 0.1 }}
-                  className="flex items-center justify-between p-4 rounded-2xl glass-gold"
-                >
-                  <span className="text-white/80 font-light">{item.label}</span>
-                  <span className="text-amber-400 font-semibold">{item.value}</span>
-                </motion.div>
-              ))}
-            </div>
-
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="mt-10 px-10 py-5 rounded-2xl gradient-gold text-slate-900 font-semibold text-lg glow-gold-sm"
-            >
-              Start Your Journey
-            </motion.button>
-          </motion.div>
-
-          {/* Right Side - Features Grid */}
-          <motion.div
-            initial={{ opacity: 0, x: 50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8 }}
-            className="grid grid-cols-1 sm:grid-cols-2 gap-6"
-          >
-            {reasons.map((reason, index) => (
+              {/* Hover Effect */}
               <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -5, scale: 1.02 }}
-                className="group relative p-6 rounded-2xl glass-gold overflow-hidden"
-              >
-                {/* Hover Effect */}
+                className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+              />
+
+              {/* Content */}
+              <div className="relative z-10">
                 <motion.div
-                  className="absolute inset-0 bg-gradient-to-br from-amber-500/10 to-yellow-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                />
+                  whileHover={{ scale: 1.1, rotate: 5 }}
+                  transition={{ duration: 0.3 }}
+                  className="inline-flex p-4 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 mb-6 shadow-lg mx-auto"
+                >
+                  <reason.icon className="w-8 h-8 text-white" />
+                </motion.div>
 
-                {/* Content */}
-                <div className="relative z-10">
-                  <motion.div
-                    whileHover={{ rotate: 360, scale: 1.1 }}
-                    transition={{ duration: 0.6 }}
-                    className="inline-flex p-3 rounded-xl bg-gradient-to-br from-amber-400 to-yellow-500 mb-4"
-                  >
-                    <reason.icon className="w-6 h-6 text-slate-900" />
-                  </motion.div>
+                <h3 className="text-xl font-bold text-slate-900 mb-3">
+                  {t(`why_choose_us.${reason.key}.title`)}
+                </h3>
 
-                  <h3 className="text-lg font-bold text-white mb-2">
-                    {reason.title}
-                  </h3>
+                <p className="text-slate-600 leading-relaxed">
+                  {t(`why_choose_us.${reason.key}.description`)}
+                </p>
+              </div>
 
-                  <p className="text-sm text-white/60 font-light leading-relaxed">
-                    {reason.description}
-                  </p>
-                </div>
-
-                {/* Decorative Corner */}
-                <div className="absolute bottom-0 right-0 w-20 h-20 bg-gradient-to-tl from-amber-500/5 to-transparent rounded-tl-full" />
-              </motion.div>
-            ))}
-          </motion.div>
+              {/* Decorative Corner */}
+              <div className={`absolute bottom-0 ${isRTL ? 'left-0' : 'right-0'} w-20 h-20 bg-gradient-to-${isRTL ? 'tr' : 'tl'} from-blue-500/5 to-transparent rounded-${isRTL ? 'tr' : 'tl'}-full`} />
+            </motion.div>
+          ))}
         </div>
       </div>
     </section>

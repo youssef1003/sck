@@ -4,7 +4,7 @@
 
 @layer base {
   body {
-    @apply bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-white antialiased;
+    @apply bg-white text-slate-900 antialiased;
   }
 }
 
@@ -13,36 +13,36 @@
     @apply bg-white/5 backdrop-blur-xl border border-white/10;
   }
   
-  .glass-gold {
-    @apply bg-gradient-to-br from-amber-500/10 to-yellow-600/10 backdrop-blur-xl border border-amber-500/20;
+  .glass-blue {
+    @apply bg-gradient-to-br from-blue-500/10 to-cyan-600/10 backdrop-blur-xl border border-blue-500/20;
   }
   
   .gradient-primary {
-    @apply bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900;
+    @apply bg-gradient-to-br from-blue-900 via-blue-800 to-blue-900;
   }
   
-  .gradient-gold {
-    @apply bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-600;
+  .gradient-blue {
+    @apply bg-gradient-to-r from-blue-600 via-cyan-500 to-blue-600;
   }
   
   .gradient-luxury {
-    @apply bg-gradient-to-br from-slate-950 via-amber-950/20 to-slate-950;
+    @apply bg-gradient-to-br from-blue-950 via-blue-900 to-slate-950;
   }
   
   .text-gradient {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-amber-400 via-yellow-500 to-amber-600;
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-cyan-500 to-blue-600;
   }
   
   .text-gradient-white {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-100 to-white;
   }
   
-  .glow-gold {
-    box-shadow: 0 0 40px rgba(251, 191, 36, 0.3);
+  .glow-blue {
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.3);
   }
   
-  .glow-gold-sm {
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.2);
+  .glow-blue-sm {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
   }
 }
 
@@ -57,16 +57,16 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0f172a;
+  background: #f1f5f9;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #f59e0b, #d97706);
+  background: linear-gradient(to bottom, #3b82f6, #2563eb);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #fbbf24, #f59e0b);
+  background: linear-gradient(to bottom, #60a5fa, #3b82f6);
 }
 
 /* Preloader Animation */
@@ -84,7 +84,7 @@ html {
   background: linear-gradient(
     to right,
     transparent 0%,
-    rgba(251, 191, 36, 0.3) 50%,
+    rgba(59, 130, 246, 0.3) 50%,
     transparent 100%
   );
   background-size: 1000px 100%;
@@ -105,10 +105,10 @@ html {
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
   }
   50% {
-    box-shadow: 0 0 40px rgba(251, 191, 36, 0.6);
+    box-shadow: 0 0 40px rgba(59, 130, 246, 0.6);
   }
 }
 
