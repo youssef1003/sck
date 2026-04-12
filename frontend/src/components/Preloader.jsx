@@ -152,7 +152,7 @@ const Preloader = ({ onComplete }) => {
               className="absolute inset-0 w-20 h-full bg-gradient-to-r from-transparent via-white to-transparent skew-x-12"
             />
             
-            {/* SCK Text */}
+            {/* SCQ Text */}
             <div className="absolute inset-0 flex items-center justify-center">
               <motion.div
                 animate={{
@@ -173,7 +173,7 @@ const Preloader = ({ onComplete }) => {
                     textShadow: '0 0 20px rgba(255, 255, 255, 0.5), 0 0 40px rgba(59, 130, 246, 0.5)'
                   }}
                 >
-                  SCK
+                  SCQ
                 </motion.span>
               </motion.div>
             </div>
@@ -193,41 +193,16 @@ const Preloader = ({ onComplete }) => {
           transition={{ delay: 0.8, duration: 0.8 }}
           className="mb-8 mt-8"
         >
-          <div className="flex items-center justify-center gap-4 mb-2">
-            {['S', 'm', 'a', 'r', 't'].map((letter, i) => (
-              <motion.span
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1 + i * 0.1, duration: 0.5 }}
-                className="text-4xl font-light tracking-wider"
-                style={{
-                  background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  textShadow: '0 0 30px rgba(251, 191, 36, 0.3)'
-                }}
-              >
-                {letter}
-              </motion.span>
-            ))}
-            <motion.span
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 1.5, duration: 0.5 }}
-              className="text-4xl font-light text-white/50"
-            >
-              •
-            </motion.span>
+          <div className="flex items-center justify-center gap-3 mb-2">
             {['C', 'o', 'n', 's', 'u', 'l', 't', 'i', 'n', 'g'].map((letter, i) => (
               <motion.span
                 key={i}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.6 + i * 0.08, duration: 0.5 }}
-                className="text-4xl font-light tracking-wider"
+                transition={{ delay: 1 + i * 0.08, duration: 0.5 }}
+                className="text-3xl font-light tracking-wider"
                 style={{
-                  background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+                  background: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%)',
                   WebkitBackgroundClip: 'text',
                   WebkitTextFillColor: 'transparent',
                 }}
@@ -240,10 +215,10 @@ const Preloader = ({ onComplete }) => {
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ delay: 2.5, duration: 0.8 }}
+            transition={{ delay: 1.8, duration: 0.8 }}
             className="text-sm text-blue-300/60 tracking-widest uppercase"
           >
-            Kingdom
+            Excellence in Every Solution
           </motion.p>
         </motion.div>
 

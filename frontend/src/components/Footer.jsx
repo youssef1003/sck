@@ -11,6 +11,7 @@ const Footer = () => {
     { name: t('nav.home'), path: '/' },
     { name: t('nav.about'), path: '/about' },
     { name: t('nav.services'), path: '/services' },
+    { name: t('nav.careers'), path: '/careers' },
     { name: t('nav.blog'), path: '/blog' },
     { name: t('nav.contact'), path: '/contact' },
   ]
@@ -27,7 +28,7 @@ const Footer = () => {
               </div>
               <div>
                 <h3 className="text-lg font-bold">SCQ</h3>
-                <p className="text-sm text-blue-400">{isRTL ? 'تكميل للاستشارات' : 'Takmeel Consulting'}</p>
+                <p className="text-sm text-blue-400">{isRTL ? 'استشارات إدارية' : 'Consulting'}</p>
               </div>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">

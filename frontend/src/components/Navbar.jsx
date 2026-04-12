@@ -26,6 +26,7 @@ const Navbar = () => {
     { name: t('nav.home'), path: '/' },
     { name: t('nav.about'), path: '/about' },
     { name: t('nav.services'), path: '/services' },
+    { name: t('nav.careers'), path: '/careers' },
     { name: t('nav.blog'), path: '/blog' },
     { name: t('nav.contact'), path: '/contact' },
   ]
@@ -50,7 +51,7 @@ const Navbar = () => {
                 SCQ
               </h1>
               <p className={`text-xs ${isScrolled ? 'text-blue-600' : 'text-blue-200'}`}>
-                {isRTL ? 'تكميل للاستشارات' : 'Takmeel Consulting'}
+                {isRTL ? 'استشارات إدارية' : 'Consulting'}
               </p>
             </div>
           </Link>
