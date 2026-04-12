@@ -1,58 +1,29 @@
 import { motion } from 'framer-motion'
-import { Briefcase, MapPin, Clock, TrendingUp, Users, Award, Target } from 'lucide-react'
+import { TrendingUp, Users, Award, Target, Upload, CheckCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 
 const Careers = () => {
   const { t, i18n } = useTranslation()
   const isRTL = i18n.language === 'ar'
-  const [selectedJob, setSelectedJob] = useState(null)
-
-  // Sample job listings - في الواقع هتيجي من API
-  const jobs = [
-    {
-      id: 1,
-      title: isRTL ? 'مستشار أعمال أول' : 'Senior Business Consultant',
-      department: isRTL ? 'الاستشارات الإدارية' : 'Business Consulting',
-      location: isRTL ? 'الرياض، السعودية' : 'Riyadh, Saudi Arabia',
-      type: t('careers.full_time'),
-      experience: '5-7',
-      description: isRTL 
-        ? 'نبحث عن مستشار أعمال متمرس للانضمام إلى فريقنا في الرياض. المرشح المثالي لديه خبرة واسعة في التخطيط الاستراتيجي وتطوير الأعمال.'
-        : 'We are looking for an experienced business consultant to join our team in Riyadh. The ideal candidate has extensive experience in strategic planning and business development.',
-      requirements: isRTL
-        ? ['خبرة 5-7 سنوات في الاستشارات الإدارية', 'درجة البكالوريوس في إدارة الأعمال أو مجال ذي صلة', 'مهارات تواصل ممتازة بالعربية والإنجليزية', 'خبرة في السوق السعودي']
-        : ['5-7 years experience in business consulting', 'Bachelor\'s degree in Business Administration or related field', 'Excellent communication skills in Arabic and English', 'Experience in Saudi market']
-    },
-    {
-      id: 2,
-      title: isRTL ? 'أخصائي موارد بشرية' : 'HR Specialist',
-      department: isRTL ? 'الموارد البشرية' : 'Human Resources',
-      location: isRTL ? 'القاهرة، مصر' : 'Cairo, Egypt',
-      type: t('careers.full_time'),
-      experience: '3-5',
-      description: isRTL
-        ? 'نبحث عن أخصائي موارد بشرية للمساعدة في تطوير وتنفيذ استراتيجيات الموارد البشرية لعملائنا.'
-        : 'We are looking for an HR specialist to help develop and implement HR strategies for our clients.',
-      requirements: isRTL
-        ? ['خبرة 3-5 سنوات في الموارد البشرية', 'معرفة بقوانين العمل المصرية', 'مهارات تحليلية قوية', 'شهادة مهنية في الموارد البشرية (مفضل)']
-        : ['3-5 years experience in HR', 'Knowledge of Egyptian labor laws', 'Strong analytical skills', 'Professional HR certification (preferred)']
-    },
-    {
-      id: 3,
-      title: isRTL ? 'محلل دراسات جدوى' : 'Feasibility Study Analyst',
-      department: isRTL ? 'دراسات الجدوى' : 'Feasibility Studies',
-      location: isRTL ? 'عن بُعد' : 'Remote',
-      type: t('careers.remote'),
-      experience: '2-4',
-      description: isRTL
-        ? 'نبحث عن محلل دراسات جدوى لإعداد دراسات اقتصادية شاملة للمشاريع الاستثمارية.'
-        : 'We are looking for a feasibility study analyst to prepare comprehensive economic studies for investment projects.',
-      requirements: isRTL
-        ? ['خبرة 2-4 سنوات في التحليل المالي', 'إجادة Excel والنمذجة المالية', 'درجة البكالوريوس في الاقتصاد أو المالية', 'مهارات كتابة تقارير ممتازة']
-        : ['2-4 years experience in financial analysis', 'Proficiency in Excel and financial modeling', 'Bachelor\'s degree in Economics or Finance', 'Excellent report writing skills']
-    }
-  ]
+  const [formData, setFormData] = useState({
+    fullName: '',
+    email: '',
+    phone: '',
+    position: '',
+    experience: '',
+    education: '',
+    currentCompany: '',
+    expectedSalary: '',
+    noticePeriod: '',
+    linkedin: '',
+    portfolio: '',
+    coverLetter: '',
+    resume: null
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [employeeCode, setEmployeeCode] = useState('')
 
   const benefits = [
     {
@@ -72,6 +43,65 @@ const Careers = () => {
       key: 'impact'
     }
   ]
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }))
+  }
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0]
+    if (file && file.type === 'application/pdf') {
+      setFormData(prev => ({
+        ...prev,
+        resume: file
+      }))
+    } else {
+      alert(isRTL ? 'يرجى رفع ملف PDF فقط' : 'Please upload PDF file only')
+    }
+  }
+
+  const generateEmployeeCode = () => {
+    const timestamp = Date.now().toString(36)
+    const random = Math.random().toString(36).substring(2, 7)
+    return `EMP-${timestamp}-${random}`.toUpperCase()
+  }
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+
+    // Simulate API call
+    setTimeout(() => {
+      const code = generateEmployeeCode()
+      setEmployeeCode(code)
+      setSubmitSuccess(true)
+      setIsSubmitting(false)
+      
+      // Reset form after 5 seconds
+      setTimeout(() => {
+        setSubmitSuccess(false)
+        setFormData({
+          fullName: '',
+          email: '',
+          phone: '',
+          position: '',
+          experience: '',
+          education: '',
+          currentCompany: '',
+          expectedSalary: '',
+          noticePeriod: '',
+          linkedin: '',
+          portfolio: '',
+          coverLetter: '',
+          resume: null
+        })
+      }, 5000)
+    }, 2000)
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-50 via-blue-50/30 to-slate-50">
@@ -115,7 +145,7 @@ const Careers = () => {
             </h2>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto mb-20">
             {benefits.map((benefit, index) => (
               <motion.div
                 key={index}
@@ -138,179 +168,293 @@ const Careers = () => {
               </motion.div>
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* Open Positions Section */}
-      <section className="py-20 bg-white">
-        <div className="container mx-auto px-6">
+          {/* Application Form */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-16"
+            className="max-w-4xl mx-auto"
           >
-            <h2 className="text-4xl font-bold text-slate-900 mb-4">
-              {t('careers.open_positions')}
-            </h2>
-          </motion.div>
+            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 border-2 border-blue-100">
+              <div className="text-center mb-10">
+                <h2 className="text-3xl font-bold text-slate-900 mb-3">
+                  {t('careers.application.title')}
+                </h2>
+                <p className="text-slate-600">
+                  {isRTL 
+                    ? 'املأ النموذج أدناه وسنتواصل معك قريباً' 
+                    : 'Fill out the form below and we will contact you soon'}
+                </p>
+              </div>
 
-          <div className="max-w-5xl mx-auto space-y-6">
-            {jobs.map((job, index) => (
-              <motion.div
-                key={job.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="p-8 rounded-2xl bg-gradient-to-br from-slate-50 to-blue-50/50 border-2 border-blue-100 hover:border-blue-300 shadow-lg hover:shadow-xl transition-all duration-300"
-              >
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                  <div className="flex-1">
-                    <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                      {job.title}
-                    </h3>
-                    <p className="text-slate-600 mb-4">{job.description}</p>
-                    
-                    <div className={`flex flex-wrap gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                      <div className={`flex items-center gap-2 text-sm text-slate-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                        <Briefcase className="w-4 h-4 text-blue-600" />
-                        <span>{job.department}</span>
-                      </div>
-                      <div className={`flex items-center gap-2 text-sm text-slate-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                        <MapPin className="w-4 h-4 text-blue-600" />
-                        <span>{job.location}</span>
-                      </div>
-                      <div className={`flex items-center gap-2 text-sm text-slate-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                        <Clock className="w-4 h-4 text-blue-600" />
-                        <span>{job.type}</span>
-                      </div>
-                      <div className={`flex items-center gap-2 text-sm text-slate-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                        <TrendingUp className="w-4 h-4 text-blue-600" />
-                        <span>{job.experience} {t('careers.years')}</span>
-                      </div>
+              {submitSuccess ? (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="text-center py-12"
+                >
+                  <div className="inline-flex p-6 rounded-full bg-green-100 mb-6">
+                    <CheckCircle className="w-16 h-16 text-green-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-slate-900 mb-4">
+                    {t('careers.application.success')}
+                  </h3>
+                  <div className="bg-blue-50 rounded-xl p-6 mb-4 max-w-md mx-auto">
+                    <p className="text-sm text-slate-600 mb-2">
+                      {isRTL ? 'كود المتقدم الخاص بك:' : 'Your Application Code:'}
+                    </p>
+                    <p className="text-2xl font-bold text-blue-600 font-mono">
+                      {employeeCode}
+                    </p>
+                    <p className="text-xs text-slate-500 mt-2">
+                      {isRTL 
+                        ? 'احتفظ بهذا الكود للمتابعة' 
+                        : 'Keep this code for follow-up'}
+                    </p>
+                  </div>
+                </motion.div>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Personal Information */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        {t('careers.application.name')} *
+                      </label>
+                      <input
+                        type="text"
+                        name="fullName"
+                        value={formData.fullName}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        {t('careers.application.email')} *
+                      </label>
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        {t('careers.application.phone')} *
+                      </label>
+                      <input
+                        type="tel"
+                        name="phone"
+                        value={formData.phone}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        {t('careers.application.position')} *
+                      </label>
+                      <input
+                        type="text"
+                        name="position"
+                        value={formData.position}
+                        onChange={handleInputChange}
+                        placeholder={isRTL ? 'مثال: مستشار أعمال' : 'e.g., Business Consultant'}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
+                        required
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        {isRTL ? 'سنوات الخبرة' : 'Years of Experience'} *
+                      </label>
+                      <select
+                        name="experience"
+                        value={formData.experience}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
+                        required
+                      >
+                        <option value="">{isRTL ? 'اختر...' : 'Select...'}</option>
+                        <option value="0-1">{isRTL ? 'أقل من سنة' : 'Less than 1 year'}</option>
+                        <option value="1-3">1-3 {t('careers.years')}</option>
+                        <option value="3-5">3-5 {t('careers.years')}</option>
+                        <option value="5-7">5-7 {t('careers.years')}</option>
+                        <option value="7-10">7-10 {t('careers.years')}</option>
+                        <option value="10+">{isRTL ? 'أكثر من 10 سنوات' : '10+ years'}</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        {isRTL ? 'المؤهل الدراسي' : 'Education'} *
+                      </label>
+                      <select
+                        name="education"
+                        value={formData.education}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
+                        required
+                      >
+                        <option value="">{isRTL ? 'اختر...' : 'Select...'}</option>
+                        <option value="high-school">{isRTL ? 'ثانوية عامة' : 'High School'}</option>
+                        <option value="diploma">{isRTL ? 'دبلوم' : 'Diploma'}</option>
+                        <option value="bachelor">{isRTL ? 'بكالوريوس' : 'Bachelor\'s Degree'}</option>
+                        <option value="master">{isRTL ? 'ماجستير' : 'Master\'s Degree'}</option>
+                        <option value="phd">{isRTL ? 'دكتوراه' : 'PhD'}</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        {isRTL ? 'الشركة الحالية' : 'Current Company'}
+                      </label>
+                      <input
+                        type="text"
+                        name="currentCompany"
+                        value={formData.currentCompany}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        {isRTL ? 'الراتب المتوقع' : 'Expected Salary'}
+                      </label>
+                      <input
+                        type="text"
+                        name="expectedSalary"
+                        value={formData.expectedSalary}
+                        onChange={handleInputChange}
+                        placeholder={isRTL ? 'مثال: 10000 ريال' : 'e.g., 10000 SAR'}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        {isRTL ? 'فترة الإشعار' : 'Notice Period'}
+                      </label>
+                      <select
+                        name="noticePeriod"
+                        value={formData.noticePeriod}
+                        onChange={handleInputChange}
+                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
+                      >
+                        <option value="">{isRTL ? 'اختر...' : 'Select...'}</option>
+                        <option value="immediate">{isRTL ? 'فوري' : 'Immediate'}</option>
+                        <option value="1-week">{isRTL ? 'أسبوع' : '1 Week'}</option>
+                        <option value="2-weeks">{isRTL ? 'أسبوعين' : '2 Weeks'}</option>
+                        <option value="1-month">{isRTL ? 'شهر' : '1 Month'}</option>
+                        <option value="2-months">{isRTL ? 'شهرين' : '2 Months'}</option>
+                        <option value="3-months">{isRTL ? '3 أشهر' : '3 Months'}</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        LinkedIn {isRTL ? 'الملف الشخصي' : 'Profile'}
+                      </label>
+                      <input
+                        type="url"
+                        name="linkedin"
+                        value={formData.linkedin}
+                        onChange={handleInputChange}
+                        placeholder="https://linkedin.com/in/..."
+                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        {isRTL ? 'رابط معرض الأعمال' : 'Portfolio Link'}
+                      </label>
+                      <input
+                        type="url"
+                        name="portfolio"
+                        value={formData.portfolio}
+                        onChange={handleInputChange}
+                        placeholder="https://..."
+                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
+                      />
                     </div>
                   </div>
 
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setSelectedJob(job)}
-                    className="px-8 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 transition-all duration-300 whitespace-nowrap"
-                  >
-                    {t('careers.apply_now')}
-                  </motion.button>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+                  {/* Resume Upload */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      {t('careers.application.resume')} *
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="file"
+                        accept=".pdf"
+                        onChange={handleFileChange}
+                        className="hidden"
+                        id="resume-upload"
+                        required
+                      />
+                      <label
+                        htmlFor="resume-upload"
+                        className="flex items-center justify-center gap-3 w-full px-4 py-6 rounded-xl border-2 border-dashed border-slate-300 hover:border-blue-500 cursor-pointer transition-colors bg-slate-50 hover:bg-blue-50"
+                      >
+                        <Upload className="w-6 h-6 text-slate-400" />
+                        <span className="text-slate-600">
+                          {formData.resume 
+                            ? formData.resume.name 
+                            : (isRTL ? 'اضغط لرفع السيرة الذاتية (PDF)' : 'Click to upload resume (PDF)')}
+                        </span>
+                      </label>
+                    </div>
+                  </div>
 
-          {jobs.length === 0 && (
-            <div className="text-center py-20">
-              <p className="text-xl text-slate-600">{t('careers.no_positions')}</p>
+                  {/* Cover Letter */}
+                  <div>
+                    <label className="block text-sm font-medium text-slate-700 mb-2">
+                      {t('careers.application.cover_letter')}
+                    </label>
+                    <textarea
+                      name="coverLetter"
+                      value={formData.coverLetter}
+                      onChange={handleInputChange}
+                      rows="6"
+                      placeholder={isRTL 
+                        ? 'أخبرنا عن نفسك ولماذا تريد الانضمام إلى فريقنا...' 
+                        : 'Tell us about yourself and why you want to join our team...'}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors resize-none"
+                    ></textarea>
+                  </div>
+
+                  {/* Submit Button */}
+                  <div className="flex gap-4 pt-6">
+                    <button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="flex-1 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmitting 
+                        ? t('careers.application.submitting') 
+                        : t('careers.application.submit')}
+                    </button>
+                  </div>
+                </form>
+              )}
             </div>
-          )}
-        </div>
-      </section>
-
-      {/* Application Modal */}
-      {selectedJob && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-          >
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <h3 className="text-2xl font-bold text-slate-900 mb-2">
-                  {t('careers.application.title')}
-                </h3>
-                <p className="text-slate-600">{selectedJob.title}</p>
-              </div>
-              <button
-                onClick={() => setSelectedJob(null)}
-                className="text-slate-400 hover:text-slate-600 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-
-            <form className="space-y-6">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  {t('careers.application.name')}
-                </label>
-                <input
-                  type="text"
-                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  {t('careers.application.email')}
-                </label>
-                <input
-                  type="email"
-                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  {t('careers.application.phone')}
-                </label>
-                <input
-                  type="tel"
-                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  {t('careers.application.resume')}
-                </label>
-                <input
-                  type="file"
-                  accept=".pdf"
-                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  {t('careers.application.cover_letter')}
-                </label>
-                <textarea
-                  rows="4"
-                  className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors resize-none"
-                ></textarea>
-              </div>
-
-              <div className="flex gap-4">
-                <button
-                  type="button"
-                  onClick={() => setSelectedJob(null)}
-                  className="flex-1 px-6 py-3 rounded-xl border-2 border-slate-200 text-slate-700 font-semibold hover:bg-slate-50 transition-colors"
-                >
-                  {t('common.cancel')}
-                </button>
-                <button
-                  type="submit"
-                  className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                >
-                  {t('careers.application.submit')}
-                </button>
-              </div>
-            </form>
           </motion.div>
         </div>
-      )}
+      </section>
     </div>
   )
 }
