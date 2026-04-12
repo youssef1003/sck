@@ -16,6 +16,7 @@ import NotFound from './pages/NotFound'
 import AdminLogin from './pages/admin/Login'
 import AdminDashboard from './pages/admin/Dashboard'
 import CareersManagement from './pages/admin/CareersManagement'
+import HomeEditor from './pages/admin/HomeEditor'
 
 function App() {
   const [loading, setLoading] = useState(() => {
@@ -41,6 +42,7 @@ function App() {
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/careers" element={<CareersManagement />} />
+          <Route path="/admin/pages/home" element={<HomeEditor />} />
 
           {/* Public Routes - With Navbar/Footer */}
           <Route path="*" element={
