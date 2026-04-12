@@ -1,0 +1,191 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About",
+    "services": "Services",
+    "blog": "Blog",
+    "contact": "Contact"
+  },
+  "hero": {
+    "title": "Smart Consulting Solutions",
+    "subtitle": "Transforming Ideas into Reality",
+    "description": "We provide comprehensive consulting solutions for companies in Egypt and Saudi Arabia, with a special focus on digital transformation and institutional development",
+    "cta": "Book Free Consultation",
+    "learn_more": "Learn More"
+  },
+  "services": {
+    "title": "Our Services",
+    "subtitle": "Comprehensive Solutions for Your Business Growth",
+    "business_consulting": {
+      "title": "Business Consulting",
+      "description": "We help you build strong business strategies, market analysis, and develop business models"
+    },
+    "hr_consulting": {
+      "title": "HR Consulting",
+      "description": "Advanced recruitment systems, performance evaluation, and customized training programs"
+    },
+    "organizational_dev": {
+      "title": "Organizational Development",
+      "description": "Improving organizational structures, process development, and increasing efficiency"
+    },
+    "strategic_planning": {
+      "title": "Strategic Planning",
+      "description": "Long-term plans, KPI identification, and risk management"
+    }
+  },
+  "stats": {
+    "clients": "Happy Clients",
+    "projects": "Successful Projects",
+    "experience": "Years Experience",
+    "satisfaction": "Client Satisfaction"
+  },
+  "why_choose_us": {
+    "title": "Why Choose SCK?",
+    "subtitle": "Combining Experience with Innovation",
+    "expertise": {
+      "title": "Local Expertise",
+      "description": "Deep understanding of Egyptian and Saudi markets"
+    },
+    "ai_powered": {
+      "title": "AI-Powered",
+      "description": "Instant consultations available 24/7"
+    },
+    "proven": {
+      "title": "Proven Results",
+      "description": "Track record of success stories"
+    },
+    "support": {
+      "title": "Continuous Support",
+      "description": "We stay with you every step"
+    }
+  },
+  "testimonials": {
+    "title": "What Our Clients Say",
+    "subtitle": "Real Success Stories"
+  },
+  "cta": {
+    "title": "Ready to Transform Your Business?",
+    "subtitle": "Book a free consultation today",
+    "button": "Get Started"
+  },
+  "footer": {
+    "description": "Smart administrative consulting platform helping companies grow and develop",
+    "quick_links": "Quick Links",
+    "services_title": "Services",
+    "contact_title": "Contact Us",
+    "egypt": "Egypt",
+    "saudi": "Saudi Arabia",
+    "rights": "All Rights Reserved"
+  },
+  "about": {
+    "title": "About Us",
+    "subtitle": "We are SCK - Your Partner in Success",
+    "description": "A smart administrative consulting platform combining traditional expertise with modern technology",
+    "vision": {
+      "title": "Our Vision",
+      "description": "To be the first choice for administrative consulting in Egypt and Saudi Arabia"
+    },
+    "mission": {
+      "title": "Our Mission",
+      "description": "Empowering companies to achieve their goals through innovative consulting solutions"
+    },
+    "approach": {
+      "title": "Our Approach",
+      "step1": "Comprehensive Analysis",
+      "step2": "Strategic Planning",
+      "step3": "Professional Implementation",
+      "step4": "Continuous Follow-up"
+    },
+    "values": {
+      "title": "Our Values",
+      "excellence": "Excellence",
+      "innovation": "Innovation",
+      "integrity": "Integrity",
+      "partnership": "Partnership"
+    }
+  },
+  "contact": {
+    "title": "Contact Us",
+    "subtitle": "We're Here to Help",
+    "form": {
+      "name": "Full Name",
+      "email": "Email Address",
+      "phone": "Phone Number",
+      "business_type": "Business Type",
+      "message": "Your Message",
+      "submit": "Send",
+      "sending": "Sending...",
+      "success": "Message sent successfully!",
+      "error": "An error occurred, please try again"
+    },
+    "business_types": {
+      "startup": "Startup",
+      "small": "Small Business",
+      "medium": "Medium Business",
+      "large": "Large Company",
+      "enterprise": "Enterprise"
+    },
+    "offices": {
+      "egypt": "Egypt Office",
+      "saudi": "Saudi Arabia Office"
+    },
+    "whatsapp": "Contact via WhatsApp"
+  },
+  "blog": {
+    "title": "Blog",
+    "subtitle": "Latest Articles and Tips",
+    "all": "All",
+    "strategy": "Strategy",
+    "hr": "HR",
+    "tech": "Technology",
+    "read_more": "Read More",
+    "min_read": "min read"
+  },
+  "booking": {
+    "title": "Book Consultation",
+    "subtitle": "Fill the form and we'll contact you soon",
+    "form": {
+      "name": "Full Name",
+      "email": "Email Address",
+      "phone": "Phone Number",
+      "company": "Company Name (Optional)",
+      "service": "Service Type",
+      "date": "Preferred Date",
+      "notes": "Additional Notes",
+      "submit": "Book Now",
+      "submitting": "Booking...",
+      "success": "Booking successful!",
+      "error": "An error occurred, please try again"
+    },
+    "service_types": {
+      "business": "Business Consulting",
+      "hr": "HR Consulting",
+      "organizational": "Organizational Development",
+      "strategic": "Strategic Planning"
+    }
+  },
+  "ai_chat": {
+    "title": "SCK Smart Assistant",
+    "subtitle": "Ask any question about our services",
+    "placeholder": "Type your question here...",
+    "send": "Send",
+    "thinking": "Thinking...",
+    "welcome": "Hello! How can I help you today?"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "close": "Close",
+    "open": "Open",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "view": "View",
+    "search": "Search",
+    "page_not_found": "Page Not Found",
+    "page_not_found_desc": "Sorry, the page you are looking for does not exist or has been moved",
+    "back_home": "Back to Home"
+  }
+}
