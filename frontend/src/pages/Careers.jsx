@@ -1,11 +1,25 @@
 import { motion } from 'framer-motion'
-import { TrendingUp, Users, Award, Target, Upload, CheckCircle } from 'lucide-react'
-import { useState } from 'react'
+import { TrendingUp, Users, Award, Target, Upload, CheckCircle, LogIn } from 'lucide-react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
 
 const Careers = () => {
   const { t, i18n } = useTranslation()
+  const navigate = useNavigate()
   const isRTL = i18n.language === 'ar'
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [currentUser, setCurrentUser] = useState(null)
+  
+  useEffect(() => {
+    // Check if user is logged in
+    const userData = localStorage.getItem('scq_user_data')
+    if (userData) {
+      setIsLoggedIn(true)
+      setCurrentUser(JSON.parse(userData))
+    }
+  }, [])
+  
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -200,6 +214,46 @@ const Careers = () => {
             viewport={{ once: true }}
             className="max-w-4xl mx-auto"
           >
+            {!isLoggedIn ? (
+              /* Login Required Message - Only when trying to apply */
+              <div className="bg-white rounded-2xl shadow-xl p-12 border-2 border-blue-100 text-center">
+                <div className="inline-flex p-6 rounded-full bg-blue-100 mb-6">
+                  <LogIn className="w-16 h-16 text-blue-600" />
+                </div>
+                <h2 className="text-3xl font-bold text-slate-900 mb-4">
+                  {isRTL ? 'للتقديم على الوظائف' : 'To Apply for Jobs'}
+                </h2>
+                <p className="text-lg text-slate-600 mb-8">
+                  {isRTL 
+                    ? 'يجب عليك إنشاء حساب أو تسجيل الدخول أولاً للتقديم على الوظائف'
+                    : 'You need to create an account or login first to apply for jobs'}
+                </p>
+                <div className="bg-blue-50 rounded-xl p-6 mb-8">
+                  <p className="text-sm text-slate-600 mb-2">
+                    {isRTL ? '💡 ملاحظة' : '💡 Note'}
+                  </p>
+                  <p className="text-slate-700">
+                    {isRTL 
+                      ? 'يمكنك تصفح المنصة ومشاهدة الخدمات بدون تسجيل، لكن للتقديم على الوظائف يجب إنشاء حساب'
+                      : 'You can browse the platform and view services without registration, but to apply for jobs you need to create an account'}
+                  </p>
+                </div>
+                <div className="flex gap-4 justify-center">
+                  <button
+                    onClick={() => navigate('/login')}
+                    className="px-8 py-4 bg-white text-blue-600 border-2 border-blue-600 rounded-xl font-bold text-lg hover:bg-blue-50 transition-all"
+                  >
+                    {isRTL ? 'تسجيل الدخول' : 'Login'}
+                  </button>
+                  <button
+                    onClick={() => navigate('/register')}
+                    className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl font-bold text-lg hover:from-blue-700 hover:to-cyan-600 transition-all shadow-lg"
+                  >
+                    {isRTL ? 'إنشاء حساب جديد' : 'Create Account'}
+                  </button>
+                </div>
+              </div>
+            ) : (
             <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 border-2 border-blue-100">
               <div className="text-center mb-10">
                 <h2 className="text-3xl font-bold text-slate-900 mb-3">
@@ -475,6 +529,7 @@ const Careers = () => {
                 </form>
               )}
             </div>
+            )}
           </motion.div>
         </div>
       </section>

@@ -13,10 +13,14 @@ import Careers from './pages/Careers'
 import Contact from './pages/Contact'
 import Blog from './pages/Blog'
 import NotFound from './pages/NotFound'
-import AdminLogin from './pages/admin/Login'
 import AdminDashboard from './pages/admin/Dashboard'
 import CareersManagement from './pages/admin/CareersManagement'
+import EmployersManagement from './pages/admin/EmployersManagement'
 import HomeEditor from './pages/admin/HomeEditor'
+import Login from './pages/auth/Login'
+import Register from './pages/auth/Register'
+import Dashboard from './pages/Dashboard'
+import EmployerDashboard from './pages/EmployerDashboard'
 
 function App() {
   const [loading, setLoading] = useState(() => {
@@ -38,10 +42,16 @@ function App() {
       
       <Router>
         <Routes>
+          {/* Auth Routes - No Navbar/Footer */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/employer/dashboard" element={<EmployerDashboard />} />
+
           {/* Admin Routes - No Navbar/Footer */}
-          <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/careers" element={<CareersManagement />} />
+          <Route path="/admin/employers" element={<EmployersManagement />} />
           <Route path="/admin/pages/home" element={<HomeEditor />} />
 
           {/* Public Routes - With Navbar/Footer */}

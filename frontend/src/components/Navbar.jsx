@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, User, LogIn } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import BookingModal from './BookingModal'
@@ -10,9 +10,18 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
   const [isBookingOpen, setIsBookingOpen] = useState(false)
+  const [user, setUser] = useState(null)
   const location = useLocation()
   const { t, i18n } = useTranslation()
   const isRTL = i18n.language === 'ar'
+
+  useEffect(() => {
+    // Check if user is logged in
+    const userData = localStorage.getItem('scq_user_data')
+    if (userData) {
+      setUser(JSON.parse(userData))
+    }
+  }, [location])
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,12 +66,12 @@ const Navbar = () => {
           </Link>
 
           {/* Desktop Menu */}
-          <div className={`hidden md:flex items-center gap-8 ${isRTL ? 'flex-row-reverse' : ''}`}>
+          <div className={`hidden md:flex items-center gap-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-sm font-medium transition-colors relative group ${
+                className={`text-sm font-medium transition-colors relative group px-2 ${
                   location.pathname === link.path
                     ? isScrolled ? 'text-blue-600' : 'text-cyan-400'
                     : isScrolled
@@ -78,10 +87,40 @@ const Navbar = () => {
                 />
               </Link>
             ))}
+            
             <LanguageSwitcher />
+            
+            {user ? (
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 bg-blue-600 text-white hover:bg-blue-700 shadow-md ml-2"
+              >
+                <User className="w-4 h-4" />
+                <span className="max-w-[80px] truncate text-sm">{user.fullName}</span>
+              </Link>
+            ) : (
+              <>
+                <Link
+                  to="/login"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-medium transition-all duration-300 shadow-md bg-white text-blue-600 border-2 border-blue-600 hover:bg-blue-50 ml-2 text-sm"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span>{isRTL ? 'دخول' : 'Login'}</span>
+                </Link>
+                
+                <Link
+                  to="/register"
+                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-medium transition-all duration-300 bg-blue-600 text-white hover:bg-blue-700 shadow-md text-sm"
+                >
+                  <User className="w-4 h-4" />
+                  <span>{isRTL ? 'تسجيل' : 'Sign Up'}</span>
+                </Link>
+              </>
+            )}
+            
             <button 
               onClick={() => setIsBookingOpen(true)}
-              className="px-6 py-2.5 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg font-medium shadow-lg shadow-blue-500/30 hover:shadow-blue-500/50 hover:scale-105 transition-all duration-300"
+              className="px-5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-medium shadow-lg hover:from-amber-600 hover:to-orange-600 transition-all duration-300 text-sm ml-1"
             >
               {t('hero.cta')}
             </button>
@@ -128,6 +167,38 @@ const Navbar = () => {
               <div className="pt-2">
                 <LanguageSwitcher />
               </div>
+              
+              {user ? (
+                <Link
+                  to="/dashboard"
+                  onClick={() => setIsOpen(false)}
+                  className={`flex items-center gap-2 w-full px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
+                >
+                  <User className="w-5 h-5" />
+                  <span className="truncate">{user.fullName}</span>
+                </Link>
+              ) : (
+                <div className="space-y-3">
+                  <Link
+                    to="/login"
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-2 w-full px-4 py-3 bg-white text-blue-600 border-2 border-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
+                  >
+                    <LogIn className="w-5 h-5" />
+                    {isRTL ? 'تسجيل الدخول' : 'Login'}
+                  </Link>
+                  
+                  <Link
+                    to="/register"
+                    onClick={() => setIsOpen(false)}
+                    className={`flex items-center gap-2 w-full px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
+                  >
+                    <User className="w-5 h-5" />
+                    {isRTL ? 'إنشاء حساب جديد' : 'Create Account'}
+                  </Link>
+                </div>
+              )}
+              
               <button 
                 onClick={() => {
                   setIsBookingOpen(true)

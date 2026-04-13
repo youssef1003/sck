@@ -21,77 +21,107 @@ import {
 const AdminDashboard = () => {
   const navigate = useNavigate()
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [adminUser, setAdminUser] = useState(null)
 
   useEffect(() => {
     // Check if user is authenticated
-    const token = localStorage.getItem('scq_admin_token')
-    if (!token) {
-      navigate('/admin/login')
+    const token = localStorage.getItem('admin_token')
+    const userData = localStorage.getItem('admin_user')
+    
+    if (!token || !userData) {
+      navigate('/login')
+      return
     }
+
+    const parsedUser = JSON.parse(userData)
+    setAdminUser(parsedUser)
   }, [navigate])
 
   const handleLogout = () => {
-    localStorage.removeItem('scq_admin_token')
-    localStorage.removeItem('scq_admin_user')
-    navigate('/admin/login')
+    localStorage.removeItem('admin_token')
+    localStorage.removeItem('admin_user')
+    navigate('/')
   }
+
+  const isSubAdmin = adminUser?.role === 'subadmin'
 
   const menuItems = [
     {
       title: 'لوحة التحكم',
       icon: LayoutDashboard,
       path: '/admin/dashboard',
-      color: 'blue'
+      color: 'blue',
+      allowSubAdmin: true
     },
     {
       title: 'الصفحة الرئيسية',
       icon: Home,
       path: '/admin/pages/home',
-      color: 'green'
+      color: 'green',
+      allowSubAdmin: true
     },
     {
       title: 'من نحن',
       icon: Info,
       path: '/admin/pages/about',
-      color: 'purple'
+      color: 'purple',
+      allowSubAdmin: false
     },
     {
       title: 'الخدمات',
       icon: Wrench,
       path: '/admin/pages/services',
-      color: 'orange'
+      color: 'orange',
+      allowSubAdmin: false
     },
     {
       title: 'التوظيف',
       icon: Briefcase,
       path: '/admin/careers',
-      color: 'cyan'
+      color: 'cyan',
+      allowSubAdmin: true
+    },
+    {
+      title: 'أصحاب العمل',
+      icon: Users,
+      path: '/admin/employers',
+      color: 'purple',
+      allowSubAdmin: false
     },
     {
       title: 'المدونة',
       icon: BookOpen,
       path: '/admin/pages/blog',
-      color: 'pink'
+      color: 'pink',
+      allowSubAdmin: false
     },
     {
       title: 'تواصل معنا',
       icon: Phone,
       path: '/admin/pages/contact',
-      color: 'indigo'
+      color: 'indigo',
+      allowSubAdmin: false
     },
     {
       title: 'الرسائل',
       icon: MessageSquare,
       path: '/admin/messages',
-      color: 'red'
+      color: 'red',
+      allowSubAdmin: false
     },
     {
       title: 'الإعدادات',
       icon: Settings,
       path: '/admin/settings',
-      color: 'gray'
+      color: 'gray',
+      allowSubAdmin: false
     }
   ]
+
+  // Filter menu items based on user role
+  const filteredMenuItems = isSubAdmin 
+    ? menuItems.filter(item => item.allowSubAdmin)
+    : menuItems
 
   const stats = [
     { label: 'طلبات التوظيف', value: '0', color: 'blue', icon: Users },
@@ -136,7 +166,7 @@ const AdminDashboard = () => {
 
           {/* Menu Items */}
           <nav className="space-y-2">
-            {menuItems.map((item, index) => (
+            {filteredMenuItems.map((item, index) => (
               <Link
                 key={index}
                 to={item.path}
