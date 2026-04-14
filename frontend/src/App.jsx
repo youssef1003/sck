@@ -45,6 +45,8 @@ function App() {
           {/* Auth Routes - No Navbar/Footer */}
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          
+          {/* User Dashboards - No Navbar/Footer */}
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/employer/dashboard" element={<EmployerDashboard />} />
 
@@ -55,19 +57,78 @@ function App() {
           <Route path="/admin/pages/home" element={<HomeEditor />} />
 
           {/* Public Routes - With Navbar/Footer */}
+          <Route path="/" element={
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-grow">
+                <Home />
+              </main>
+              <Footer />
+              <AIChat />
+            </div>
+          } />
+          
+          <Route path="/about" element={
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-grow">
+                <About />
+              </main>
+              <Footer />
+              <AIChat />
+            </div>
+          } />
+          
+          <Route path="/services" element={
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-grow">
+                <Services />
+              </main>
+              <Footer />
+              <AIChat />
+            </div>
+          } />
+          
+          <Route path="/careers" element={
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-grow">
+                <Careers />
+              </main>
+              <Footer />
+              <AIChat />
+            </div>
+          } />
+          
+          <Route path="/contact" element={
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-grow">
+                <Contact />
+              </main>
+              <Footer />
+              <AIChat />
+            </div>
+          } />
+          
+          <Route path="/blog" element={
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-grow">
+                <Blog />
+              </main>
+              <Footer />
+              <AIChat />
+            </div>
+          } />
+          
+          {/* 404 - Not Found */}
           <Route path="*" element={
             <div className="min-h-screen flex flex-col">
               <Navbar />
               <main className="flex-grow">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/services" element={<Services />} />
-                  <Route path="/careers" element={<Careers />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/blog" element={<Blog />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
+                <NotFound />
               </main>
               <Footer />
               <AIChat />
