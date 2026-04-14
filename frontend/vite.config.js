@@ -10,10 +10,11 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: false,
-    assetsInlineLimit: 0,
+    assetsInlineLimit: 4096,
+    minify: 'esbuild',
     rollupOptions: {
       output: {
-        entryFileNames: 'assets/[name].[hash].js',
+        entryFileNames: 'assets/index.[hash].js',
         chunkFileNames: 'assets/[name].[hash].js',
         assetFileNames: 'assets/[name].[hash].[ext]',
         manualChunks(id) {
