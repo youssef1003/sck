@@ -1,0 +1,6 @@
+# Ignore files
+node_modules
+.git
+*.log
+.env.local
+.DS_Store
