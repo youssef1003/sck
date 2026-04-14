@@ -3,6 +3,10 @@ import ReactDOM from 'react-dom/client'
 import App from './App.jsx'
 import './index.css'
 import './i18n/config'
+import { cleanupServiceWorker } from './utils/cleanupServiceWorker'
+
+// Clean up any old service workers and caches
+cleanupServiceWorker()
 
 // Set initial direction based on language
 const lang = localStorage.getItem('i18nextLng') || 'ar'

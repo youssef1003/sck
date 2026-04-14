@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run clean && vite build",
+    "clean": "node -e \"const fs = require('fs'); const path = require('path'); const dir = path.join(__dirname, 'dist'); if (fs.existsSync(dir)) { fs.rmSync(dir, { recursive: true, force: true }); console.log('✅ Cleaned dist folder'); }\"",
     "preview": "vite preview",
     "vercel-build": "npm run build"
   },
