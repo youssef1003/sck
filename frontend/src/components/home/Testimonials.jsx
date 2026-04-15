@@ -10,7 +10,7 @@ const Testimonials = () => {
       country: '🇪🇬 مصر',
       image: 'https://ui-avatars.com/api/?name=Ahmed+Mohamed&background=0A1F44&color=fff',
       rating: 5,
-      text: 'ساعدتنا SCK في إعادة هيكلة شركتنا بالكامل. النتائج كانت مذهلة وتجاوزت توقعاتنا بكثير.'
+      text: 'ساعدتنا SCQ في إعادة هيكلة شركتنا بالكامل. النتائج كانت مذهلة وتجاوزت توقعاتنا بكثير.'
     },
     {
       name: 'فاطمة العلي',
@@ -28,7 +28,7 @@ const Testimonials = () => {
       country: '🇪🇬 مصر',
       image: 'https://ui-avatars.com/api/?name=Mohamed+Alsaeed&background=0A1F44&color=fff',
       rating: 5,
-      text: 'كشركة ناشئة، كنا بحاجة لتوجيه استراتيجي. SCK قدمت لنا خارطة طريق واضحة ساعدتنا على النمو بسرعة.'
+      text: 'كشركة ناشئة، كنا بحاجة لتوجيه استراتيجي. SCQ قدمت لنا خارطة طريق واضحة ساعدتنا على النمو بسرعة.'
     }
   ]
 

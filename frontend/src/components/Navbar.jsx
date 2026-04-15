@@ -117,13 +117,6 @@ const Navbar = () => {
                 </Link>
               </>
             )}
-            
-            <button 
-              onClick={() => setIsBookingOpen(true)}
-              className="px-5 py-2 bg-gradient-to-r from-amber-500 to-orange-500 text-white rounded-lg font-medium shadow-lg hover:from-amber-600 hover:to-orange-600 transition-all duration-300 text-sm ml-1"
-            >
-              {t('hero.cta')}
-            </button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -198,16 +191,6 @@ const Navbar = () => {
                   </Link>
                 </div>
               )}
-              
-              <button 
-                onClick={() => {
-                  setIsBookingOpen(true)
-                  setIsOpen(false)
-                }}
-                className="w-full px-6 py-3 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-lg font-medium shadow-lg"
-              >
-                {t('hero.cta')}
-              </button>
             </div>
           </motion.div>
         )}

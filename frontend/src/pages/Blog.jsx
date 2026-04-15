@@ -7,7 +7,7 @@ const Blog = () => {
       id: 1,
       title: 'كيف تبني استراتيجية عمل ناجحة في 2026',
       excerpt: 'دليل شامل لبناء استراتيجية عمل قوية تساعدك على تحقيق أهدافك وتجاوز المنافسين',
-      author: 'فريق SCK',
+      author: 'فريق SCQ',
       date: '15 مارس 2026',
       category: 'استراتيجية',
       image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=800&h=500&fit=crop',
@@ -17,7 +17,7 @@ const Blog = () => {
       id: 2,
       title: 'أهمية الموارد البشرية في نجاح الشركات',
       excerpt: 'كيف يمكن لإدارة الموارد البشرية الفعالة أن تحدث فرقاً كبيراً في أداء شركتك',
-      author: 'فريق SCK',
+      author: 'فريق SCQ',
       date: '10 مارس 2026',
       category: 'موارد بشرية',
       image: 'https://images.unsplash.com/photo-1521737711867-e3b97375f902?w=800&h=500&fit=crop',
@@ -27,7 +27,7 @@ const Blog = () => {
       id: 3,
       title: 'التحول الرقمي: ضرورة أم خيار؟',
       excerpt: 'لماذا أصبح التحول الرقمي ضرورة حتمية للشركات في العصر الحديث',
-      author: 'فريق SCK',
+      author: 'فريق SCQ',
       date: '5 مارس 2026',
       category: 'تكنولوجيا',
       image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&h=500&fit=crop',
@@ -37,7 +37,7 @@ const Blog = () => {
       id: 4,
       title: 'مؤشرات الأداء الرئيسية (KPIs) التي يجب تتبعها',
       excerpt: 'تعرف على أهم مؤشرات الأداء التي يجب على كل شركة قياسها لضمان النجاح',
-      author: 'فريق SCK',
+      author: 'فريق SCQ',
       date: '1 مارس 2026',
       category: 'إدارة',
       image: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&h=500&fit=crop',
@@ -47,7 +47,7 @@ const Blog = () => {
       id: 5,
       title: 'كيف تدير التغيير التنظيمي بنجاح',
       excerpt: 'استراتيجيات فعالة لإدارة التغيير في شركتك دون مقاومة من الموظفين',
-      author: 'فريق SCK',
+      author: 'فريق SCQ',
       date: '25 فبراير 2026',
       category: 'تطوير تنظيمي',
       image: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=500&fit=crop',
@@ -57,7 +57,7 @@ const Blog = () => {
       id: 6,
       title: 'الذكاء الاصطناعي في الاستشارات الإدارية',
       excerpt: 'كيف يغير الذكاء الاصطناعي مستقبل الاستشارات الإدارية والأعمال',
-      author: 'فريق SCK',
+      author: 'فريق SCQ',
       date: '20 فبراير 2026',
       category: 'ذكاء اصطناعي',
       image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&h=500&fit=crop',
@@ -82,7 +82,7 @@ const Blog = () => {
             </div>
             <h1 className="text-5xl md:text-6xl font-bold mb-6">المدونة</h1>
             <p className="text-xl text-gray-200 max-w-3xl mx-auto">
-              نصائح وإرشادات من خبراء SCK لمساعدتك على تطوير أعمالك
+              نصائح وإرشادات من خبراء SCQ لمساعدتك على تطوير أعمالك
             </p>
           </motion.div>
         </div>

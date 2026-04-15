@@ -20,7 +20,7 @@ const About = () => {
             transition={{ delay: 0.2 }}
             className="text-xl text-gray-200 max-w-3xl mx-auto"
           >
-            نحن في SCK نؤمن بأن كل شركة لديها القدرة على النمو مع الاستراتيجية الصحيحة
+            نحن في SCQ نؤمن بأن كل شركة لديها القدرة على النمو مع الاستراتيجية الصحيحة
           </motion.p>
         </div>
       </section>

@@ -104,7 +104,7 @@ const Contact = () => {
                     </div>
                     <div className="flex items-center space-x-3 space-x-reverse text-gray-700">
                       <Mail size={18} className="text-secondary" />
-                      <span>egypt@sck-consulting.com</span>
+                      <span>egypt@scq-consulting.com</span>
                     </div>
                   </div>
                 </div>
@@ -126,7 +126,7 @@ const Contact = () => {
                     </div>
                     <div className="flex items-center space-x-3 space-x-reverse text-gray-700">
                       <Mail size={18} className="text-secondary" />
-                      <span>saudi@sck-consulting.com</span>
+                      <span>saudi@scq-consulting.com</span>
                     </div>
                   </div>
                 </div>
