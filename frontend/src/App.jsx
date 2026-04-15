@@ -17,6 +17,7 @@ import AdminDashboard from './pages/admin/Dashboard'
 import CareersManagement from './pages/admin/CareersManagement'
 import EmployersManagement from './pages/admin/EmployersManagement'
 import HomeEditor from './pages/admin/HomeEditor'
+import ContactsManagement from './pages/admin/ContactsManagement'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
 import Dashboard from './pages/Dashboard'
@@ -55,6 +56,7 @@ function App() {
           <Route path="/admin/careers" element={<CareersManagement />} />
           <Route path="/admin/employers" element={<EmployersManagement />} />
           <Route path="/admin/pages/home" element={<HomeEditor />} />
+          <Route path="/admin/contacts" element={<ContactsManagement />} />
 
           {/* Public Routes - With Navbar/Footer */}
           <Route path="/" element={

@@ -78,6 +78,13 @@ const AdminDashboard = () => {
       title: 'التوظيف',
       icon: Briefcase,
       path: '/admin/careers',
+      color: 'yellow',
+      allowSubAdmin: true
+    },
+    {
+      title: 'الرسائل',
+      icon: MessageSquare,
+      path: '/admin/contacts',
       color: 'cyan',
       allowSubAdmin: true
     },

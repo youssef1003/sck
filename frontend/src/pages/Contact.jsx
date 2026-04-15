@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Mail, Phone, MapPin, Send, MessageCircle } from 'lucide-react'
 
 const Contact = () => {
+  const [submitStatus, setSubmitStatus] = useState(null)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -13,8 +14,31 @@ const Contact = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // Handle form submission
-    console.log('Form submitted:', formData)
+    setSubmitStatus('sending')
+    
+    // Simulate form submission
+    setTimeout(() => {
+      // Store in localStorage
+      const contacts = JSON.parse(localStorage.getItem('scq_contacts') || '[]')
+      contacts.push({
+        ...formData,
+        id: Date.now(),
+        date: new Date().toISOString(),
+        status: 'new'
+      })
+      localStorage.setItem('scq_contacts', JSON.stringify(contacts))
+      
+      setSubmitStatus('success')
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        businessType: '',
+        message: ''
+      })
+      
+      setTimeout(() => setSubmitStatus(null), 3000)
+    }, 1000)
   }
 
   const handleChange = (e) => {
@@ -195,11 +219,24 @@ const Contact = () => {
 
                   <button
                     type="submit"
-                    className="w-full px-6 py-4 bg-gradient-to-r from-secondary to-yellow-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center space-x-2 space-x-reverse"
+                    disabled={submitStatus === 'sending'}
+                    className="w-full px-6 py-4 bg-gradient-to-r from-secondary to-yellow-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center space-x-2 space-x-reverse disabled:opacity-50 disabled:cursor-not-allowed"
                   >
-                    <span>إرسال الرسالة</span>
+                    <span>
+                      {submitStatus === 'sending' ? 'جاري الإرسال...' : 'إرسال الرسالة'}
+                    </span>
                     <Send size={18} />
                   </button>
+                  
+                  {submitStatus === 'success' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 bg-green-50 border-2 border-green-200 rounded-xl text-green-600 text-center"
+                    >
+                      ✅ تم إرسال رسالتك بنجاح! سنتواصل معك قريباً
+                    </motion.div>
+                  )}
                 </form>
               </div>
             </motion.div>
