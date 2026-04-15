@@ -56,23 +56,9 @@ const AdminDashboard = () => {
     {
       title: 'الصفحة الرئيسية',
       icon: Home,
-      path: '/admin/pages/home',
+      path: '/admin/home',
       color: 'green',
       allowSubAdmin: true
-    },
-    {
-      title: 'من نحن',
-      icon: Info,
-      path: '/admin/pages/about',
-      color: 'purple',
-      allowSubAdmin: false
-    },
-    {
-      title: 'الخدمات',
-      icon: Wrench,
-      path: '/admin/pages/services',
-      color: 'orange',
-      allowSubAdmin: false
     },
     {
       title: 'التوظيف',
@@ -93,34 +79,6 @@ const AdminDashboard = () => {
       icon: Users,
       path: '/admin/employers',
       color: 'purple',
-      allowSubAdmin: false
-    },
-    {
-      title: 'المدونة',
-      icon: BookOpen,
-      path: '/admin/pages/blog',
-      color: 'pink',
-      allowSubAdmin: false
-    },
-    {
-      title: 'تواصل معنا',
-      icon: Phone,
-      path: '/admin/pages/contact',
-      color: 'indigo',
-      allowSubAdmin: false
-    },
-    {
-      title: 'الرسائل',
-      icon: MessageSquare,
-      path: '/admin/messages',
-      color: 'red',
-      allowSubAdmin: false
-    },
-    {
-      title: 'الإعدادات',
-      icon: Settings,
-      path: '/admin/settings',
-      color: 'gray',
       allowSubAdmin: false
     }
   ]
@@ -247,7 +205,7 @@ const AdminDashboard = () => {
             <h2 className="text-xl font-bold text-slate-900 mb-6">إجراءات سريعة</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Link
-                to="/admin/pages/home"
+                to="/admin/home"
                 className="p-6 rounded-xl border-2 border-blue-100 hover:border-blue-300 hover:bg-blue-50 transition-all text-center group"
               >
                 <Home className="w-8 h-8 text-blue-600 mx-auto mb-3" />
@@ -265,12 +223,12 @@ const AdminDashboard = () => {
               </Link>
 
               <Link
-                to="/admin/pages/blog"
+                to="/admin/employers"
                 className="p-6 rounded-xl border-2 border-purple-100 hover:border-purple-300 hover:bg-purple-50 transition-all text-center group"
               >
-                <BookOpen className="w-8 h-8 text-purple-600 mx-auto mb-3" />
-                <h3 className="font-semibold text-slate-900 mb-1">إدارة المدونة</h3>
-                <p className="text-sm text-slate-600">إضافة وتعديل المقالات</p>
+                <Users className="w-8 h-8 text-purple-600 mx-auto mb-3" />
+                <h3 className="font-semibold text-slate-900 mb-1">إدارة أصحاب العمل</h3>
+                <p className="text-sm text-slate-600">الموافقة والاشتراكات</p>
               </Link>
             </div>
           </div>

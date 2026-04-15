@@ -55,7 +55,7 @@ function App() {
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/careers" element={<CareersManagement />} />
           <Route path="/admin/employers" element={<EmployersManagement />} />
-          <Route path="/admin/pages/home" element={<HomeEditor />} />
+          <Route path="/admin/home" element={<HomeEditor />} />
           <Route path="/admin/contacts" element={<ContactsManagement />} />
 
           {/* Public Routes - With Navbar/Footer */}
