@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Search, Users, Shield, UserCheck, UserX, Trash2, ChevronDown } from 'lucide-react'
 import { getUsers, updateUserRole, updateUserStatus, deleteUser } from '../../utils/adminApi'
+import { hasPermission, getCurrentUserPermissions, PERMISSIONS } from '../../utils/permissions'
+import PermissionGuard from '../../components/admin/PermissionGuard'
 
 const UsersManagement = () => {
   const [users, setUsers] = useState([])
@@ -11,6 +13,11 @@ const UsersManagement = () => {
   const [roleFilter, setRoleFilter] = useState('all')
   const [totalCount, setTotalCount] = useState(0)
   const [toast, setToast] = useState(null)
+
+  const userPermissions = getCurrentUserPermissions()
+  const canEdit = hasPermission(userPermissions, PERMISSIONS.USERS_EDIT)
+  const canDelete = hasPermission(userPermissions, PERMISSIONS.USERS_DELETE)
+  const canChangeRole = hasPermission(userPermissions, PERMISSIONS.USERS_CHANGE_ROLE)
 
   const fetchUsers = async () => {
     setLoading(true)
@@ -205,43 +212,64 @@ const UsersManagement = () => {
                     <td className="px-6 py-4 text-sm text-slate-600">{user.email}</td>
                     <td className="px-6 py-4 text-sm text-slate-600" dir="ltr">{user.phone || '—'}</td>
                     <td className="px-6 py-4">
-                      <select
-                        value={user.role}
-                        onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                        className="text-xs px-2 py-1.5 rounded-lg border border-slate-200 focus:border-blue-500 focus:outline-none cursor-pointer"
-                      >
-                        <option value="client">عميل</option>
-                        <option value="user">مستخدم</option>
-                        <option value="employer">صاحب عمل</option>
-                        <option value="consultant">مستشار</option>
-                        <option value="subadmin">مساعد مدير</option>
-                        <option value="admin">مدير</option>
-                      </select>
+                      <PermissionGuard permission={PERMISSIONS.USERS_CHANGE_ROLE}>
+                        <select
+                          value={user.role}
+                          onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                          className="text-xs px-2 py-1.5 rounded-lg border border-slate-200 focus:border-blue-500 focus:outline-none cursor-pointer"
+                        >
+                          <option value="client">عميل</option>
+                          <option value="user">مستخدم</option>
+                          <option value="employer">صاحب عمل</option>
+                          <option value="consultant">مستشار</option>
+                          <option value="subadmin">مساعد مدير</option>
+                          <option value="admin">مدير</option>
+                        </select>
+                      </PermissionGuard>
+                      <PermissionGuard 
+                        permission={PERMISSIONS.USERS_CHANGE_ROLE}
+                        fallback={getRoleBadge(user.role)}
+                      />
                     </td>
                     <td className="px-6 py-4">
-                      <button
-                        onClick={() => handleStatusToggle(user.id, user.is_active)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-                          user.is_active
-                            ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                            : 'bg-red-100 text-red-700 hover:bg-red-200'
-                        }`}
-                      >
-                        {user.is_active ? <UserCheck className="w-3.5 h-3.5" /> : <UserX className="w-3.5 h-3.5" />}
-                        {user.is_active ? 'نشط' : 'معطل'}
-                      </button>
+                      <PermissionGuard permission={PERMISSIONS.USERS_EDIT}>
+                        <button
+                          onClick={() => handleStatusToggle(user.id, user.is_active)}
+                          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
+                            user.is_active
+                              ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                              : 'bg-red-100 text-red-700 hover:bg-red-200'
+                          }`}
+                        >
+                          {user.is_active ? <UserCheck className="w-3.5 h-3.5" /> : <UserX className="w-3.5 h-3.5" />}
+                          {user.is_active ? 'نشط' : 'معطل'}
+                        </button>
+                      </PermissionGuard>
+                      <PermissionGuard 
+                        permission={PERMISSIONS.USERS_EDIT}
+                        fallback={
+                          <span className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold ${
+                            user.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                          }`}>
+                            {user.is_active ? <UserCheck className="w-3.5 h-3.5" /> : <UserX className="w-3.5 h-3.5" />}
+                            {user.is_active ? 'نشط' : 'معطل'}
+                          </span>
+                        }
+                      />
                     </td>
                     <td className="px-6 py-4 text-xs text-slate-500">
                       {user.created_at ? new Date(user.created_at).toLocaleDateString('ar-EG') : '—'}
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <button
-                        onClick={() => handleDelete(user.id)}
-                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                        title="حذف"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                      <PermissionGuard permission={PERMISSIONS.USERS_DELETE}>
+                        <button
+                          onClick={() => handleDelete(user.id)}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                          title="حذف"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </PermissionGuard>
                     </td>
                   </motion.tr>
                 ))}

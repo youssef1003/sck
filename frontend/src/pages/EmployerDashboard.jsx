@@ -1,59 +1,61 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { User, Mail, Phone, LogOut, Users, Search, Filter, ArrowRight, Eye, CheckCircle, XCircle, Clock } from 'lucide-react'
-import { useTranslation } from 'react-i18next'
+import { 
+  User, 
+  Users,
+  Briefcase,
+  LogOut,
+  Home,
+  Mail,
+  Phone,
+  FileText,
+  Calendar,
+  CheckCircle,
+  Clock,
+  XCircle,
+  Eye,
+  Download,
+  Search,
+  Filter
+} from 'lucide-react'
 
 const EmployerDashboard = () => {
   const navigate = useNavigate()
-  const { t, i18n } = useTranslation()
-  const isRTL = i18n.language === 'ar'
-  const [user, setUser] = useState(null)
+  const [userData, setUserData] = useState(null)
   const [applications, setApplications] = useState([])
   const [filteredApplications, setFilteredApplications] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
-  const [filterStatus, setFilterStatus] = useState('all')
+  const [statusFilter, setStatusFilter] = useState('all')
   const [selectedApp, setSelectedApp] = useState(null)
 
   useEffect(() => {
     // Check authentication
     const token = localStorage.getItem('scq_user_token')
-    const userData = localStorage.getItem('scq_user_data')
-
-    if (!token || !userData) {
+    const user = JSON.parse(localStorage.getItem('scq_user_data') || '{}')
+    
+    if (!token || !user.id || user.userType !== 'employer') {
       navigate('/login')
       return
     }
 
-    const parsedUser = JSON.parse(userData)
-    
-    // Check if user is employer
-    if (parsedUser.userType !== 'employer') {
-      navigate('/dashboard')
-      return
-    }
-
-    setUser(parsedUser)
-
-    // Check if employer is approved
-    if (parsedUser.userType === 'employer' && !parsedUser.isApproved) {
-      // Employer not approved yet - show message
-      setApplications([])
-      setFilteredApplications([])
-      return
-    }
-
-    // Get approved applications only (for approved employers)
-    const allApplications = JSON.parse(localStorage.getItem('scq_applications') || '[]')
-    const approvedApps = allApplications.filter(app => app.status === 'approved')
-    setApplications(approvedApps)
-    setFilteredApplications(approvedApps)
+    setUserData(user)
+    loadApplications()
   }, [navigate])
 
   useEffect(() => {
-    // Filter applications
-    let filtered = applications
+    filterApplications()
+  }, [applications, searchTerm, statusFilter])
 
+  const loadApplications = () => {
+    const allApplications = JSON.parse(localStorage.getItem('scq_applications') || '[]')
+    setApplications(allApplications)
+  }
+
+  const filterApplications = () => {
+    let filtered = [...applications]
+
+    // Search filter
     if (searchTerm) {
       filtered = filtered.filter(app =>
         app.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -63,12 +65,13 @@ const EmployerDashboard = () => {
       )
     }
 
-    if (filterStatus !== 'all') {
-      filtered = filtered.filter(app => app.status === filterStatus)
+    // Status filter
+    if (statusFilter !== 'all') {
+      filtered = filtered.filter(app => app.status === statusFilter)
     }
 
     setFilteredApplications(filtered)
-  }, [searchTerm, filterStatus, applications])
+  }
 
   const handleLogout = () => {
     localStorage.removeItem('scq_user_token')
@@ -76,387 +79,307 @@ const EmployerDashboard = () => {
     navigate('/')
   }
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'approved':
-        return 'text-green-600 bg-green-50 border-green-200'
-      case 'rejected':
-        return 'text-red-600 bg-red-50 border-red-200'
-      default:
-        return 'text-yellow-600 bg-yellow-50 border-yellow-200'
+  const getStatusBadge = (status) => {
+    const config = {
+      pending: { label: 'قيد المراجعة', color: 'yellow', icon: Clock },
+      approved: { label: 'مقبول', color: 'green', icon: CheckCircle },
+      rejected: { label: 'مرفوض', color: 'red', icon: XCircle }
+    }
+    const cfg = config[status] || config.pending
+    const Icon = cfg.icon
+    return (
+      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-${cfg.color}-100 text-${cfg.color}-700`}>
+        <Icon className="w-3 h-3" />
+        {cfg.label}
+      </span>
+    )
+  }
+
+  const getStats = () => {
+    return {
+      total: applications.length,
+      pending: applications.filter(a => a.status === 'pending').length,
+      approved: applications.filter(a => a.status === 'approved').length,
+      rejected: applications.filter(a => a.status === 'rejected').length
     }
   }
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'approved':
-        return <CheckCircle className="w-5 h-5" />
-      case 'rejected':
-        return <XCircle className="w-5 h-5" />
-      default:
-        return <Clock className="w-5 h-5" />
-    }
-  }
+  if (!userData) return null
 
-  const getStatusText = (status) => {
-    switch (status) {
-      case 'approved':
-        return isRTL ? 'مقبول' : 'Approved'
-      case 'rejected':
-        return isRTL ? 'مرفوض' : 'Rejected'
-      default:
-        return isRTL ? 'قيد المراجعة' : 'Pending'
-    }
-  }
-
-  if (!user) return null
+  const stats = getStats()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-900 to-blue-800 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-            <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className="w-16 h-16 bg-gradient-to-br from-amber-500 to-orange-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <Users className="w-8 h-8" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold">{user.fullName}</h1>
-                <p className="text-blue-200">{isRTL ? 'لوحة تحكم صاحب العمل' : 'Employer Dashboard'}</p>
-              </div>
-            </div>
-            <div className={`flex items-center gap-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <Link
-                to="/"
-                className={`flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
-              >
-                <ArrowRight className={`w-5 h-5 ${isRTL ? 'rotate-180' : ''}`} />
-                {isRTL ? 'الرئيسية' : 'Home'}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Link to="/" className="flex items-center gap-2 text-slate-600 hover:text-blue-600 transition-colors">
+                <Home className="w-5 h-5" />
+                <span className="font-medium">الرئيسية</span>
               </Link>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="text-right">
+                <p className="font-bold text-slate-900">{userData.fullName}</p>
+                <p className="text-sm text-blue-600">صاحب عمل</p>
+              </div>
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-500 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-lg">{userData.fullName?.[0]}</span>
+              </div>
               <button
                 onClick={handleLogout}
-                className={`flex items-center gap-2 px-4 py-2 bg-red-500 hover:bg-red-600 rounded-lg transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
+                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                title="تسجيل الخروج"
               >
                 <LogOut className="w-5 h-5" />
-                {isRTL ? 'تسجيل الخروج' : 'Logout'}
               </button>
             </div>
           </div>
         </div>
-      </div>
+      </header>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Check if employer is approved */}
-        {user.userType === 'employer' && !user.isApproved ? (
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        {/* Welcome Banner */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-gradient-to-l from-purple-600 via-purple-700 to-pink-600 rounded-2xl p-8 mb-8 text-white relative overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:40px_40px]" />
+          <div className="relative">
+            <h1 className="text-3xl font-bold mb-2">مرحباً، {userData.fullName} 👋</h1>
+            <p className="text-purple-100 text-lg">إدارة المتقدمين للوظائف</p>
+          </div>
+        </motion.div>
+
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-2xl shadow-xl p-12 text-center"
+            className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"
           >
-            <div className="inline-flex p-6 rounded-full bg-yellow-100 mb-6">
-              <Clock className="w-16 h-16 text-yellow-600" />
+            <div className="flex items-center justify-between mb-2">
+              <Users className="w-8 h-8 text-blue-600" />
+              <span className="text-3xl font-bold text-slate-900">{stats.total}</span>
             </div>
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">
-              {isRTL ? 'حسابك قيد المراجعة' : 'Your Account is Under Review'}
-            </h2>
-            <p className="text-lg text-slate-600 mb-6">
-              {isRTL 
-                ? 'شكراً لتسجيلك كصاحب عمل. حسابك قيد المراجعة من قبل الإدارة.'
-                : 'Thank you for registering as an employer. Your account is under review by administration.'}
-            </p>
-            <div className="bg-blue-50 rounded-xl p-6 max-w-2xl mx-auto mb-8">
-              <h3 className="font-bold text-slate-900 mb-3">
-                {isRTL ? '📋 الخطوات التالية:' : '📋 Next Steps:'}
-              </h3>
-              <ul className={`text-slate-700 space-y-2 ${isRTL ? 'text-right' : 'text-left'}`}>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 font-bold">1.</span>
-                  <span>{isRTL ? 'سيقوم فريقنا بمراجعة طلبك خلال 24-48 ساعة' : 'Our team will review your request within 24-48 hours'}</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 font-bold">2.</span>
-                  <span>{isRTL ? 'سنتواصل معك عبر البريد الإلكتروني أو الهاتف' : 'We will contact you via email or phone'}</span>
-                </li>
-                <li className="flex items-start gap-2">
-                  <span className="text-blue-600 font-bold">3.</span>
-                  <span>{isRTL ? 'بعد الموافقة، ستتمكن من الوصول إلى قاعدة بيانات المرشحين' : 'After approval, you will have access to our candidate database'}</span>
-                </li>
-              </ul>
-            </div>
-            <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl p-6 max-w-2xl mx-auto">
-              <p className="text-sm text-slate-600 mb-2">
-                {isRTL ? '💡 هل تريد تسريع العملية؟' : '💡 Want to speed up the process?'}
-              </p>
-              <p className="text-slate-700">
-                {isRTL 
-                  ? 'تواصل معنا مباشرة عبر الواتساب أو البريد الإلكتروني'
-                  : 'Contact us directly via WhatsApp or email'}
-              </p>
-            </div>
-          </motion.div>
-        ) : (
-          <>
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl shadow-lg p-6"
-          >
-            <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className={isRTL ? 'text-right' : ''}>
-                <p className="text-sm text-slate-500">{isRTL ? 'المرشحين المتاحين' : 'Available Candidates'}</p>
-                <p className="text-3xl font-bold text-slate-900">{applications.length}</p>
-                <p className="text-xs text-slate-400 mt-1">
-                  {isRTL ? 'المرشحين المقبولين من الإدارة' : 'Approved by Admin'}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-green-600" />
-              </div>
-            </div>
+            <p className="text-slate-600 font-medium">إجمالي المتقدمين</p>
           </motion.div>
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-white rounded-xl shadow-lg p-6"
+            className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"
           >
-            <div className={`flex items-center justify-between ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className={isRTL ? 'text-right' : ''}>
-                <p className="text-sm text-slate-500">{isRTL ? 'إجمالي المشاهدات' : 'Total Views'}</p>
-                <p className="text-3xl font-bold text-blue-600">{applications.length}</p>
-                <p className="text-xs text-slate-400 mt-1">
-                  {isRTL ? 'المرشحين الذين شاهدتهم' : 'Candidates you viewed'}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600" />
-              </div>
+            <div className="flex items-center justify-between mb-2">
+              <Clock className="w-8 h-8 text-yellow-600" />
+              <span className="text-3xl font-bold text-slate-900">{stats.pending}</span>
             </div>
+            <p className="text-slate-600 font-medium">قيد المراجعة</p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <CheckCircle className="w-8 h-8 text-green-600" />
+              <span className="text-3xl font-bold text-slate-900">{stats.approved}</span>
+            </div>
+            <p className="text-slate-600 font-medium">مقبول</p>
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200"
+          >
+            <div className="flex items-center justify-between mb-2">
+              <XCircle className="w-8 h-8 text-red-600" />
+              <span className="text-3xl font-bold text-slate-900">{stats.rejected}</span>
+            </div>
+            <p className="text-slate-600 font-medium">مرفوض</p>
           </motion.div>
         </div>
 
-        {/* Search and Filter */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className={`grid grid-cols-1 md:grid-cols-2 gap-4 ${isRTL ? 'text-right' : ''}`}>
-            <div className="relative">
-              <Search className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400`} />
+        {/* Filters */}
+        <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 mb-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1 relative">
+              <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder={isRTL ? 'بحث بالاسم، البريد، الوظيفة، أو الكود...' : 'Search by name, email, position, or code...'}
-                className={`w-full ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors`}
+                placeholder="بحث بالاسم، البريد، الوظيفة، أو الكود..."
+                className="w-full pr-12 pl-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none"
               />
             </div>
-            <div className="relative">
-              <Filter className={`absolute ${isRTL ? 'right-4' : 'left-4'} top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400`} />
+            <div className="flex items-center gap-2">
+              <Filter className="w-5 h-5 text-slate-400" />
               <select
-                value={filterStatus}
-                onChange={(e) => setFilterStatus(e.target.value)}
-                className={`w-full ${isRTL ? 'pr-12 pl-4' : 'pl-12 pr-4'} py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors appearance-none bg-white`}
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none min-w-[160px]"
               >
-                <option value="all">{isRTL ? 'كل المرشحين' : 'All Candidates'}</option>
+                <option value="all">جميع الحالات</option>
+                <option value="pending">قيد المراجعة</option>
+                <option value="approved">مقبول</option>
+                <option value="rejected">مرفوض</option>
               </select>
             </div>
           </div>
         </div>
 
         {/* Applications List */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className={`text-2xl font-bold text-slate-900 mb-2 ${isRTL ? 'text-right' : ''}`}>
-            {isRTL ? 'المرشحين المتاحين' : 'Available Candidates'}
-          </h2>
-          <p className={`text-sm text-slate-500 mb-6 ${isRTL ? 'text-right' : ''}`}>
-            {isRTL 
-              ? 'المرشحين الذين تمت الموافقة عليهم من قبل الإدارة'
-              : 'Candidates approved by administration'}
-          </p>
-
-          {filteredApplications.length === 0 ? (
-            <div className="text-center py-12">
-              <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500 mb-2">
-                {isRTL ? 'لا يوجد مرشحين متاحين حالياً' : 'No candidates available at the moment'}
-              </p>
-              <p className="text-xs text-slate-400">
-                {isRTL 
-                  ? 'سيظهر المرشحون هنا بعد موافقة الإدارة عليهم'
-                  : 'Candidates will appear here after admin approval'}
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {filteredApplications.map((app) => (
+        <div className="grid lg:grid-cols-3 gap-6">
+          {/* List */}
+          <div className="lg:col-span-2 space-y-4">
+            {filteredApplications.length === 0 ? (
+              <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-slate-200">
+                <Briefcase className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-600 text-lg">لا توجد طلبات توظيف</p>
+              </div>
+            ) : (
+              filteredApplications.map((app) => (
                 <motion.div
-                  key={app.employeeCode}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="border-2 border-slate-200 rounded-xl p-6 hover:border-blue-300 transition-colors"
+                  key={app.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  onClick={() => setSelectedApp(app)}
+                  className={`bg-white rounded-2xl p-6 shadow-sm border-2 cursor-pointer transition-all hover:shadow-md ${
+                    selectedApp?.id === app.id
+                      ? 'border-purple-500'
+                      : 'border-slate-200 hover:border-purple-300'
+                  }`}
                 >
-                  <div className={`flex items-start justify-between mb-4 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <div className={isRTL ? 'text-right' : ''}>
-                      <h3 className="text-lg font-bold text-slate-900 mb-1">{app.fullName}</h3>
-                      <p className="text-sm text-slate-600 mb-2">{app.position}</p>
-                      <p className="text-xs text-slate-500">
-                        {isRTL ? 'رقم الموظف: ' : 'Employee Code: '}
-                        <span className="font-mono font-medium text-blue-600">{app.employeeCode}</span>
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-slate-900 mb-1">
+                        {app.fullName}
+                      </h3>
+                      <p className="text-purple-600 font-semibold mb-2">{app.position}</p>
+                      <div className="flex flex-wrap gap-3 text-sm text-slate-600">
+                        <span className="flex items-center gap-1">
+                          <Mail className="w-4 h-4" />
+                          {app.email}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Phone className="w-4 h-4" />
+                          {app.phone}
+                        </span>
+                      </div>
+                    </div>
+                    {getStatusBadge(app.status)}
+                  </div>
+
+                  <div className="flex items-center justify-between pt-4 border-t border-slate-100">
+                    <span className="text-xs text-slate-500 font-mono">
+                      {app.employeeCode}
+                    </span>
+                    <span className="text-xs text-slate-500 flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(app.submittedAt).toLocaleDateString('ar-EG')}
+                    </span>
+                  </div>
+                </motion.div>
+              ))
+            )}
+          </div>
+
+          {/* Details Panel */}
+          <div className="lg:col-span-1">
+            {selectedApp ? (
+              <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 sticky top-24">
+                <h3 className="text-xl font-bold text-slate-900 mb-6">تفاصيل المتقدم</h3>
+
+                <div className="space-y-4 mb-6">
+                  <div>
+                    <label className="text-sm text-slate-500 block mb-1">الاسم الكامل</label>
+                    <p className="font-semibold text-slate-900">{selectedApp.fullName}</p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-slate-500 block mb-1">البريد الإلكتروني</label>
+                    <p className="font-semibold text-slate-900 text-sm break-all">{selectedApp.email}</p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-slate-500 block mb-1">رقم الهاتف</label>
+                    <p className="font-semibold text-slate-900" dir="ltr">{selectedApp.phone}</p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-slate-500 block mb-1">الوظيفة المطلوبة</label>
+                    <p className="font-semibold text-slate-900">{selectedApp.position}</p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm text-slate-500 block mb-1">سنوات الخبرة</label>
+                    <p className="font-semibold text-slate-900">{selectedApp.experience}</p>
+                  </div>
+
+                  {selectedApp.education && (
+                    <div>
+                      <label className="text-sm text-slate-500 block mb-1">المؤهل الدراسي</label>
+                      <p className="font-semibold text-slate-900">{selectedApp.education}</p>
+                    </div>
+                  )}
+
+                  {selectedApp.currentCompany && (
+                    <div>
+                      <label className="text-sm text-slate-500 block mb-1">الشركة الحالية</label>
+                      <p className="font-semibold text-slate-900">{selectedApp.currentCompany}</p>
+                    </div>
+                  )}
+
+                  {selectedApp.coverLetter && (
+                    <div>
+                      <label className="text-sm text-slate-500 block mb-1">خطاب التقديم</label>
+                      <p className="text-slate-700 text-sm leading-relaxed bg-slate-50 p-3 rounded-lg">
+                        {selectedApp.coverLetter}
                       </p>
                     </div>
-                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 bg-green-50 border-green-200 text-green-600 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                      <CheckCircle className="w-5 h-5" />
-                      <span className="text-sm font-medium">{isRTL ? 'مقبول' : 'Approved'}</span>
-                    </div>
-                  </div>
-                  
-                  <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-4 ${isRTL ? 'text-right' : ''}`}>
-                    <div>
-                      <p className="text-slate-500">{isRTL ? 'البريد' : 'Email'}</p>
-                      <p className="font-medium text-slate-900 truncate">{app.email}</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-500">{isRTL ? 'الهاتف' : 'Phone'}</p>
-                      <p className="font-medium text-slate-900">{app.phone}</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-500">{isRTL ? 'الخبرة' : 'Experience'}</p>
-                      <p className="font-medium text-slate-900">{app.experience}</p>
-                    </div>
-                    <div>
-                      <p className="text-slate-500">{isRTL ? 'التعليم' : 'Education'}</p>
-                      <p className="font-medium text-slate-900">{app.education || '-'}</p>
-                    </div>
-                  </div>
+                  )}
 
-                  <button
-                    onClick={() => setSelectedApp(app)}
-                    className={`flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm ${isRTL ? 'flex-row-reverse' : ''}`}
-                  >
-                    <Eye className="w-4 h-4" />
-                    {isRTL ? 'عرض التفاصيل' : 'View Details'}
-                  </button>
-                </motion.div>
-              ))}
-            </div>
-          )}
-        </div>
-          </>
-        )}
-      </div>
-
-      {/* Application Details Modal */}
-      {selectedApp && (
-        <div 
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[10000] p-4"
-          onClick={() => setSelectedApp(null)}
-        >
-          <div 
-            className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setSelectedApp(null)}
-              className="absolute top-4 right-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-all"
-            >
-              <XCircle size={24} />
-            </button>
-
-            <div className="p-8">
-              <h2 className={`text-2xl font-bold text-slate-900 mb-6 ${isRTL ? 'text-right' : ''}`}>
-                {isRTL ? 'تفاصيل المتقدم' : 'Applicant Details'}
-              </h2>
-
-              <div className={`space-y-4 ${isRTL ? 'text-right' : ''}`}>
-                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-slate-500">{isRTL ? 'الاسم الكامل' : 'Full Name'}</p>
-                    <p className="font-medium text-slate-900">{selectedApp.fullName}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">{isRTL ? 'رقم الموظف' : 'Employee Code'}</p>
-                    <p className="font-mono font-medium text-blue-600">{selectedApp.employeeCode}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">{isRTL ? 'البريد الإلكتروني' : 'Email'}</p>
-                    <p className="font-medium text-slate-900">{selectedApp.email}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">{isRTL ? 'الهاتف' : 'Phone'}</p>
-                    <p className="font-medium text-slate-900">{selectedApp.phone}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">{isRTL ? 'الوظيفة المطلوبة' : 'Position'}</p>
-                    <p className="font-medium text-slate-900">{selectedApp.position}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">{isRTL ? 'سنوات الخبرة' : 'Experience'}</p>
-                    <p className="font-medium text-slate-900">{selectedApp.experience}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">{isRTL ? 'المؤهل الدراسي' : 'Education'}</p>
-                    <p className="font-medium text-slate-900">{selectedApp.education || '-'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">{isRTL ? 'الشركة الحالية' : 'Current Company'}</p>
-                    <p className="font-medium text-slate-900">{selectedApp.currentCompany || '-'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">{isRTL ? 'الراتب المتوقع' : 'Expected Salary'}</p>
-                    <p className="font-medium text-slate-900">{selectedApp.expectedSalary || '-'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-500">{isRTL ? 'فترة الإشعار' : 'Notice Period'}</p>
-                    <p className="font-medium text-slate-900">{selectedApp.noticePeriod || '-'}</p>
+                    <label className="text-sm text-slate-500 block mb-1">كود المتقدم</label>
+                    <p className="font-mono font-bold text-purple-600">{selectedApp.employeeCode}</p>
                   </div>
                 </div>
 
-                {selectedApp.linkedin && (
-                  <div>
-                    <p className="text-sm text-slate-500 mb-1">{isRTL ? 'LinkedIn' : 'LinkedIn'}</p>
-                    <a href={selectedApp.linkedin} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">
-                      {selectedApp.linkedin}
-                    </a>
-                  </div>
-                )}
+                {/* Contact Button */}
+                <a
+                  href={`mailto:${selectedApp.email}`}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-purple-600 to-pink-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all mb-3"
+                >
+                  <Mail className="w-5 h-5" />
+                  تواصل عبر البريد
+                </a>
 
-                {selectedApp.portfolio && (
-                  <div>
-                    <p className="text-sm text-slate-500 mb-1">{isRTL ? 'معرض الأعمال' : 'Portfolio'}</p>
-                    <a href={selectedApp.portfolio} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline break-all">
-                      {selectedApp.portfolio}
-                    </a>
-                  </div>
-                )}
-
-                {selectedApp.coverLetter && (
-                  <div>
-                    <p className="text-sm text-slate-500 mb-2">{isRTL ? 'خطاب التقديم' : 'Cover Letter'}</p>
-                    <div className="bg-slate-50 p-4 rounded-lg">
-                      <p className="text-slate-700 whitespace-pre-wrap">{selectedApp.coverLetter}</p>
-                    </div>
-                  </div>
-                )}
-
-                <div>
-                  <p className="text-sm text-slate-500">{isRTL ? 'تاريخ التقديم' : 'Applied On'}</p>
-                  <p className="font-medium text-slate-900">
-                    {new Date(selectedApp.submittedAt).toLocaleDateString(isRTL ? 'ar-SA' : 'en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
-                </div>
+                <a
+                  href={`tel:${selectedApp.phone}`}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-600 transition-colors"
+                >
+                  <Phone className="w-5 h-5" />
+                  اتصل الآن
+                </a>
               </div>
-            </div>
+            ) : (
+              <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-slate-200">
+                <Eye className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-600">اختر متقدماً لعرض التفاصيل</p>
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
     </div>
   )
 }

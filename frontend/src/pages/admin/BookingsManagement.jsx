@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Search, CalendarCheck, Clock, CheckCircle, XCircle, Eye, Phone, Mail, Building2 } from 'lucide-react'
 import { getBookings, updateBookingStatus } from '../../utils/adminApi'
+import { hasPermission, getCurrentUserPermissions, PERMISSIONS } from '../../utils/permissions'
+import PermissionGuard from '../../components/admin/PermissionGuard'
 
 const BookingsManagement = () => {
   const [bookings, setBookings] = useState([])
@@ -12,6 +14,9 @@ const BookingsManagement = () => {
   const [selectedBooking, setSelectedBooking] = useState(null)
   const [totalCount, setTotalCount] = useState(0)
   const [toast, setToast] = useState(null)
+
+  const userPermissions = getCurrentUserPermissions()
+  const canChangeStatus = hasPermission(userPermissions, PERMISSIONS.BOOKINGS_CHANGE_STATUS)
 
   const fetchBookings = async () => {
     setLoading(true)
@@ -181,17 +186,27 @@ const BookingsManagement = () => {
               </div>
               <div className="space-y-2 pt-4 border-t border-slate-200">
                 <p className="text-xs text-slate-500 mb-2">تغيير الحالة</p>
-                {Object.entries(statusConfig).map(([key, cfg]) => (
-                  <button key={key} onClick={() => handleStatusChange(selectedBooking.id, key)}
-                    className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                      selectedBooking.status === key
-                        ? `bg-${cfg.color}-500 text-white`
-                        : `bg-${cfg.color}-50 text-${cfg.color}-700 hover:bg-${cfg.color}-100`
-                    }`}>
-                    <cfg.icon className="w-4 h-4" />
-                    {cfg.label}
-                  </button>
-                ))}
+                <PermissionGuard permission={PERMISSIONS.BOOKINGS_CHANGE_STATUS}>
+                  {Object.entries(statusConfig).map(([key, cfg]) => (
+                    <button key={key} onClick={() => handleStatusChange(selectedBooking.id, key)}
+                      className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                        selectedBooking.status === key
+                          ? `bg-${cfg.color}-500 text-white`
+                          : `bg-${cfg.color}-50 text-${cfg.color}-700 hover:bg-${cfg.color}-100`
+                      }`}>
+                      <cfg.icon className="w-4 h-4" />
+                      {cfg.label}
+                    </button>
+                  ))}
+                </PermissionGuard>
+                <PermissionGuard 
+                  permission={PERMISSIONS.BOOKINGS_CHANGE_STATUS}
+                  fallback={
+                    <p className="text-sm text-slate-500 text-center py-4">
+                      ليس لديك صلاحية تغيير حالة الحجز
+                    </p>
+                  }
+                />
               </div>
             </motion.div>
           ) : (

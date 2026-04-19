@@ -13,8 +13,10 @@ import {
   Menu,
   X,
   ChevronLeft,
-  Bell
+  Bell,
+  Shield
 } from 'lucide-react'
+import { hasAnyPermission, getCurrentUserPermissions, isSuperAdmin, PERMISSIONS } from '../../utils/permissions'
 
 const AdminLayout = ({ children }) => {
   const location = useLocation()
@@ -43,22 +45,81 @@ const AdminLayout = ({ children }) => {
     navigate('/')
   }
 
-  const isSubAdmin = adminUser?.role === 'subadmin'
+  const userPermissions = getCurrentUserPermissions()
+  const isSuper = isSuperAdmin()
 
   const menuItems = [
-    { title: 'لوحة التحكم', icon: LayoutDashboard, path: '/admin/dashboard', allowSubAdmin: true },
-    { title: 'الصفحة الرئيسية', icon: Home, path: '/admin/home', allowSubAdmin: true },
-    { title: 'المستخدمون', icon: Users, path: '/admin/users', allowSubAdmin: false },
-    { title: 'الحجوزات', icon: CalendarCheck, path: '/admin/bookings', allowSubAdmin: true },
-    { title: 'التوظيف', icon: Briefcase, path: '/admin/careers', allowSubAdmin: true },
-    { title: 'الرسائل', icon: MessageSquare, path: '/admin/contacts', allowSubAdmin: true },
-    { title: 'أصحاب العمل', icon: Users, path: '/admin/employers', allowSubAdmin: false },
-    { title: 'المدونة', icon: FileText, path: '/admin/blog', allowSubAdmin: true },
+    { 
+      title: 'لوحة التحكم', 
+      icon: LayoutDashboard, 
+      path: '/admin/dashboard', 
+      permissions: [] // Always visible
+    },
+    { 
+      title: 'الصفحة الرئيسية', 
+      icon: Home, 
+      path: '/admin/home', 
+      permissions: [PERMISSIONS.HOME_EDIT]
+    },
+    { 
+      title: 'المستخدمون', 
+      icon: Users, 
+      path: '/admin/users', 
+      permissions: [PERMISSIONS.USERS_VIEW, PERMISSIONS.USERS_EDIT, PERMISSIONS.USERS_DELETE]
+    },
+    { 
+      title: 'الحجوزات', 
+      icon: CalendarCheck, 
+      path: '/admin/bookings', 
+      permissions: [PERMISSIONS.BOOKINGS_VIEW, PERMISSIONS.BOOKINGS_EDIT]
+    },
+    { 
+      title: 'التوظيف', 
+      icon: Briefcase, 
+      path: '/admin/careers', 
+      permissions: [PERMISSIONS.CAREERS_VIEW, PERMISSIONS.CAREERS_EDIT]
+    },
+    { 
+      title: 'الرسائل', 
+      icon: MessageSquare, 
+      path: '/admin/contacts', 
+      permissions: [PERMISSIONS.MESSAGES_VIEW, PERMISSIONS.MESSAGES_EDIT]
+    },
+    { 
+      title: 'أصحاب العمل', 
+      icon: Users, 
+      path: '/admin/employers', 
+      permissions: [PERMISSIONS.EMPLOYERS_VIEW, PERMISSIONS.EMPLOYERS_APPROVE]
+    },
+    { 
+      title: 'المدونة', 
+      icon: FileText, 
+      path: '/admin/blog', 
+      permissions: [PERMISSIONS.BLOG_VIEW, PERMISSIONS.BLOG_CREATE, PERMISSIONS.BLOG_EDIT]
+    },
+    { 
+      title: 'المساعدين', 
+      icon: Shield, 
+      path: '/admin/subadmins', 
+      permissions: [PERMISSIONS.SUBADMINS_VIEW],
+      superAdminOnly: true
+    },
   ]
 
-  const filteredMenuItems = isSubAdmin
-    ? menuItems.filter(item => item.allowSubAdmin)
-    : menuItems
+  // Filter menu items based on permissions
+  const filteredMenuItems = menuItems.filter(item => {
+    // Super Admin sees everything
+    if (isSuper) return true
+    
+    // Super Admin only items
+    if (item.superAdminOnly) return false
+    
+    // Items with no permission requirements (like dashboard)
+    if (!item.permissions || item.permissions.length === 0) return true
+    
+    // Check if user has any of the required permissions
+    return hasAnyPermission(userPermissions, item.permissions)
+  })
 
   const isActive = (path) => location.pathname === path
 
@@ -120,8 +181,18 @@ const AdminLayout = ({ children }) => {
       <div className="mt-auto pt-6 border-t border-white/10">
         {isSidebarOpen && adminUser && (
           <div className="px-4 py-3 mb-2">
-            <p className="text-sm font-medium text-white truncate">{adminUser.username || 'Admin'}</p>
-            <p className="text-xs text-blue-300 capitalize">{adminUser.role || 'admin'}</p>
+            <p className="text-sm font-medium text-white truncate">{adminUser.fullName || adminUser.username || 'Admin'}</p>
+            <div className="flex items-center gap-2 mt-1">
+              {isSuper ? (
+                <span className="px-2 py-0.5 bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold rounded">
+                  Super Admin
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 bg-blue-500/30 text-blue-200 text-xs font-semibold rounded">
+                  Sub-Admin
+                </span>
+              )}
+            </div>
           </div>
         )}
         <button

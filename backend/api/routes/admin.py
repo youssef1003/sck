@@ -1,28 +1,19 @@
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Depends
 from services.supabase_client import supabase
+from services.auth import get_current_admin, require_permission
 from models.schemas import BlogPost
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Dict, Any
 from uuid import UUID
 
 router = APIRouter()
 
 # ============================================================
-# Admin Auth Middleware
-# ============================================================
-def verify_admin(admin_token: Optional[str] = Header(None)):
-    """Verify admin authentication via header token"""
-    if not admin_token or admin_token != "authenticated":
-        raise HTTPException(status_code=401, detail="Unauthorized: Admin access required")
-    return True
-
-# ============================================================
 # Dashboard Stats
 # ============================================================
 @router.get("/stats")
-async def get_dashboard_stats(admin_token: Optional[str] = Header(None)):
+async def get_dashboard_stats(current_user: Dict[str, Any] = Depends(get_current_admin)):
     """Get dashboard overview stats"""
-    verify_admin(admin_token)
     try:
         users = supabase.table("users").select("id", count="exact").execute()
         bookings = supabase.table("consultation_bookings").select("id", count="exact").execute()
@@ -52,14 +43,13 @@ async def get_dashboard_stats(admin_token: Optional[str] = Header(None)):
 # ============================================================
 @router.get("/users")
 async def get_users(
-    admin_token: Optional[str] = Header(None),
     search: Optional[str] = None,
     role: Optional[str] = None,
     limit: int = 50,
-    offset: int = 0
+    offset: int = 0,
+    current_user: Dict[str, Any] = Depends(require_permission("users_view"))
 ):
     """Get all users with search and filter"""
-    verify_admin(admin_token)
     try:
         query = supabase.table("users").select("*", count="exact").is_("deleted_at", "null")
 
@@ -80,9 +70,12 @@ async def get_users(
         raise HTTPException(status_code=500, detail=f"Error fetching users: {str(e)}")
 
 @router.patch("/users/{user_id}/role")
-async def update_user_role(user_id: UUID, role: str, admin_token: Optional[str] = Header(None)):
+async def update_user_role(
+    user_id: UUID, 
+    role: str, 
+    current_user: Dict[str, Any] = Depends(require_permission("users_edit"))
+):
     """Update user role"""
-    verify_admin(admin_token)
     valid_roles = ["client", "admin", "consultant", "subadmin", "user", "employer"]
     if role not in valid_roles:
         raise HTTPException(status_code=400, detail=f"Invalid role. Must be one of: {valid_roles}")
@@ -96,9 +89,12 @@ async def update_user_role(user_id: UUID, role: str, admin_token: Optional[str] 
         raise HTTPException(status_code=500, detail=f"Error updating user role: {str(e)}")
 
 @router.patch("/users/{user_id}/status")
-async def update_user_status(user_id: UUID, is_active: bool, admin_token: Optional[str] = Header(None)):
+async def update_user_status(
+    user_id: UUID, 
+    is_active: bool, 
+    current_user: Dict[str, Any] = Depends(require_permission("users_edit"))
+):
     """Activate or deactivate user"""
-    verify_admin(admin_token)
     try:
         result = supabase.table("users").update({
             "is_active": is_active,
@@ -110,9 +106,11 @@ async def update_user_status(user_id: UUID, is_active: bool, admin_token: Option
         raise HTTPException(status_code=500, detail=f"Error updating user status: {str(e)}")
 
 @router.delete("/users/{user_id}")
-async def soft_delete_user(user_id: UUID, admin_token: Optional[str] = Header(None)):
+async def soft_delete_user(
+    user_id: UUID, 
+    current_user: Dict[str, Any] = Depends(require_permission("users_delete"))
+):
     """Soft delete user"""
-    verify_admin(admin_token)
     try:
         result = supabase.table("users").update({
             "deleted_at": datetime.utcnow().isoformat(),
@@ -127,14 +125,13 @@ async def soft_delete_user(user_id: UUID, admin_token: Optional[str] = Header(No
 # ============================================================
 @router.get("/bookings")
 async def get_all_bookings(
-    admin_token: Optional[str] = Header(None),
     status: Optional[str] = None,
     search: Optional[str] = None,
     limit: int = 50,
-    offset: int = 0
+    offset: int = 0,
+    current_user: Dict[str, Any] = Depends(require_permission("bookings_view"))
 ):
     """Get all consultation bookings"""
-    verify_admin(admin_token)
     try:
         query = supabase.table("consultation_bookings").select("*", count="exact").is_("deleted_at", "null")
 
@@ -155,9 +152,12 @@ async def get_all_bookings(
         raise HTTPException(status_code=500, detail=f"Error fetching bookings: {str(e)}")
 
 @router.patch("/bookings/{booking_id}/status")
-async def admin_update_booking_status(booking_id: UUID, status: str, admin_token: Optional[str] = Header(None)):
+async def admin_update_booking_status(
+    booking_id: UUID, 
+    status: str, 
+    current_user: Dict[str, Any] = Depends(require_permission("bookings_edit"))
+):
     """Update booking status"""
-    verify_admin(admin_token)
     valid = ["pending", "confirmed", "completed", "cancelled"]
     if status not in valid:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid}")
@@ -175,14 +175,13 @@ async def admin_update_booking_status(booking_id: UUID, status: str, admin_token
 # ============================================================
 @router.get("/messages")
 async def get_all_messages(
-    admin_token: Optional[str] = Header(None),
     status: Optional[str] = None,
     search: Optional[str] = None,
     limit: int = 50,
-    offset: int = 0
+    offset: int = 0,
+    current_user: Dict[str, Any] = Depends(require_permission("messages_view"))
 ):
     """Get all contact messages"""
-    verify_admin(admin_token)
     try:
         query = supabase.table("contact_requests").select("*", count="exact").is_("deleted_at", "null")
 
@@ -203,9 +202,12 @@ async def get_all_messages(
         raise HTTPException(status_code=500, detail=f"Error fetching messages: {str(e)}")
 
 @router.patch("/messages/{message_id}/status")
-async def update_message_status(message_id: UUID, status: str, admin_token: Optional[str] = Header(None)):
+async def update_message_status(
+    message_id: UUID, 
+    status: str, 
+    current_user: Dict[str, Any] = Depends(require_permission("messages_edit"))
+):
     """Update message status"""
-    verify_admin(admin_token)
     valid = ["new", "pending", "resolved", "rejected"]
     if status not in valid:
         raise HTTPException(status_code=400, detail=f"Invalid status. Must be one of: {valid}")
@@ -219,9 +221,11 @@ async def update_message_status(message_id: UUID, status: str, admin_token: Opti
         raise HTTPException(status_code=500, detail=f"Error updating message: {str(e)}")
 
 @router.delete("/messages/{message_id}")
-async def delete_message(message_id: UUID, admin_token: Optional[str] = Header(None)):
+async def delete_message(
+    message_id: UUID, 
+    current_user: Dict[str, Any] = Depends(require_permission("messages_delete"))
+):
     """Soft delete message"""
-    verify_admin(admin_token)
     try:
         result = supabase.table("contact_requests").update({
             "deleted_at": datetime.utcnow().isoformat()
@@ -235,14 +239,13 @@ async def delete_message(message_id: UUID, admin_token: Optional[str] = Header(N
 # ============================================================
 @router.get("/blog")
 async def get_all_blog_posts(
-    admin_token: Optional[str] = Header(None),
     search: Optional[str] = None,
     category: Optional[str] = None,
     limit: int = 50,
-    offset: int = 0
+    offset: int = 0,
+    current_user: Dict[str, Any] = Depends(require_permission("blog_view"))
 ):
     """Get all blog posts including unpublished"""
-    verify_admin(admin_token)
     try:
         query = supabase.table("blog_posts").select("*", count="exact").is_("deleted_at", "null")
 
@@ -263,9 +266,11 @@ async def get_all_blog_posts(
         raise HTTPException(status_code=500, detail=f"Error fetching blog posts: {str(e)}")
 
 @router.post("/blog")
-async def admin_create_blog_post(post: BlogPost, admin_token: Optional[str] = Header(None)):
+async def admin_create_blog_post(
+    post: BlogPost, 
+    current_user: Dict[str, Any] = Depends(require_permission("blog_create"))
+):
     """Create new blog post"""
-    verify_admin(admin_token)
     try:
         data = {
             "title": post.title,
@@ -283,9 +288,12 @@ async def admin_create_blog_post(post: BlogPost, admin_token: Optional[str] = He
         raise HTTPException(status_code=500, detail=f"Error creating blog post: {str(e)}")
 
 @router.put("/blog/{post_id}")
-async def update_blog_post(post_id: UUID, post: BlogPost, admin_token: Optional[str] = Header(None)):
+async def update_blog_post(
+    post_id: UUID, 
+    post: BlogPost, 
+    current_user: Dict[str, Any] = Depends(require_permission("blog_edit"))
+):
     """Update blog post"""
-    verify_admin(admin_token)
     try:
         data = {
             "title": post.title,
@@ -302,9 +310,12 @@ async def update_blog_post(post_id: UUID, post: BlogPost, admin_token: Optional[
         raise HTTPException(status_code=500, detail=f"Error updating blog post: {str(e)}")
 
 @router.patch("/blog/{post_id}/publish")
-async def toggle_blog_publish(post_id: UUID, is_published: bool, admin_token: Optional[str] = Header(None)):
+async def toggle_blog_publish(
+    post_id: UUID, 
+    is_published: bool, 
+    current_user: Dict[str, Any] = Depends(require_permission("blog_edit"))
+):
     """Toggle blog post publish status"""
-    verify_admin(admin_token)
     try:
         result = supabase.table("blog_posts").update({
             "is_published": is_published,
@@ -316,9 +327,11 @@ async def toggle_blog_publish(post_id: UUID, is_published: bool, admin_token: Op
         raise HTTPException(status_code=500, detail=f"Error toggling publish: {str(e)}")
 
 @router.delete("/blog/{post_id}")
-async def delete_blog_post(post_id: UUID, admin_token: Optional[str] = Header(None)):
+async def delete_blog_post(
+    post_id: UUID, 
+    current_user: Dict[str, Any] = Depends(require_permission("blog_delete"))
+):
     """Soft delete blog post"""
-    verify_admin(admin_token)
     try:
         result = supabase.table("blog_posts").update({
             "deleted_at": datetime.utcnow().isoformat()

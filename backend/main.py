@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
 
-from api.routes import consultation, contact, blog, ai_chat, admin
+from api.routes import consultation, contact, blog, ai_chat, admin, auth, subadmins, employers, careers
 
 load_dotenv()
 
@@ -26,6 +26,10 @@ app.add_middleware(
 )
 
 # Include Routers
+app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
+app.include_router(subadmins.router, prefix="/api/subadmins", tags=["Sub-Admins"])
+app.include_router(employers.router, prefix="/api/employers", tags=["Employers"])
+app.include_router(careers.router, prefix="/api/careers", tags=["Careers"])
 app.include_router(consultation.router, prefix="/api/consultation", tags=["Consultation"])
 app.include_router(contact.router, prefix="/api/contact", tags=["Contact"])
 app.include_router(blog.router, prefix="/api/blog", tags=["Blog"])

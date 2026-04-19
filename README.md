@@ -7,20 +7,49 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8.svg)](https://tailwindcss.com/)
 [![PWA](https://img.shields.io/badge/PWA-Ready-purple.svg)](https://web.dev/progressive-web-apps/)
 [![i18n](https://img.shields.io/badge/i18n-AR%20%7C%20EN-orange.svg)](https://www.i18next.com/)
+[![Status](https://img.shields.io/badge/Status-Ready%20for%20Demo-success.svg)](https://github.com)
 
 ## 🎯 Overview
 
-SCK is a modern, AI-powered administrative consulting platform built for businesses in Egypt and Saudi Arabia. Features multi-language support (Arabic/English), PWA capabilities, and AI-powered chatbot.
+SCK is a modern, AI-powered administrative consulting platform built for businesses in Egypt and Saudi Arabia. Features multi-language support (Arabic/English), PWA capabilities, AI-powered chatbot, and comprehensive dashboards for all user types.
+
+## ✨ Latest Updates (April 19, 2026)
+
+### 🆕 New Features:
+- ✅ **User Dashboard** - Complete profile management and booking tracking
+- ✅ **Employer Dashboard** - Advanced applicant management system
+- ✅ **Admin HomeEditor** - Dynamic homepage content management
+- ✅ **Admin EmployersManagement** - Employer approval and management system
+
+### 📊 Build Status:
+```
+✓ 1807 modules transformed
+✓ Built in 4.78s
+✓ Zero errors
+```
 
 ## ✨ Features
 
+### 🎯 Core Features
 - 🌍 **Multi-Language** - Arabic (RTL) & English (LTR)
 - 📱 **Progressive Web App** - Install on mobile, works offline
 - 🤖 **AI Chatbot** - Powered by Groq AI
-- 📊 **Admin Dashboard Ready** - Backend structure prepared
+- 📊 **Comprehensive Dashboards** - For all user types
 - ⚡ **Fast & Optimized** - Vite + Tailwind CSS
 - 🎨 **Modern Design** - Glassmorphism & smooth animations
 - 📱 **Fully Responsive** - Mobile-first design
+
+### 👥 User Roles & Dashboards
+- **Admin** - Full system control with advanced management tools
+- **Sub-Admin** - Limited permissions for content management
+- **Client** - Personal dashboard with booking and message tracking
+- **Employer** - Advanced applicant management and filtering system
+
+### 🆕 New Features (April 2026)
+- ✅ **User Dashboard** - Profile management, booking tracking, message center
+- ✅ **Employer Dashboard** - Applicant management with search & filter
+- ✅ **Admin HomeEditor** - Dynamic homepage content management
+- ✅ **Admin EmployersManagement** - Employer approval workflow
 
 ## 🛠️ Tech Stack
 
@@ -98,6 +127,24 @@ CORS_ORIGINS=http://localhost:3000,http://localhost:5173
 - Frontend: `http://localhost:3000`
 - Backend API: `http://localhost:8000`
 - API Docs: `http://localhost:8000/docs`
+
+### 🔐 Demo Accounts
+
+**Admin (Full Access):**
+```
+Username: admin
+Password: scq2025
+```
+
+**Sub-Admin (Limited Access):**
+```
+Username: subadmin1
+Password: scq2025sub1
+```
+
+**Client/Employer:**
+- Register a new account at `/register`
+- Choose account type: Client or Employer
 
 ## 📦 Project Structure
 

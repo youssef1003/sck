@@ -1,16 +1,22 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Users, CheckCircle, XCircle, Clock, Search, Eye } from 'lucide-react'
+import { Search, Users, CheckCircle, XCircle, Clock, Mail, Phone, Building2, Calendar, Eye, Trash2 } from 'lucide-react'
 
 const EmployersManagement = () => {
   const [employers, setEmployers] = useState([])
+  const [filteredEmployers, setFilteredEmployers] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
+  const [statusFilter, setStatusFilter] = useState('all')
   const [selectedEmployer, setSelectedEmployer] = useState(null)
+  const [toast, setToast] = useState(null)
 
   useEffect(() => {
     loadEmployers()
   }, [])
+
+  useEffect(() => {
+    filterEmployers()
+  }, [employers, searchTerm, statusFilter])
 
   const loadEmployers = () => {
     const users = JSON.parse(localStorage.getItem('scq_users') || '[]')
@@ -18,344 +24,326 @@ const EmployersManagement = () => {
     setEmployers(employerUsers)
   }
 
+  const filterEmployers = () => {
+    let filtered = [...employers]
+
+    // Search filter
+    if (searchTerm) {
+      filtered = filtered.filter(emp =>
+        emp.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (emp.phone && emp.phone.includes(searchTerm))
+      )
+    }
+
+    // Status filter
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'approved') {
+        filtered = filtered.filter(emp => emp.isApproved === true)
+      } else if (statusFilter === 'pending') {
+        filtered = filtered.filter(emp => emp.isApproved === false)
+      }
+    }
+
+    setFilteredEmployers(filtered)
+  }
+
+  const showToast = (message, type = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 3000)
+  }
+
   const handleApprove = (employerId) => {
     const users = JSON.parse(localStorage.getItem('scq_users') || '[]')
-    const updatedUsers = users.map(user => {
-      if (user.id === employerId) {
-        return { ...user, isApproved: true, subscriptionStatus: 'active' }
-      }
-      return user
-    })
+    const updatedUsers = users.map(u =>
+      u.id === employerId ? { ...u, isApproved: true, subscriptionStatus: 'active' } : u
+    )
     localStorage.setItem('scq_users', JSON.stringify(updatedUsers))
-    
-    // Update current user data if they're logged in
-    const currentUser = JSON.parse(localStorage.getItem('scq_user_data') || '{}')
-    if (currentUser.id === employerId) {
-      localStorage.setItem('scq_user_data', JSON.stringify({ ...currentUser, isApproved: true, subscriptionStatus: 'active' }))
-    }
-    
     loadEmployers()
+    showToast('تم الموافقة على صاحب العمل')
+    if (selectedEmployer?.id === employerId) {
+      setSelectedEmployer({ ...selectedEmployer, isApproved: true, subscriptionStatus: 'active' })
+    }
   }
 
   const handleReject = (employerId) => {
     const users = JSON.parse(localStorage.getItem('scq_users') || '[]')
-    const updatedUsers = users.map(user => {
-      if (user.id === employerId) {
-        return { ...user, isApproved: false, subscriptionStatus: 'rejected' }
-      }
-      return user
-    })
+    const updatedUsers = users.map(u =>
+      u.id === employerId ? { ...u, isApproved: false, subscriptionStatus: 'rejected' } : u
+    )
     localStorage.setItem('scq_users', JSON.stringify(updatedUsers))
     loadEmployers()
+    showToast('تم رفض صاحب العمل', 'error')
+    if (selectedEmployer?.id === employerId) {
+      setSelectedEmployer({ ...selectedEmployer, isApproved: false, subscriptionStatus: 'rejected' })
+    }
   }
 
-  const filteredEmployers = employers.filter(emp =>
-    emp.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    emp.phone.includes(searchTerm)
-  )
+  const handleDelete = (employerId) => {
+    if (!window.confirm('هل أنت متأكد من حذف هذا الحساب؟')) return
+    
+    const users = JSON.parse(localStorage.getItem('scq_users') || '[]')
+    const updatedUsers = users.filter(u => u.id !== employerId)
+    localStorage.setItem('scq_users', JSON.stringify(updatedUsers))
+    loadEmployers()
+    showToast('تم حذف الحساب')
+    setSelectedEmployer(null)
+  }
 
-  const pendingCount = employers.filter(e => !e.isApproved && e.subscriptionStatus === 'pending').length
-  const approvedCount = employers.filter(e => e.isApproved).length
-  const rejectedCount = employers.filter(e => e.subscriptionStatus === 'rejected').length
+  const getStatusBadge = (employer) => {
+    if (employer.isApproved) {
+      return (
+        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-green-100 text-green-700">
+          <CheckCircle className="w-3.5 h-3.5" />
+          مفعّل
+        </span>
+      )
+    } else if (employer.subscriptionStatus === 'rejected') {
+      return (
+        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-100 text-red-700">
+          <XCircle className="w-3.5 h-3.5" />
+          مرفوض
+        </span>
+      )
+    } else {
+      return (
+        <span className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold bg-yellow-100 text-yellow-700">
+          <Clock className="w-3.5 h-3.5" />
+          قيد المراجعة
+        </span>
+      )
+    }
+  }
+
+  const getStats = () => {
+    return {
+      total: employers.length,
+      approved: employers.filter(e => e.isApproved === true).length,
+      pending: employers.filter(e => e.isApproved === false && e.subscriptionStatus !== 'rejected').length,
+      rejected: employers.filter(e => e.subscriptionStatus === 'rejected').length
+    }
+  }
+
+  const stats = getStats()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50">
+    <div>
+      {/* Toast */}
+      {toast && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`fixed top-4 left-1/2 -translate-x-1/2 z-50 px-6 py-3 rounded-xl shadow-lg font-semibold ${
+            toast.type === 'error' ? 'bg-red-500 text-white' : 'bg-green-500 text-white'
+          }`}
+        >
+          {toast.message}
+        </motion.div>
+      )}
+
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-900 to-blue-800 text-white shadow-xl">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link
-                to="/admin/dashboard"
-                className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-              >
-                <ArrowLeft className="w-6 h-6" />
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold">إدارة أصحاب العمل</h1>
-                <p className="text-blue-200 text-sm">الموافقة على طلبات الاشتراك</p>
-              </div>
-            </div>
-          </div>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-900">إدارة أصحاب العمل</h2>
+          <p className="text-slate-600 mt-1">الموافقة على الحسابات وإدارة الاشتراكات</p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-white rounded-xl shadow-lg p-6"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-500">إجمالي أصحاب العمل</p>
-                <p className="text-3xl font-bold text-slate-900">{employers.length}</p>
-              </div>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                <Users className="w-6 h-6 text-blue-600" />
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="bg-white rounded-xl shadow-lg p-6"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-500">قيد المراجعة</p>
-                <p className="text-3xl font-bold text-yellow-600">{pendingCount}</p>
-              </div>
-              <div className="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-                <Clock className="w-6 h-6 text-yellow-600" />
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="bg-white rounded-xl shadow-lg p-6"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-500">مقبول</p>
-                <p className="text-3xl font-bold text-green-600">{approvedCount}</p>
-              </div>
-              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-green-600" />
-              </div>
-            </div>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="bg-white rounded-xl shadow-lg p-6"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-slate-500">مرفوض</p>
-                <p className="text-3xl font-bold text-red-600">{rejectedCount}</p>
-              </div>
-              <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                <XCircle className="w-6 h-6 text-red-600" />
-              </div>
-            </div>
-          </motion.div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-5 mb-6">
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <div className="flex items-center justify-between mb-2">
+            <Users className="w-8 h-8 text-blue-600" />
+            <span className="text-3xl font-bold text-slate-900">{stats.total}</span>
+          </div>
+          <p className="text-slate-600 font-medium">إجمالي أصحاب العمل</p>
         </div>
 
-        {/* Search */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-          <div className="relative">
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <div className="flex items-center justify-between mb-2">
+            <CheckCircle className="w-8 h-8 text-green-600" />
+            <span className="text-3xl font-bold text-slate-900">{stats.approved}</span>
+          </div>
+          <p className="text-slate-600 font-medium">مفعّل</p>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <div className="flex items-center justify-between mb-2">
+            <Clock className="w-8 h-8 text-yellow-600" />
+            <span className="text-3xl font-bold text-slate-900">{stats.pending}</span>
+          </div>
+          <p className="text-slate-600 font-medium">قيد المراجعة</p>
+        </div>
+
+        <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+          <div className="flex items-center justify-between mb-2">
+            <XCircle className="w-8 h-8 text-red-600" />
+            <span className="text-3xl font-bold text-slate-900">{stats.rejected}</span>
+          </div>
+          <p className="text-slate-600 font-medium">مرفوض</p>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 mb-6">
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 relative">
             <Search className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="بحث بالاسم، البريد، أو الهاتف..."
-              className="w-full pr-12 pl-4 py-3 border-2 border-slate-200 rounded-xl focus:border-blue-500 focus:outline-none transition-colors text-right"
+              className="w-full pr-12 pl-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none"
             />
           </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none min-w-[160px]"
+          >
+            <option value="all">كل الحالات</option>
+            <option value="approved">مفعّل</option>
+            <option value="pending">قيد المراجعة</option>
+            <option value="rejected">مرفوض</option>
+          </select>
         </div>
+      </div>
 
-        {/* Employers List */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
-          <h2 className="text-2xl font-bold text-slate-900 mb-6 text-right">
-            قائمة أصحاب العمل
-          </h2>
-
+      {/* Employers List */}
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* List */}
+        <div className="lg:col-span-2 space-y-4">
           {filteredEmployers.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-slate-200">
               <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-500">لا يوجد أصحاب عمل</p>
+              <p className="text-slate-600 text-lg">لا يوجد أصحاب عمل</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {filteredEmployers.map((employer) => (
-                <motion.div
-                  key={employer.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="border-2 border-slate-200 rounded-xl p-6 hover:border-blue-300 transition-colors"
+            filteredEmployers.map((employer) => (
+              <motion.div
+                key={employer.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                onClick={() => setSelectedEmployer(employer)}
+                className={`bg-white rounded-2xl p-6 shadow-sm border-2 cursor-pointer transition-all hover:shadow-md ${
+                  selectedEmployer?.id === employer.id
+                    ? 'border-blue-500'
+                    : 'border-slate-200 hover:border-blue-300'
+                }`}
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-500 rounded-xl flex items-center justify-center">
+                      <span className="text-white font-bold text-lg">{employer.fullName?.[0]}</span>
+                    </div>
+                    <div>
+                      <h3 className="font-bold text-slate-900 text-lg">{employer.fullName}</h3>
+                      <p className="text-sm text-slate-600">{employer.email}</p>
+                    </div>
+                  </div>
+                  {getStatusBadge(employer)}
+                </div>
+
+                <div className="flex flex-wrap gap-4 text-sm text-slate-600">
+                  <span className="flex items-center gap-1">
+                    <Phone className="w-4 h-4" />
+                    {employer.phone || 'غير محدد'}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <Calendar className="w-4 h-4" />
+                    {new Date(employer.createdAt).toLocaleDateString('ar-EG')}
+                  </span>
+                </div>
+              </motion.div>
+            ))
+          )}
+        </div>
+
+        {/* Details Panel */}
+        <div className="lg:col-span-1">
+          {selectedEmployer ? (
+            <div className="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 sticky top-24">
+              <h3 className="text-xl font-bold text-slate-900 mb-6">تفاصيل صاحب العمل</h3>
+
+              <div className="space-y-4 mb-6">
+                <div>
+                  <label className="text-sm text-slate-500 block mb-1">الاسم الكامل</label>
+                  <p className="font-semibold text-slate-900">{selectedEmployer.fullName}</p>
+                </div>
+
+                <div>
+                  <label className="text-sm text-slate-500 block mb-1">البريد الإلكتروني</label>
+                  <p className="font-semibold text-slate-900 text-sm break-all">{selectedEmployer.email}</p>
+                </div>
+
+                <div>
+                  <label className="text-sm text-slate-500 block mb-1">رقم الهاتف</label>
+                  <p className="font-semibold text-slate-900" dir="ltr">{selectedEmployer.phone || 'غير محدد'}</p>
+                </div>
+
+                <div>
+                  <label className="text-sm text-slate-500 block mb-1">تاريخ التسجيل</label>
+                  <p className="font-semibold text-slate-900">
+                    {new Date(selectedEmployer.createdAt).toLocaleDateString('ar-EG')}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="text-sm text-slate-500 block mb-1">حالة الاشتراك</label>
+                  <p className="font-semibold text-slate-900">{selectedEmployer.subscriptionStatus || 'pending'}</p>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="space-y-3 pt-6 border-t border-slate-200">
+                {!selectedEmployer.isApproved && selectedEmployer.subscriptionStatus !== 'rejected' && (
+                  <button
+                    onClick={() => handleApprove(selectedEmployer.id)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-green-500 text-white rounded-xl font-semibold hover:bg-green-600 transition-colors"
+                  >
+                    <CheckCircle className="w-5 h-5" />
+                    الموافقة وتفعيل الحساب
+                  </button>
+                )}
+
+                {!selectedEmployer.isApproved && selectedEmployer.subscriptionStatus !== 'rejected' && (
+                  <button
+                    onClick={() => handleReject(selectedEmployer.id)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500 text-white rounded-xl font-semibold hover:bg-red-600 transition-colors"
+                  >
+                    <XCircle className="w-5 h-5" />
+                    رفض الطلب
+                  </button>
+                )}
+
+                {selectedEmployer.isApproved && (
+                  <button
+                    onClick={() => handleReject(selectedEmployer.id)}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-yellow-500 text-white rounded-xl font-semibold hover:bg-yellow-600 transition-colors"
+                  >
+                    <Clock className="w-5 h-5" />
+                    إيقاف الحساب
+                  </button>
+                )}
+
+                <button
+                  onClick={() => handleDelete(selectedEmployer.id)}
+                  className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-slate-200 text-slate-700 rounded-xl font-semibold hover:bg-slate-300 transition-colors"
                 >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="text-right flex-1">
-                      <h3 className="text-lg font-bold text-slate-900 mb-1">{employer.fullName}</h3>
-                      <p className="text-sm text-slate-600 mb-2">{employer.email}</p>
-                      <p className="text-sm text-slate-500">{employer.phone}</p>
-                    </div>
-                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 ${
-                      employer.isApproved 
-                        ? 'bg-green-50 border-green-200 text-green-600'
-                        : employer.subscriptionStatus === 'rejected'
-                        ? 'bg-red-50 border-red-200 text-red-600'
-                        : 'bg-yellow-50 border-yellow-200 text-yellow-600'
-                    }`}>
-                      {employer.isApproved ? (
-                        <>
-                          <CheckCircle className="w-5 h-5" />
-                          <span className="text-sm font-medium">مقبول</span>
-                        </>
-                      ) : employer.subscriptionStatus === 'rejected' ? (
-                        <>
-                          <XCircle className="w-5 h-5" />
-                          <span className="text-sm font-medium">مرفوض</span>
-                        </>
-                      ) : (
-                        <>
-                          <Clock className="w-5 h-5" />
-                          <span className="text-sm font-medium">قيد المراجعة</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 text-sm mb-4 text-right">
-                    <div>
-                      <p className="text-slate-500">تاريخ التسجيل</p>
-                      <p className="font-medium text-slate-900">
-                        {new Date(employer.createdAt).toLocaleDateString('ar-SA')}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-slate-500">حالة الاشتراك</p>
-                      <p className="font-medium text-slate-900">
-                        {employer.subscriptionStatus === 'active' ? 'نشط' : 
-                         employer.subscriptionStatus === 'rejected' ? 'مرفوض' : 'معلق'}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="flex gap-3">
-                    <button
-                      onClick={() => setSelectedEmployer(employer)}
-                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-                    >
-                      <Eye className="w-4 h-4" />
-                      عرض التفاصيل
-                    </button>
-                    
-                    {!employer.isApproved && employer.subscriptionStatus !== 'rejected' && (
-                      <>
-                        <button
-                          onClick={() => handleApprove(employer.id)}
-                          className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
-                        >
-                          <CheckCircle className="w-4 h-4" />
-                          موافقة
-                        </button>
-                        <button
-                          onClick={() => handleReject(employer.id)}
-                          className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
-                        >
-                          <XCircle className="w-4 h-4" />
-                          رفض
-                        </button>
-                      </>
-                    )}
-
-                    {employer.subscriptionStatus === 'rejected' && (
-                      <button
-                        onClick={() => handleApprove(employer.id)}
-                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
-                      >
-                        <CheckCircle className="w-4 h-4" />
-                        إعادة تفعيل
-                      </button>
-                    )}
-                  </div>
-                </motion.div>
-              ))}
+                  <Trash2 className="w-5 h-5" />
+                  حذف الحساب
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-white rounded-2xl p-12 text-center shadow-sm border border-slate-200">
+              <Eye className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-600">اختر صاحب عمل لعرض التفاصيل</p>
             </div>
           )}
         </div>
       </div>
-
-      {/* Employer Details Modal */}
-      {selectedEmployer && (
-        <div 
-          className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-[10000] p-4"
-          onClick={() => setSelectedEmployer(null)}
-        >
-          <div 
-            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full p-8 relative"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={() => setSelectedEmployer(null)}
-              className="absolute top-4 left-4 bg-red-500 hover:bg-red-600 text-white p-2 rounded-full transition-all"
-            >
-              <XCircle size={24} />
-            </button>
-
-            <h2 className="text-2xl font-bold text-slate-900 mb-6 text-right">
-              تفاصيل صاحب العمل
-            </h2>
-
-            <div className="space-y-4 text-right">
-              <div>
-                <p className="text-sm text-slate-500">الاسم الكامل</p>
-                <p className="font-medium text-slate-900 text-lg">{selectedEmployer.fullName}</p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-500">البريد الإلكتروني</p>
-                <p className="font-medium text-slate-900">{selectedEmployer.email}</p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-500">رقم الهاتف</p>
-                <p className="font-medium text-slate-900">{selectedEmployer.phone}</p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-500">تاريخ التسجيل</p>
-                <p className="font-medium text-slate-900">
-                  {new Date(selectedEmployer.createdAt).toLocaleDateString('ar-SA', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                  })}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-slate-500">حالة الحساب</p>
-                <div className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg border-2 mt-2 ${
-                  selectedEmployer.isApproved 
-                    ? 'bg-green-50 border-green-200 text-green-600'
-                    : selectedEmployer.subscriptionStatus === 'rejected'
-                    ? 'bg-red-50 border-red-200 text-red-600'
-                    : 'bg-yellow-50 border-yellow-200 text-yellow-600'
-                }`}>
-                  {selectedEmployer.isApproved ? (
-                    <>
-                      <CheckCircle className="w-5 h-5" />
-                      <span className="font-medium">مقبول - يمكنه رؤية المرشحين</span>
-                    </>
-                  ) : selectedEmployer.subscriptionStatus === 'rejected' ? (
-                    <>
-                      <XCircle className="w-5 h-5" />
-                      <span className="font-medium">مرفوض</span>
-                    </>
-                  ) : (
-                    <>
-                      <Clock className="w-5 h-5" />
-                      <span className="font-medium">قيد المراجعة</span>
-                    </>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }

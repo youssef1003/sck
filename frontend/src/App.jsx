@@ -28,6 +28,7 @@ import ContactsManagement from './pages/admin/ContactsManagement'
 import UsersManagement from './pages/admin/UsersManagement'
 import BookingsManagement from './pages/admin/BookingsManagement'
 import BlogManagement from './pages/admin/BlogManagement'
+import SubAdminsManagement from './pages/admin/SubAdminsManagement'
 
 function App() {
   const [loading, setLoading] = useState(() => {
@@ -61,13 +62,14 @@ function App() {
           <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="/admin/login" element={<Navigate to="/login" replace />} />
           <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
-          <Route path="/admin/users" element={<AdminRoute><UsersManagement /></AdminRoute>} />
-          <Route path="/admin/bookings" element={<AdminRoute><BookingsManagement /></AdminRoute>} />
-          <Route path="/admin/careers" element={<AdminRoute><CareersManagement /></AdminRoute>} />
-          <Route path="/admin/employers" element={<AdminRoute><EmployersManagement /></AdminRoute>} />
-          <Route path="/admin/home" element={<AdminRoute><HomeEditor /></AdminRoute>} />
-          <Route path="/admin/contacts" element={<AdminRoute><ContactsManagement /></AdminRoute>} />
-          <Route path="/admin/blog" element={<AdminRoute><BlogManagement /></AdminRoute>} />
+          <Route path="/admin/users" element={<AdminRoute anyOf={['users_view', 'users_edit', 'users_delete']}><UsersManagement /></AdminRoute>} />
+          <Route path="/admin/bookings" element={<AdminRoute anyOf={['bookings_view', 'bookings_edit']}><BookingsManagement /></AdminRoute>} />
+          <Route path="/admin/careers" element={<AdminRoute anyOf={['careers_view', 'careers_edit']}><CareersManagement /></AdminRoute>} />
+          <Route path="/admin/employers" element={<AdminRoute anyOf={['employers_view', 'employers_approve']}><EmployersManagement /></AdminRoute>} />
+          <Route path="/admin/home" element={<AdminRoute permission="home_edit"><HomeEditor /></AdminRoute>} />
+          <Route path="/admin/contacts" element={<AdminRoute anyOf={['messages_view', 'messages_edit']}><ContactsManagement /></AdminRoute>} />
+          <Route path="/admin/blog" element={<AdminRoute anyOf={['blog_view', 'blog_create', 'blog_edit']}><BlogManagement /></AdminRoute>} />
+          <Route path="/admin/subadmins" element={<AdminRoute superAdminOnly><SubAdminsManagement /></AdminRoute>} />
 
           {/* Public Routes - With Navbar/Footer */}
           <Route path="/" element={

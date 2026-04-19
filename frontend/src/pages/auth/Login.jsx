@@ -3,6 +3,8 @@ import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { authAPI } from '../utils/apiClient'
+import toast from 'react-hot-toast'
 
 const Login = () => {
   const navigate = useNavigate()
@@ -17,68 +19,43 @@ const Login = () => {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setIsLoading(true)
 
-    setTimeout(() => {
-      // Check if admin credentials
-      if (formData.email === 'admin' && formData.password === 'scq2025') {
-        // Main Admin login
-        localStorage.setItem('admin_token', 'authenticated')
-        localStorage.setItem('admin_user', JSON.stringify({ 
-          username: 'admin', 
-          role: 'admin',
-          permissions: 'all'
-        }))
-        navigate('/admin/dashboard')
-        setIsLoading(false)
-        return
-      }
-
-      // Check if sub-admin credentials (3 accounts)
-      const subAdmins = [
-        { email: 'subadmin1', password: 'scq2025sub1', name: 'Sub Admin 1' },
-        { email: 'subadmin2', password: 'scq2025sub2', name: 'Sub Admin 2' },
-        { email: 'subadmin3', password: 'scq2025sub3', name: 'Sub Admin 3' }
-      ]
-
-      const subAdmin = subAdmins.find(sa => sa.email === formData.email && sa.password === formData.password)
+    try {
+      const response = await authAPI.login(formData.email, formData.password)
       
-      if (subAdmin) {
-        // Sub-Admin login
-        localStorage.setItem('admin_token', 'authenticated')
-        localStorage.setItem('admin_user', JSON.stringify({ 
-          username: subAdmin.name, 
-          role: 'subadmin',
-          permissions: 'limited' // careers, content editing only
-        }))
-        navigate('/admin/dashboard')
-        setIsLoading(false)
-        return
-      }
-
-      // Check regular users (clients and employers)
-      const users = JSON.parse(localStorage.getItem('scq_users') || '[]')
-      const user = users.find(u => u.email === formData.email && u.password === formData.password)
-
-      if (user) {
-        // Regular user login successful
-        localStorage.setItem('scq_user_token', 'authenticated')
-        localStorage.setItem('scq_user_data', JSON.stringify(user))
+      if (response.success) {
+        const { access_token, refresh_token, user } = response.data
         
-        // Redirect based on user type
-        if (user.userType === 'employer') {
+        // Store tokens
+        localStorage.setItem('access_token', access_token)
+        localStorage.setItem('refresh_token', refresh_token)
+        localStorage.setItem('user_data', JSON.stringify(user))
+        
+        // Show success message
+        toast.success(isRTL ? 'تم تسجيل الدخول بنجاح' : 'Login successful')
+        
+        // Redirect based on role
+        if (user.role === 'admin' || user.role === 'subadmin') {
+          navigate('/admin/dashboard')
+        } else if (user.role === 'employer') {
           navigate('/employer/dashboard')
         } else {
           navigate('/dashboard')
         }
-      } else {
-        setError(isRTL ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة' : 'Invalid email or password')
       }
+    } catch (err) {
+      console.error('Login error:', err)
+      const errorMessage = err.response?.data?.detail || 
+                          (isRTL ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة' : 'Invalid email or password')
+      setError(errorMessage)
+      toast.error(errorMessage)
+    } finally {
       setIsLoading(false)
-    }, 1000)
+    }
   }
 
   return (
