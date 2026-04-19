@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+const API_URL = 'https://sck-production.up.railway.app'
 
 // Create axios instance
 const apiClient = axios.create({
