@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { 
   Mail, 
@@ -16,23 +16,15 @@ import {
 } from 'lucide-react'
 
 const ContactsManagement = () => {
-  const navigate = useNavigate()
   const [contacts, setContacts] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [selectedContact, setSelectedContact] = useState(null)
 
   useEffect(() => {
-    // Check authentication
-    const adminToken = localStorage.getItem('admin_token')
-    if (!adminToken) {
-      navigate('/login')
-      return
-    }
-
     // Load contacts
     loadContacts()
-  }, [navigate])
+  }, [])
 
   const loadContacts = () => {
     const storedContacts = JSON.parse(localStorage.getItem('scq_contacts') || '[]')
@@ -94,12 +86,12 @@ const ContactsManagement = () => {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <button
-                onClick={() => navigate('/admin/dashboard')}
+              <Link
+                to="/admin/dashboard"
                 className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
               >
                 <ArrowLeft className="w-5 h-5 text-slate-600" />
-              </button>
+              </Link>
               <div>
                 <h1 className="text-2xl font-bold text-slate-900">إدارة الرسائل</h1>
                 <p className="text-sm text-slate-600">عرض وإدارة رسائل التواصل</p>

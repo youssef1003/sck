@@ -1,0 +1,223 @@
+import { useState, useEffect } from 'react'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import {
+  LayoutDashboard,
+  Users,
+  Briefcase,
+  MessageSquare,
+  Home,
+  FileText,
+  CalendarCheck,
+  LogOut,
+  Menu,
+  X,
+  ChevronLeft,
+  Bell
+} from 'lucide-react'
+
+const AdminLayout = ({ children }) => {
+  const location = useLocation()
+  const navigate = useNavigate()
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [adminUser, setAdminUser] = useState(null)
+
+  useEffect(() => {
+    const token = localStorage.getItem('admin_token')
+    const userData = localStorage.getItem('admin_user')
+    if (!token || !userData) {
+      navigate('/login')
+      return
+    }
+    setAdminUser(JSON.parse(userData))
+  }, [navigate])
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false)
+  }, [location.pathname])
+
+  const handleLogout = () => {
+    localStorage.removeItem('admin_token')
+    localStorage.removeItem('admin_user')
+    navigate('/')
+  }
+
+  const isSubAdmin = adminUser?.role === 'subadmin'
+
+  const menuItems = [
+    { title: 'لوحة التحكم', icon: LayoutDashboard, path: '/admin/dashboard', allowSubAdmin: true },
+    { title: 'الصفحة الرئيسية', icon: Home, path: '/admin/home', allowSubAdmin: true },
+    { title: 'المستخدمون', icon: Users, path: '/admin/users', allowSubAdmin: false },
+    { title: 'الحجوزات', icon: CalendarCheck, path: '/admin/bookings', allowSubAdmin: true },
+    { title: 'التوظيف', icon: Briefcase, path: '/admin/careers', allowSubAdmin: true },
+    { title: 'الرسائل', icon: MessageSquare, path: '/admin/contacts', allowSubAdmin: true },
+    { title: 'أصحاب العمل', icon: Users, path: '/admin/employers', allowSubAdmin: false },
+    { title: 'المدونة', icon: FileText, path: '/admin/blog', allowSubAdmin: true },
+  ]
+
+  const filteredMenuItems = isSubAdmin
+    ? menuItems.filter(item => item.allowSubAdmin)
+    : menuItems
+
+  const isActive = (path) => location.pathname === path
+
+  const SidebarContent = () => (
+    <>
+      {/* Logo */}
+      <div className="flex items-center justify-between mb-8 px-2">
+        {isSidebarOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="flex items-center gap-3"
+          >
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-400 to-cyan-400 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+              <span className="text-white font-bold text-lg">SCQ</span>
+            </div>
+            <div>
+              <h2 className="font-bold text-lg text-white">لوحة التحكم</h2>
+              <p className="text-xs text-blue-300">Admin Panel</p>
+            </div>
+          </motion.div>
+        )}
+        <button
+          onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+          className="p-2 hover:bg-white/10 rounded-lg transition-colors hidden md:block"
+        >
+          {isSidebarOpen ? <ChevronLeft className="w-5 h-5 text-blue-300" /> : <Menu className="w-5 h-5 text-blue-300" />}
+        </button>
+      </div>
+
+      {/* Navigation */}
+      <nav className="space-y-1 flex-1">
+        {filteredMenuItems.map((item) => (
+          <Link
+            key={item.path}
+            to={item.path}
+            className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group relative ${
+              isActive(item.path)
+                ? 'bg-white/15 text-white shadow-lg shadow-blue-500/10'
+                : 'text-blue-200 hover:bg-white/10 hover:text-white'
+            }`}
+          >
+            {isActive(item.path) && (
+              <motion.div
+                layoutId="activeTab"
+                className="absolute right-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-cyan-400 rounded-l-full"
+                transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              />
+            )}
+            <item.icon className={`w-5 h-5 flex-shrink-0 ${isActive(item.path) ? 'text-cyan-400' : ''}`} />
+            {isSidebarOpen && (
+              <span className="text-sm font-medium">{item.title}</span>
+            )}
+          </Link>
+        ))}
+      </nav>
+
+      {/* User Info & Logout */}
+      <div className="mt-auto pt-6 border-t border-white/10">
+        {isSidebarOpen && adminUser && (
+          <div className="px-4 py-3 mb-2">
+            <p className="text-sm font-medium text-white truncate">{adminUser.username || 'Admin'}</p>
+            <p className="text-xs text-blue-300 capitalize">{adminUser.role || 'admin'}</p>
+          </div>
+        )}
+        <button
+          onClick={handleLogout}
+          className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-500/20 transition-colors w-full text-red-300 hover:text-red-200"
+        >
+          <LogOut className="w-5 h-5 flex-shrink-0" />
+          {isSidebarOpen && <span className="text-sm font-medium">تسجيل الخروج</span>}
+        </button>
+      </div>
+    </>
+  )
+
+  if (!adminUser) return null
+
+  return (
+    <div className="min-h-screen bg-slate-50 flex" dir="rtl">
+      {/* Desktop Sidebar */}
+      <motion.aside
+        initial={false}
+        animate={{ width: isSidebarOpen ? 280 : 80 }}
+        transition={{ duration: 0.3, ease: 'easeInOut' }}
+        className="bg-gradient-to-b from-blue-900 via-blue-950 to-slate-900 text-white fixed h-full z-40 shadow-2xl hidden md:flex flex-col p-4"
+      >
+        <SidebarContent />
+      </motion.aside>
+
+      {/* Mobile Overlay */}
+      <AnimatePresence>
+        {isMobileMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            <motion.aside
+              initial={{ x: 300 }}
+              animate={{ x: 0 }}
+              exit={{ x: 300 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              className="bg-gradient-to-b from-blue-900 via-blue-950 to-slate-900 text-white fixed h-full z-50 w-72 right-0 flex flex-col p-4 md:hidden"
+            >
+              <button
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="absolute left-4 top-4 p-2 hover:bg-white/10 rounded-lg"
+              >
+                <X className="w-5 h-5 text-white" />
+              </button>
+              <SidebarContent />
+            </motion.aside>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* Main Content */}
+      <div className={`flex-1 transition-all duration-300 ${isSidebarOpen ? 'md:mr-[280px]' : 'md:mr-[80px]'}`}>
+        {/* Top Header */}
+        <header className="bg-white border-b border-slate-200 sticky top-0 z-30">
+          <div className="flex items-center justify-between px-4 md:px-8 py-4">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setIsMobileMenuOpen(true)}
+                className="p-2 hover:bg-slate-100 rounded-lg md:hidden"
+              >
+                <Menu className="w-6 h-6 text-slate-700" />
+              </button>
+              <div>
+                <h1 className="text-lg md:text-xl font-bold text-slate-900">
+                  {menuItems.find(i => isActive(i.path))?.title || 'لوحة التحكم'}
+                </h1>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <button className="relative p-2 hover:bg-slate-100 rounded-lg transition-colors">
+                <Bell className="w-5 h-5 text-slate-600" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full" />
+              </button>
+              <div className="w-9 h-9 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex items-center justify-center">
+                <span className="text-white font-bold text-sm">
+                  {(adminUser?.username || 'A')[0].toUpperCase()}
+                </span>
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Page Content */}
+        <main className="p-4 md:p-8">
+          {children}
+        </main>
+      </div>
+    </div>
+  )
+}
+
+export default AdminLayout

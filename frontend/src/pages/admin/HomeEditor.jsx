@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowRight, Save, Plus, Trash2, Edit2 } from 'lucide-react'
 
 const HomeEditor = () => {
-  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState('hero')
   const [isSaving, setIsSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
@@ -55,12 +54,6 @@ const HomeEditor = () => {
   ])
 
   useEffect(() => {
-    const token = localStorage.getItem('admin_token')
-    if (!token) {
-      navigate('/login')
-      return
-    }
-
     // Load saved data
     const savedHero = localStorage.getItem('scq_home_hero')
     const savedStats = localStorage.getItem('scq_home_stats')
@@ -69,7 +62,7 @@ const HomeEditor = () => {
     if (savedHero) setHeroData(JSON.parse(savedHero))
     if (savedStats) setStatsData(JSON.parse(savedStats))
     if (savedServices) setServicesData(JSON.parse(savedServices))
-  }, [navigate])
+  }, [])
 
   const handleSave = () => {
     setIsSaving(true)

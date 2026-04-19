@@ -1,24 +1,16 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { ArrowLeft, Users, CheckCircle, XCircle, Clock, Search, Eye } from 'lucide-react'
 
 const EmployersManagement = () => {
-  const navigate = useNavigate()
   const [employers, setEmployers] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedEmployer, setSelectedEmployer] = useState(null)
 
   useEffect(() => {
-    // Check authentication
-    const token = localStorage.getItem('admin_token')
-    if (!token) {
-      navigate('/login')
-      return
-    }
-
     loadEmployers()
-  }, [navigate])
+  }, [])
 
   const loadEmployers = () => {
     const users = JSON.parse(localStorage.getItem('scq_users') || '[]')

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate, Link } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { 
   ArrowRight,
@@ -18,26 +18,18 @@ import {
 } from 'lucide-react'
 
 const CareersManagement = () => {
-  const navigate = useNavigate()
   const [applications, setApplications] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [selectedApplication, setSelectedApplication] = useState(null)
 
   useEffect(() => {
-    // Check authentication
-    const token = localStorage.getItem('admin_token')
-    if (!token) {
-      navigate('/login')
-      return
-    }
-
     // Load applications from localStorage (temporary)
     const stored = localStorage.getItem('scq_applications')
     if (stored) {
       setApplications(JSON.parse(stored))
     }
-  }, [navigate])
+  }, [])
 
   const getStatusColor = (status) => {
     switch (status) {

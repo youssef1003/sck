@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 import os
 
-from api.routes import consultation, contact, blog, ai_chat
+from api.routes import consultation, contact, blog, ai_chat, admin
 
 load_dotenv()
 
@@ -30,6 +30,7 @@ app.include_router(consultation.router, prefix="/api/consultation", tags=["Consu
 app.include_router(contact.router, prefix="/api/contact", tags=["Contact"])
 app.include_router(blog.router, prefix="/api/blog", tags=["Blog"])
 app.include_router(ai_chat.router, prefix="/api/ai", tags=["AI Chatbot"])
+app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 
 @app.get("/")
 async def root():

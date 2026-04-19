@@ -13,15 +13,21 @@ import Careers from './pages/Careers'
 import Contact from './pages/Contact'
 import Blog from './pages/Blog'
 import NotFound from './pages/NotFound'
+import Login from './pages/auth/Login'
+import Register from './pages/auth/Register'
+import Dashboard from './pages/Dashboard'
+import EmployerDashboard from './pages/EmployerDashboard'
+
+// Admin
+import AdminRoute from './components/admin/AdminRoute'
 import AdminDashboard from './pages/admin/Dashboard'
 import CareersManagement from './pages/admin/CareersManagement'
 import EmployersManagement from './pages/admin/EmployersManagement'
 import HomeEditor from './pages/admin/HomeEditor'
 import ContactsManagement from './pages/admin/ContactsManagement'
-import Login from './pages/auth/Login'
-import Register from './pages/auth/Register'
-import Dashboard from './pages/Dashboard'
-import EmployerDashboard from './pages/EmployerDashboard'
+import UsersManagement from './pages/admin/UsersManagement'
+import BookingsManagement from './pages/admin/BookingsManagement'
+import BlogManagement from './pages/admin/BlogManagement'
 
 function App() {
   const [loading, setLoading] = useState(() => {
@@ -51,14 +57,17 @@ function App() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/employer/dashboard" element={<EmployerDashboard />} />
 
-          {/* Admin Routes - No Navbar/Footer */}
+          {/* Admin Routes — Protected by AdminRoute (auth + layout) */}
           <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
           <Route path="/admin/login" element={<Navigate to="/login" replace />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/careers" element={<CareersManagement />} />
-          <Route path="/admin/employers" element={<EmployersManagement />} />
-          <Route path="/admin/home" element={<HomeEditor />} />
-          <Route path="/admin/contacts" element={<ContactsManagement />} />
+          <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
+          <Route path="/admin/users" element={<AdminRoute><UsersManagement /></AdminRoute>} />
+          <Route path="/admin/bookings" element={<AdminRoute><BookingsManagement /></AdminRoute>} />
+          <Route path="/admin/careers" element={<AdminRoute><CareersManagement /></AdminRoute>} />
+          <Route path="/admin/employers" element={<AdminRoute><EmployersManagement /></AdminRoute>} />
+          <Route path="/admin/home" element={<AdminRoute><HomeEditor /></AdminRoute>} />
+          <Route path="/admin/contacts" element={<AdminRoute><ContactsManagement /></AdminRoute>} />
+          <Route path="/admin/blog" element={<AdminRoute><BlogManagement /></AdminRoute>} />
 
           {/* Public Routes - With Navbar/Footer */}
           <Route path="/" element={
