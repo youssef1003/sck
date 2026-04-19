@@ -1,4 +1,0 @@
-Deployment Trigger - Force Vercel Rebuild
-Timestamp: 2026-04-15
-Reason: Apply vercel.json routing configuration for SPA
-Changes: Added favicon.svg and forcing new deployment

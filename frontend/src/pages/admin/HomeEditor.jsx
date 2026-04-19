@@ -55,9 +55,9 @@ const HomeEditor = () => {
   ])
 
   useEffect(() => {
-    const token = localStorage.getItem('scq_admin_token')
+    const token = localStorage.getItem('admin_token')
     if (!token) {
-      navigate('/admin/login')
+      navigate('/login')
       return
     }
 

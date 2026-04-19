@@ -1,2 +1,0 @@
-Force rebuild - timestamp: 2024-12-20 15:30:00
-This file is created to trigger a new Vercel deployment.

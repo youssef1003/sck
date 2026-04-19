@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { useState } from 'react'
 import { AnimatePresence } from 'framer-motion'
 import ErrorBoundary from './components/ErrorBoundary'
@@ -52,6 +52,8 @@ function App() {
           <Route path="/employer/dashboard" element={<EmployerDashboard />} />
 
           {/* Admin Routes - No Navbar/Footer */}
+          <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
+          <Route path="/admin/login" element={<Navigate to="/login" replace />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/careers" element={<CareersManagement />} />
           <Route path="/admin/employers" element={<EmployersManagement />} />
