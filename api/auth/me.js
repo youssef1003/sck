@@ -19,7 +19,7 @@ function verifyToken(token) {
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   
   if (req.method === 'OPTIONS') {
@@ -34,44 +34,66 @@ export default async function handler(req, res) {
     // Check authorization
     const authHeader = req.headers.authorization
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Unauthorized' })
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Unauthorized' 
+      })
     }
 
     const token = authHeader.substring(7)
     const decoded = verifyToken(token)
     
     if (!decoded) {
-      return res.status(401).json({ error: 'Invalid token' })
+      return res.status(401).json({ 
+        success: false, 
+        error: 'Invalid token' 
+      })
     }
 
-    // Get user from database
-    const { data: user, error: userError } = await supabase
+    // Get user data from database
+    const { data: user, error } = await supabase
       .from('users')
-      .select('*')
+      .select('id, email, full_name, phone, company, role, is_active, is_approved, approval_status, last_login_at, metadata, created_at, updated_at')
       .eq('id', decoded.user_id)
       .is('deleted_at', null)
       .single()
 
-    if (userError || !user) {
+    if (error || !user) {
       return res.status(404).json({ 
         success: false, 
         error: 'User not found' 
       })
     }
 
+    // Check if user is active
+    if (!user.is_active) {
+      return res.status(403).json({ 
+        success: false, 
+        error: 'Account is deactivated' 
+      })
+    }
+
+    // Get permissions for sub-admins
+    let permissions = []
+    if (user.role === 'subadmin') {
+      const { data: permData } = await supabase
+        .from('admin_permissions')
+        .select('permissions')
+        .eq('user_id', user.id)
+        .single()
+      
+      if (permData) {
+        permissions = permData.permissions || []
+      }
+    }
+
     return res.status(200).json({
       success: true,
       data: {
-        id: user.id,
-        email: user.email,
-        full_name: user.full_name,
-        phone: user.phone,
-        company: user.company,
-        role: user.role,
-        is_active: user.is_active,
-        is_approved: user.is_approved,
-        created_at: user.created_at,
-        updated_at: user.updated_at
+        user: {
+          ...user,
+          permissions: permissions
+        }
       }
     })
 

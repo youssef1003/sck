@@ -8,10 +8,18 @@ const supabase = createClient(
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
 
+function verifyToken(token) {
+  try {
+    return jwt.verify(token, JWT_SECRET)
+  } catch (error) {
+    return null
+  }
+}
+
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   
   if (req.method === 'OPTIONS') {
@@ -33,26 +41,24 @@ export default async function handler(req, res) {
     }
 
     // Verify refresh token
-    let decoded
-    try {
-      decoded = jwt.verify(refresh_token, JWT_SECRET)
-    } catch (error) {
+    const decoded = verifyToken(refresh_token)
+    if (!decoded || !decoded.user_id) {
       return res.status(401).json({ 
         success: false, 
         error: 'Invalid refresh token' 
       })
     }
 
-    // Get user from database
-    const { data: user, error: userError } = await supabase
+    // Get user data from database
+    const { data: user, error } = await supabase
       .from('users')
-      .select('*')
+      .select('id, email, full_name, role, is_active')
       .eq('id', decoded.user_id)
       .is('deleted_at', null)
       .single()
 
-    if (userError || !user) {
-      return res.status(401).json({ 
+    if (error || !user) {
+      return res.status(404).json({ 
         success: false, 
         error: 'User not found' 
       })
@@ -96,15 +102,7 @@ export default async function handler(req, res) {
       data: {
         access_token: accessToken,
         refresh_token: newRefreshToken,
-        expires_in: 3600,
-        user: {
-          id: user.id,
-          email: user.email,
-          full_name: user.full_name,
-          role: user.role,
-          is_approved: user.is_approved,
-          permissions: permissions
-        }
+        expires_in: 3600
       }
     })
 

@@ -8,7 +8,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- Disable RLS temporarily for setup (safe approach)
-DO $$
+DO $do1$
 BEGIN
     -- Disable RLS on existing tables
     IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'users') THEN
@@ -26,7 +26,7 @@ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'blog_posts') THEN
         ALTER TABLE blog_posts DISABLE ROW LEVEL SECURITY;
     END IF;
-END $$;
+END $do1$;
 
 -- ============================================================================
 -- Create/Update Users Table with all required columns
@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS users (
 );
 
 -- Add missing columns to users table if they don't exist
-DO $
+DO $do2$
 BEGIN
     -- Add password_hash if missing
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='password_hash') THEN
@@ -93,10 +93,10 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='deleted_at') THEN
         ALTER TABLE users ADD COLUMN deleted_at TIMESTAMP WITH TIME ZONE;
     END IF;
-END $;
+END $do2$;
 
 -- Ensure Super Admin exists with correct password
-DO $
+DO $do3$
 BEGIN
     -- Check if Super Admin exists
     IF NOT EXISTS (SELECT 1 FROM users WHERE email = 'admin@sck.com') THEN
@@ -128,7 +128,7 @@ BEGIN
         
         RAISE NOTICE '✅ Super Admin password updated';
     END IF;
-END $;
+END $do3$;
 
 -- Contact Requests Table
 CREATE TABLE IF NOT EXISTS contact_requests (
@@ -218,16 +218,66 @@ CREATE TABLE IF NOT EXISTS ai_messages (
 );
 
 -- ============================================================================
+-- Sub-Admins and Permissions Tables
+-- ============================================================================
+
+-- Admin Permissions Table
+CREATE TABLE IF NOT EXISTS admin_permissions (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    permissions JSONB DEFAULT '[]'::jsonb,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id)
+);
+
+-- Employer Approvals Table
+CREATE TABLE IF NOT EXISTS employer_approvals (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'approved', 'rejected')),
+    approved_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    approved_at TIMESTAMP WITH TIME ZONE,
+    rejection_reason TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(user_id)
+);
+
+-- Job Applications Table
+CREATE TABLE IF NOT EXISTS job_applications (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    full_name VARCHAR(100) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    phone VARCHAR(20) NOT NULL,
+    position VARCHAR(100) NOT NULL,
+    experience_years INTEGER,
+    education VARCHAR(200),
+    cv_url TEXT,
+    cover_letter TEXT,
+    linkedin_url TEXT,
+    status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'reviewing', 'shortlisted', 'rejected', 'hired')),
+    reviewed_by UUID REFERENCES users(id) ON DELETE SET NULL,
+    reviewed_at TIMESTAMP WITH TIME ZONE,
+    notes TEXT,
+    deleted_at TIMESTAMP WITH TIME ZONE,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- ============================================================================
 -- Create Database Functions
 -- ============================================================================
 
--- Update timestamp function
-CREATE OR REPLACE FUNCTION update_updated_at() RETURNS TRIGGER AS $
-BEGIN 
-    NEW.updated_at = NOW(); 
-    RETURN NEW; 
+CREATE OR REPLACE FUNCTION update_updated_at()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $fn$
+BEGIN
+    NEW.updated_at := NOW();
+    RETURN NEW;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$fn$;
 
 -- Password verification function
 CREATE OR REPLACE FUNCTION verify_user_password(user_email TEXT, user_password TEXT) 
@@ -245,7 +295,7 @@ RETURNS TABLE(
     metadata JSONB,
     created_at TIMESTAMP WITH TIME ZONE,
     updated_at TIMESTAMP WITH TIME ZONE
-) AS $
+) AS $verify_fn$
 BEGIN
     RETURN QUERY
     SELECT u.id, u.email, u.full_name, u.phone, u.company, u.role, 
@@ -256,11 +306,11 @@ BEGIN
       AND u.password_hash = crypt(user_password, u.password_hash)
       AND u.deleted_at IS NULL;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$verify_fn$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Check if user has permission
 CREATE OR REPLACE FUNCTION has_permission(user_uuid UUID, permission_name TEXT) 
-RETURNS BOOLEAN AS $
+RETURNS BOOLEAN AS $has_perm_fn$
 DECLARE
     user_role TEXT;
     user_permissions JSONB;
@@ -284,11 +334,11 @@ EXCEPTION
     WHEN OTHERS THEN 
         RETURN false;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+$has_perm_fn$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 -- Get user permissions
 CREATE OR REPLACE FUNCTION get_user_permissions(user_uuid UUID) 
-RETURNS JSONB AS $
+RETURNS JSONB AS $get_perm_fn$
 DECLARE
     user_role TEXT;
     user_permissions JSONB;
@@ -309,11 +359,11 @@ EXCEPTION
     WHEN OTHERS THEN 
         RETURN '[]'::jsonb;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+$get_perm_fn$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 -- Check if user is Super Admin
 CREATE OR REPLACE FUNCTION is_super_admin(user_uuid UUID) 
-RETURNS BOOLEAN AS $
+RETURNS BOOLEAN AS $super_admin_fn$
 DECLARE
     user_role TEXT;
 BEGIN
@@ -323,7 +373,7 @@ EXCEPTION
     WHEN OTHERS THEN 
         RETURN false;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+$super_admin_fn$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
 
 -- Contact Requests Indexes
 CREATE INDEX IF NOT EXISTS idx_contact_requests_status ON contact_requests(status);
@@ -601,7 +651,7 @@ CREATE POLICY "Allow admin full access" ON blog_posts FOR ALL USING (true);
 -- Final Verification Report
 -- ============================================================================
 
-DO $
+DO $do4$
 DECLARE
     users_count INTEGER;
     contact_count INTEGER;
@@ -642,4 +692,4 @@ BEGIN
     RAISE NOTICE '   2. Test login at: https://sck-tawny.vercel.app/login';
     RAISE NOTICE '   3. Run: node test-complete-system.js';
     RAISE NOTICE '========================================';
-END $;
+END $do4$;
