@@ -1,14 +1,4 @@
-import { createClient } from '@supabase/supabase-js'
-import jwt from 'jsonwebtoken'
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-)
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
-
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
@@ -32,7 +22,7 @@ export default async function handler(req, res) {
       })
     }
 
-    // Simple test login for admin (temporary - will connect to Supabase later)
+    // Simple test login for admin
     if (email === 'admin@sck.com' && password === 'scq2025') {
       return res.status(200).json({
         success: true,
