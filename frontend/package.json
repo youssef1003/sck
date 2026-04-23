@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "npm run clean && vite build",
-    "clean": "node -e \"const fs = require('fs'); const path = require('path'); const dir = path.join(__dirname, 'dist'); if (fs.existsSync(dir)) { fs.rmSync(dir, { recursive: true, force: true }); console.log('✅ Cleaned dist folder'); }\"",
+    "clean": "rm -rf dist || rmdir /s /q dist || echo 'Dist folder cleaned'",
     "preview": "vite preview",
     "vercel-build": "npm run build"
   },
