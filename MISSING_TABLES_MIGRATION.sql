@@ -1,19 +1,17 @@
 -- ============================================================================
--- Complete Database Setup for SCK Platform
+-- Complete Database Setup for SCK Platform  
 -- Run this in Supabase SQL Editor to create all required tables
 -- ============================================================================
 
--- Enable required extensions (if not already enabled)
+-- Enable required extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
--- Drop existing policies to avoid conflicts
-DO $
+-- Disable RLS temporarily for setup (safe approach)
+DO $$
 BEGIN
+    -- Disable RLS on existing tables
     IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'users') THEN
-        DROP POLICY IF EXISTS "Enable read access for all users" ON users;
-        DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON users;
-        DROP POLICY IF EXISTS "Enable update for users based on email" ON users;
         ALTER TABLE users DISABLE ROW LEVEL SECURITY;
     END IF;
     
@@ -28,7 +26,7 @@ BEGIN
     IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'blog_posts') THEN
         ALTER TABLE blog_posts DISABLE ROW LEVEL SECURITY;
     END IF;
-END $;
+END $$;
 
 -- ============================================================================
 -- Create/Update Users Table with all required columns
