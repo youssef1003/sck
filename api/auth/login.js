@@ -9,11 +9,10 @@ const supabase = createClient(
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
 
 export default async function handler(req, res) {
-  // Enable CORS for all origins
+  // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-  res.setHeader('Access-Control-Allow-Credentials', 'true')
   
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
@@ -21,19 +20,6 @@ export default async function handler(req, res) {
 
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
-  }
-
-  // Debug: Check environment variables first
-  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
-    return res.status(500).json({ 
-      success: false, 
-      error: 'Missing environment variables',
-      debug: {
-        hasSupabaseUrl: !!process.env.SUPABASE_URL,
-        hasSupabaseKey: !!process.env.SUPABASE_SERVICE_KEY,
-        hasJwtSecret: !!process.env.JWT_SECRET
-      }
-    })
   }
 
   try {
@@ -46,7 +32,7 @@ export default async function handler(req, res) {
       })
     }
 
-    // Simple test login for admin
+    // Simple test login for admin (temporary - will connect to Supabase later)
     if (email === 'admin@sck.com' && password === 'scq2025') {
       return res.status(200).json({
         success: true,
@@ -75,8 +61,7 @@ export default async function handler(req, res) {
     console.error('Login error:', error)
     return res.status(500).json({ 
       success: false, 
-      error: 'Internal server error',
-      details: error.message
+      error: 'Internal server error'
     })
   }
 }
