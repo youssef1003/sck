@@ -8,15 +8,27 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- Drop existing policies to avoid conflicts
-DROP POLICY IF EXISTS "Enable read access for all users" ON users;
-DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON users;
-DROP POLICY IF EXISTS "Enable update for users based on email" ON users;
-
--- Disable RLS temporarily for setup
-ALTER TABLE IF EXISTS users DISABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS contact_requests DISABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS consultation_bookings DISABLE ROW LEVEL SECURITY;
-ALTER TABLE IF EXISTS blog_posts DISABLE ROW LEVEL SECURITY;
+DO $
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'users') THEN
+        DROP POLICY IF EXISTS "Enable read access for all users" ON users;
+        DROP POLICY IF EXISTS "Enable insert for authenticated users only" ON users;
+        DROP POLICY IF EXISTS "Enable update for users based on email" ON users;
+        ALTER TABLE users DISABLE ROW LEVEL SECURITY;
+    END IF;
+    
+    IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'contact_requests') THEN
+        ALTER TABLE contact_requests DISABLE ROW LEVEL SECURITY;
+    END IF;
+    
+    IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'consultation_bookings') THEN
+        ALTER TABLE consultation_bookings DISABLE ROW LEVEL SECURITY;
+    END IF;
+    
+    IF EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'blog_posts') THEN
+        ALTER TABLE blog_posts DISABLE ROW LEVEL SECURITY;
+    END IF;
+END $;
 
 -- ============================================================================
 -- Create/Update Users Table with all required columns
