@@ -138,7 +138,11 @@ async def login(credentials: UserLogin):
         # Try to find user by email or username
         user_query = supabase.table("users").select("*").or_(
             f"email.eq.{credentials.email},metadata->>username.eq.{credentials.email}"
-        ).eq("deleted_at", None).execute()
+        ).execute()
+        
+        # Filter out deleted users if the column exists
+        if user_query.data:
+            user_query.data = [u for u in user_query.data if u.get("deleted_at") is None]
         
         if not user_query.data:
             raise HTTPException(
@@ -238,9 +242,11 @@ async def refresh_token(token_request: RefreshTokenRequest):
             )
         
         # Get user data
-        user_query = supabase.table("users").select("*").eq("id", user_id).eq(
-            "deleted_at", None
-        ).execute()
+        user_query = supabase.table("users").select("*").eq("id", user_id).execute()
+        
+        # Filter out deleted users if the column exists
+        if user_query.data:
+            user_query.data = [u for u in user_query.data if u.get("deleted_at") is None]
         
         if not user_query.data:
             raise HTTPException(

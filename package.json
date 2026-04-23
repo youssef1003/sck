@@ -1,0 +1,17 @@
+{
+  "name": "sck-consulting-api",
+  "version": "1.0.0",
+  "description": "SCK Consulting Platform Serverless API",
+  "main": "index.js",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required for serverless functions'"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

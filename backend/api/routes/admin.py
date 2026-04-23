@@ -15,27 +15,58 @@ router = APIRouter()
 async def get_dashboard_stats(current_user: Dict[str, Any] = Depends(get_current_admin)):
     """Get dashboard overview stats"""
     try:
-        users = supabase.table("users").select("id", count="exact").execute()
-        bookings = supabase.table("consultation_bookings").select("id", count="exact").execute()
-        contacts = supabase.table("contact_requests").select("id", count="exact").execute()
-        blog = supabase.table("blog_posts").select("id", count="exact").execute()
-
-        # Get recent counts
-        pending_bookings = supabase.table("consultation_bookings").select("id", count="exact").eq("status", "pending").execute()
-        new_messages = supabase.table("contact_requests").select("id", count="exact").eq("status", "new").execute()
+        # Initialize stats with defaults
+        stats = {
+            "users": 0,
+            "bookings": 0,
+            "contacts": 0,
+            "blog_posts": 0,
+            "pending_bookings": 0,
+            "new_messages": 0,
+        }
+        
+        # Get users count (this table should always exist)
+        try:
+            users = supabase.table("users").select("id", count="exact").execute()
+            stats["users"] = users.count or 0
+        except Exception as e:
+            print(f"Error fetching users count: {e}")
+        
+        # Get bookings count (handle if table doesn't exist)
+        try:
+            bookings = supabase.table("consultation_bookings").select("id", count="exact").execute()
+            stats["bookings"] = bookings.count or 0
+            
+            # Get pending bookings
+            pending_bookings = supabase.table("consultation_bookings").select("id", count="exact").eq("status", "pending").execute()
+            stats["pending_bookings"] = pending_bookings.count or 0
+        except Exception as e:
+            print(f"Error fetching bookings count: {e}")
+        
+        # Get contacts count (handle if table doesn't exist)
+        try:
+            contacts = supabase.table("contact_requests").select("id", count="exact").execute()
+            stats["contacts"] = contacts.count or 0
+            
+            # Get new messages
+            new_messages = supabase.table("contact_requests").select("id", count="exact").eq("status", "new").execute()
+            stats["new_messages"] = new_messages.count or 0
+        except Exception as e:
+            print(f"Error fetching contacts count: {e}")
+        
+        # Get blog posts count (handle if table doesn't exist)
+        try:
+            blog = supabase.table("blog_posts").select("id", count="exact").execute()
+            stats["blog_posts"] = blog.count or 0
+        except Exception as e:
+            print(f"Error fetching blog posts count: {e}")
 
         return {
             "success": True,
-            "data": {
-                "users": users.count or 0,
-                "bookings": bookings.count or 0,
-                "contacts": contacts.count or 0,
-                "blog_posts": blog.count or 0,
-                "pending_bookings": pending_bookings.count or 0,
-                "new_messages": new_messages.count or 0,
-            }
+            "data": stats
         }
     except Exception as e:
+        print(f"General error in get_dashboard_stats: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching stats: {str(e)}")
 
 # ============================================================
@@ -51,7 +82,14 @@ async def get_users(
 ):
     """Get all users with search and filter"""
     try:
-        query = supabase.table("users").select("*", count="exact").is_("deleted_at", "null")
+        query = supabase.table("users").select("*", count="exact")
+        
+        # Only filter by deleted_at if the column exists
+        try:
+            query = query.is_("deleted_at", "null")
+        except Exception:
+            # Column might not exist, continue without this filter
+            pass
 
         if role and role != "all":
             query = query.eq("role", role)
@@ -67,6 +105,7 @@ async def get_users(
             "count": result.count or len(result.data)
         }
     except Exception as e:
+        print(f"Error in get_users: {e}")
         raise HTTPException(status_code=500, detail=f"Error fetching users: {str(e)}")
 
 @router.patch("/users/{user_id}/role")

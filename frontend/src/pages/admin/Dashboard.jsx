@@ -12,7 +12,7 @@ import {
   Clock,
   ArrowUpRight
 } from 'lucide-react'
-import { getStats } from '../../utils/adminApi'
+import { adminAPI, systemAPI } from '../../utils/apiClient'
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null)
@@ -22,7 +22,7 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const result = await getStats()
+        const result = await adminAPI.getStats()
         setStats(result.data)
       } catch (err) {
         setError('فشل في تحميل الإحصائيات')
@@ -52,10 +52,10 @@ const AdminDashboard = () => {
 
   // Check if user is Super Admin
   const isSuperAdmin = () => {
-    const adminUser = localStorage.getItem('admin_user')
-    if (!adminUser) return false
+    const userData = localStorage.getItem('user_data')
+    if (!userData) return false
     try {
-      const user = JSON.parse(adminUser)
+      const user = JSON.parse(userData)
       return user.role === 'admin'
     } catch {
       return false
@@ -167,21 +167,49 @@ const AdminDashboard = () => {
               <Users className="w-5 h-5 text-orange-600" />
               إدارة متقدمة (Super Admin فقط)
             </h3>
-            <Link
-              to="/admin/subadmins"
-              className="block p-5 rounded-xl border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-red-50 hover:border-orange-300 hover:shadow-md transition-all group"
-            >
-              <div className="flex items-center gap-4">
-                <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 shadow-lg">
-                  <Users className="w-6 h-6 text-white" />
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Sub-Admins Management */}
+              <Link
+                to="/admin/subadmins"
+                className="block p-5 rounded-xl border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-red-50 hover:border-orange-300 hover:shadow-md transition-all group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 shadow-lg">
+                    <Users className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1 text-right">
+                    <h4 className="font-bold text-slate-900 text-lg mb-1">إدارة المساعدين</h4>
+                    <p className="text-sm text-slate-600">إنشاء وإدارة حسابات المساعدين وصلاحياتهم</p>
+                  </div>
+                  <ArrowUpRight className="w-5 h-5 text-orange-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                 </div>
-                <div className="flex-1 text-right">
-                  <h4 className="font-bold text-slate-900 text-lg mb-1">إدارة المساعدين (Sub-Admins)</h4>
-                  <p className="text-sm text-slate-600">إنشاء وإدارة حسابات المساعدين وصلاحياتهم</p>
+              </Link>
+
+              {/* System Backup */}
+              <button
+                onClick={async () => {
+                  try {
+                    await systemAPI.downloadBackup()
+                    // Show success message
+                  } catch (error) {
+                    console.error('Backup failed:', error)
+                  }
+                }}
+                className="block p-5 rounded-xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-cyan-50 hover:border-blue-300 hover:shadow-md transition-all group text-right"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 shadow-lg">
+                    <FileText className="w-6 h-6 text-white" />
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-slate-900 text-lg mb-1">نسخ احتياطي</h4>
+                    <p className="text-sm text-slate-600">تحميل نسخة احتياطية من جميع البيانات</p>
+                  </div>
+                  <ArrowUpRight className="w-5 h-5 text-blue-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
                 </div>
-                <ArrowUpRight className="w-5 h-5 text-orange-500 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-              </div>
-            </Link>
+              </button>
+            </div>
           </div>
         )}
       </div>
