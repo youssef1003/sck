@@ -3,8 +3,8 @@ import axios from 'axios'
 // Use Vercel Functions for API
 const API_URL = import.meta.env.VITE_API_URL || (
   import.meta.env.PROD 
-    ? '/api' 
-    : 'http://localhost:3000/api'
+    ? '' // Use relative paths in production
+    : 'http://localhost:3000'
 )
 
 // Create axios instance
@@ -46,7 +46,7 @@ apiClient.interceptors.response.use(
           throw new Error('No refresh token')
         }
 
-        const response = await apiClient.post('/auth/refresh', {
+        const response = await apiClient.post('/api/auth/refresh', {
           refresh_token: refreshToken
         })
 
@@ -79,12 +79,12 @@ apiClient.interceptors.response.use(
 
 export const authAPI = {
   login: async (email, password) => {
-    const response = await apiClient.post('/auth/login', { email, password })
+    const response = await apiClient.post('/api/auth/login', { email, password })
     return response.data
   },
 
   register: async (userData) => {
-    const response = await apiClient.post('/auth/register', userData)
+    const response = await apiClient.post('/api/auth/register', userData)
     return response.data
   },
 
@@ -97,12 +97,12 @@ export const authAPI = {
   },
 
   getCurrentUser: async () => {
-    const response = await apiClient.get('/auth/me')
+    const response = await apiClient.get('/api/auth/me')
     return response.data
   },
 
   changePassword: async (oldPassword, newPassword) => {
-    const response = await apiClient.post('/auth/change-password', {
+    const response = await apiClient.post('/api/auth/change-password', {
       old_password: oldPassword,
       new_password: newPassword
     })
@@ -110,7 +110,7 @@ export const authAPI = {
   },
 
   refreshToken: async (refreshToken) => {
-    const response = await apiClient.post('/auth/refresh', {
+    const response = await apiClient.post('/api/auth/refresh', {
       refresh_token: refreshToken
     })
     return response.data
@@ -124,29 +124,29 @@ export const authAPI = {
 export const adminAPI = {
   // Dashboard Stats
   getStats: async () => {
-    const response = await apiClient.get('/admin/stats')
+    const response = await apiClient.get('/api/admin/stats')
     return response.data
   },
 
   // Users Management
   users: {
     getAll: async (params = {}) => {
-      const response = await apiClient.get('/admin/users', { params })
+      const response = await apiClient.get('/api/admin/users', { params })
       return response.data
     },
 
     updateRole: async (userId, role) => {
-      const response = await apiClient.patch(`/admin/users/${userId}/role`, { role })
+      const response = await apiClient.patch(`/api/admin/users/${userId}/role`, { role })
       return response.data
     },
 
     updateStatus: async (userId, isActive) => {
-      const response = await apiClient.patch(`/admin/users/${userId}/status`, { is_active: isActive })
+      const response = await apiClient.patch(`/api/admin/users/${userId}/status`, { is_active: isActive })
       return response.data
     },
 
     delete: async (userId) => {
-      const response = await apiClient.delete(`/admin/users/${userId}`)
+      const response = await apiClient.delete(`/api/admin/users/${userId}`)
       return response.data
     }
   },
@@ -353,13 +353,13 @@ export const publicAPI = {
 export const systemAPI = {
   // Health Check
   getHealth: async () => {
-    const response = await apiClient.get('/health')
+    const response = await apiClient.get('/api/health')
     return response.data
   },
 
   // Backup (Super Admin only)
   downloadBackup: async () => {
-    const response = await apiClient.get('/admin/backup', {
+    const response = await apiClient.get('/api/admin/backup', {
       responseType: 'blob'
     })
     
