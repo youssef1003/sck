@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
-import { authAPI } from '../utils/apiClient'
+import { authAPI } from '../../utils/apiClient'
 import toast from 'react-hot-toast'
 
 const Login = () => {
