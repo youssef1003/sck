@@ -1,5 +1,8 @@
-/* Synqor Group Premium Brand Theme */
-:root {
+/* Synqor Group Premium Brand Theme - SCOPED TO HOME PAGE ONLY */
+
+/* Only apply to home page and components with synqor- prefix */
+.home-page,
+.synqor-component {
   /* Primary Colors - Royal Navy / Deep Royal Blue */
   --synqor-primary: #002366;
   --synqor-primary-dark: #0A2540;
@@ -23,76 +26,76 @@
   --synqor-border-radius: 8px;
 }
 
-/* Premium Typography */
+/* SCOPED Premium Typography - Only for synqor classes */
 .synqor-heading {
-  font-family: var(--synqor-font-heading);
-  color: var(--synqor-primary);
+  font-family: 'Playfair Display', serif;
+  color: #002366;
   font-weight: 700;
   line-height: 1.2;
 }
 
 .synqor-body {
-  font-family: var(--synqor-font-body);
-  color: var(--synqor-slate-grey);
+  font-family: 'Montserrat', sans-serif;
+  color: #4A5568;
   line-height: 1.6;
 }
 
-/* Premium Button Styles */
+/* SCOPED Premium Button Styles */
 .synqor-btn-primary {
-  background: var(--synqor-primary);
+  background: #002366;
   color: white;
   padding: 12px 32px;
-  border-radius: var(--synqor-border-radius);
-  font-family: var(--synqor-font-body);
+  border-radius: 8px;
+  font-family: 'Montserrat', sans-serif;
   font-weight: 600;
   border: none;
   cursor: pointer;
-  transition: var(--synqor-transition);
-  box-shadow: var(--synqor-shadow-subtle);
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 35, 102, 0.08);
 }
 
 .synqor-btn-primary:hover {
-  background: var(--synqor-silver);
-  color: var(--synqor-primary);
+  background: #C0C0C0;
+  color: #002366;
   transform: translateY(-2px);
-  box-shadow: var(--synqor-shadow-card);
+  box-shadow: 0 4px 16px rgba(0, 35, 102, 0.12);
 }
 
-/* Premium Card Styles */
+/* SCOPED Premium Card Styles */
 .synqor-card {
   background: white;
-  border-radius: var(--synqor-border-radius);
-  box-shadow: var(--synqor-shadow-subtle);
-  border: 1px solid var(--synqor-silver-light);
-  transition: var(--synqor-transition);
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 35, 102, 0.08);
+  border: 1px solid #E8E8E1;
+  transition: all 0.3s ease;
   overflow: hidden;
 }
 
 .synqor-card:hover {
-  box-shadow: var(--synqor-shadow-card);
-  border-color: var(--synqor-silver);
+  box-shadow: 0 4px 16px rgba(0, 35, 102, 0.12);
+  border-color: #C0C0C0;
   transform: translateY(-4px);
 }
 
-/* Premium Navbar */
+/* SCOPED Premium Navbar - Only when has synqor-navbar class */
 .synqor-navbar {
-  border-bottom: 1px solid var(--synqor-silver);
+  border-bottom: 1px solid #C0C0C0;
   background: white;
   backdrop-filter: blur(10px);
 }
 
 .synqor-nav-link {
-  color: var(--synqor-slate-grey);
-  font-family: var(--synqor-font-body);
+  color: #4A5568;
+  font-family: 'Montserrat', sans-serif;
   font-weight: 500;
   text-decoration: none;
   position: relative;
   padding: 8px 16px;
-  transition: var(--synqor-transition);
+  transition: all 0.3s ease;
 }
 
 .synqor-nav-link:hover {
-  color: var(--synqor-primary);
+  color: #002366;
 }
 
 .synqor-nav-link::after {
@@ -102,8 +105,8 @@
   left: 50%;
   width: 0;
   height: 2px;
-  background: var(--synqor-silver);
-  transition: var(--synqor-transition);
+  background: #C0C0C0;
+  transition: all 0.3s ease;
   transform: translateX(-50%);
 }
 
@@ -111,9 +114,9 @@
   width: 80%;
 }
 
-/* Premium Hero Section */
+/* SCOPED Premium Hero Section */
 .synqor-hero {
-  background: linear-gradient(135deg, var(--synqor-ice-blue) 0%, white 100%);
+  background: linear-gradient(135deg, #F8FAFB 0%, white 100%);
   position: relative;
   overflow: hidden;
 }
@@ -129,10 +132,10 @@
   opacity: 0.5;
 }
 
-/* Legacy Section */
+/* SCOPED Legacy Section */
 .synqor-legacy {
-  background: var(--synqor-primary-dark);
-  color: var(--synqor-silver-light);
+  background: #0A2540;
+  color: #E8E8E1;
   position: relative;
 }
 
@@ -146,7 +149,7 @@
   background: linear-gradient(45deg, transparent 30%, rgba(192, 192, 192, 0.05) 50%, transparent 70%);
 }
 
-/* Premium Spacing */
+/* SCOPED Premium Spacing */
 .synqor-section {
   padding: 80px 0;
 }
@@ -157,7 +160,7 @@
   padding: 0 24px;
 }
 
-/* Responsive Design */
+/* SCOPED Responsive Design */
 @media (max-width: 768px) {
   .synqor-section {
     padding: 60px 0;
@@ -173,55 +176,55 @@
   }
 }
 
-/* Premium Icons */
+/* SCOPED Premium Icons */
 .synqor-icon {
-  color: var(--synqor-silver);
-  transition: var(--synqor-transition);
+  color: #C0C0C0;
+  transition: all 0.3s ease;
 }
 
 .synqor-icon:hover {
-  color: var(--synqor-primary);
+  color: #002366;
   transform: scale(1.1);
 }
 
-/* Premium Form Elements */
+/* SCOPED Premium Form Elements */
 .synqor-input {
-  border: 2px solid var(--synqor-silver-light);
-  border-radius: var(--synqor-border-radius);
+  border: 2px solid #E8E8E1;
+  border-radius: 8px;
   padding: 12px 16px;
-  font-family: var(--synqor-font-body);
-  transition: var(--synqor-transition);
+  font-family: 'Montserrat', sans-serif;
+  transition: all 0.3s ease;
   background: white;
 }
 
 .synqor-input:focus {
-  border-color: var(--synqor-primary);
+  border-color: #002366;
   box-shadow: 0 0 0 3px rgba(0, 35, 102, 0.1);
   outline: none;
 }
 
-/* Premium Text Styles */
+/* SCOPED Premium Text Styles */
 .synqor-text-primary {
-  color: var(--synqor-primary);
+  color: #002366;
 }
 
 .synqor-text-silver {
-  color: var(--synqor-silver);
+  color: #C0C0C0;
 }
 
 .synqor-text-slate {
-  color: var(--synqor-slate-grey);
+  color: #4A5568;
 }
 
-/* Premium Background */
+/* SCOPED Premium Background */
 .synqor-bg-ice {
-  background-color: var(--synqor-ice-blue);
+  background-color: #F8FAFB;
 }
 
 .synqor-bg-primary {
-  background-color: var(--synqor-primary);
+  background-color: #002366;
 }
 
 .synqor-bg-silver {
-  background-color: var(--synqor-silver-light);
+  background-color: #E8E8E1;
 }

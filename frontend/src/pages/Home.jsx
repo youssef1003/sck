@@ -7,7 +7,7 @@ import CTA from '../components/home/CTA'
 
 const Home = () => {
   return (
-    <div className="overflow-hidden">
+    <div className="home-page synqor-component overflow-hidden">
       <Hero />
       <Stats />
       <Legacy />
