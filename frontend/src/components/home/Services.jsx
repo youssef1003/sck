@@ -95,13 +95,8 @@ const Services = () => {
               {/* Card */}
               <motion.div
                 whileHover={{ y: -10 }}
-                className="relative h-full p-8 rounded-2xl bg-white border-2 border-blue-100 hover:border-blue-300 shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden"
+                className="synqor-card relative h-full p-8"
               >
-                {/* Animated Background */}
-                <motion.div
-                  className={`absolute inset-0 bg-gradient-to-br ${service.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-500`}
-                />
-
                 {/* Content */}
                 <div className="relative z-10">
                   {/* Icon */}
@@ -110,13 +105,13 @@ const Services = () => {
                       scale: hoveredIndex === index ? 1.1 : 1,
                     }}
                     transition={{ duration: 0.3 }}
-                    className={`inline-flex p-4 rounded-xl bg-gradient-to-br ${service.color} mb-6 shadow-lg`}
+                    className="synqor-icon inline-flex p-4 rounded-xl bg-gradient-to-br from-slate-400 to-slate-500 mb-6 shadow-lg"
                   >
                     <service.icon className="w-8 h-8 text-white" />
                   </motion.div>
 
                   {/* Title */}
-                  <h3 className="text-2xl font-bold text-slate-900 mb-4">
+                  <h3 className="synqor-heading text-2xl font-bold mb-4">
                     {t(`services.${service.key}.title`)}
                   </h3>
 

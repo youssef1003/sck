@@ -42,10 +42,10 @@ const Navbar = () => {
 
   return (
     <nav
-      className={`fixed w-full z-50 transition-all duration-300 ${
+      className={`synqor-navbar fixed w-full z-50 transition-all duration-300 ${
         isScrolled
           ? 'bg-white/95 backdrop-blur-md shadow-lg'
-          : 'bg-blue-950/80 backdrop-blur-sm'
+          : 'bg-white/90 backdrop-blur-sm'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -71,20 +71,13 @@ const Navbar = () => {
               <Link
                 key={link.path}
                 to={link.path}
-                className={`text-sm font-medium transition-colors relative group px-2 ${
+                className={`synqor-nav-link text-sm font-medium transition-colors relative group px-3 py-2 ${
                   location.pathname === link.path
-                    ? isScrolled ? 'text-blue-600' : 'text-cyan-400'
-                    : isScrolled
-                    ? 'text-gray-700 hover:text-blue-600'
-                    : 'text-white hover:text-cyan-400'
+                    ? 'text-blue-600'
+                    : 'text-gray-700 hover:text-blue-600'
                 }`}
               >
                 {link.name}
-                <span
-                  className={`absolute -bottom-1 ${isRTL ? 'right-0' : 'left-0'} h-0.5 bg-blue-600 transition-all duration-300 ${
-                    location.pathname === link.path ? 'w-full' : 'w-0 group-hover:w-full'
-                  }`}
-                />
               </Link>
             ))}
             
