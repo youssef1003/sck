@@ -3,7 +3,7 @@ import axios from 'axios'
 // Use Vercel Functions for API
 const API_URL = import.meta.env.VITE_API_URL || (
   import.meta.env.PROD 
-    ? 'https://sck-tawny.vercel.app/api' 
+    ? '/api' 
     : 'http://localhost:3000/api'
 )
 
