@@ -1,7 +1,7 @@
 {
-  "buildCommand": "npm ci && npm run build --prefix frontend",
+  "buildCommand": "npm install && npm run build --prefix frontend",
   "outputDirectory": "frontend/dist",
-  "installCommand": "npm ci && npm ci --prefix frontend",
+  "installCommand": "npm install && npm install --prefix frontend",
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
