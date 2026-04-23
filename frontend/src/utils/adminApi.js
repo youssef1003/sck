@@ -1,6 +1,7 @@
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+// FORCE Vercel API - NO Railway URLs
+const API_URL = ''
 
 const adminApi = axios.create({
   baseURL: `${API_URL}/api/admin`,

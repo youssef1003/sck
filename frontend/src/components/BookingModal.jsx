@@ -28,7 +28,7 @@ export default function BookingModal({ isOpen, onClose }) {
     setSubmitStatus(null)
 
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+      const apiUrl = '' // Force Vercel API
       const response = await fetch(`${apiUrl}/api/consultation/book`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -22,7 +22,7 @@ module.exports = async function handler(req, res) {
       })
     }
 
-    // Simple test login for admin
+    // Simple test login for admin - return test data without database
     if (email === 'admin@sck.com' && password === 'scq2025') {
       return res.status(200).json({
         success: true,

@@ -1,11 +1,7 @@
 import axios from 'axios'
 
-// Use Vercel Functions for API
-const API_URL = import.meta.env.VITE_API_URL || (
-  import.meta.env.PROD 
-    ? '' // Use relative paths in production
-    : 'http://localhost:3000'
-)
+// FORCE Vercel API - NO Railway URLs allowed
+const API_URL = ''  // Always use relative paths for Vercel
 
 // Create axios instance
 const apiClient = axios.create({
