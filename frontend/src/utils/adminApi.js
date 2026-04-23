@@ -12,9 +12,9 @@ const adminApi = axios.create({
 
 // Attach admin token to every request
 adminApi.interceptors.request.use((config) => {
-  const token = localStorage.getItem('admin_token')
+  const token = localStorage.getItem('access_token')
   if (token) {
-    config.headers['admin-token'] = token
+    config.headers['Authorization'] = `Bearer ${token}`
   }
   return config
 })
@@ -24,8 +24,9 @@ adminApi.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('admin_token')
-      localStorage.removeItem('admin_user')
+      localStorage.removeItem('access_token')
+      localStorage.removeItem('refresh_token')
+      localStorage.removeItem('user_data')
       window.location.href = '/login'
     }
     return Promise.reject(error)

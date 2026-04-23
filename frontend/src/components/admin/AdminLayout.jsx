@@ -26,8 +26,8 @@ const AdminLayout = ({ children }) => {
   const [adminUser, setAdminUser] = useState(null)
 
   useEffect(() => {
-    const token = localStorage.getItem('admin_token')
-    const userData = localStorage.getItem('admin_user')
+    const token = localStorage.getItem('access_token')
+    const userData = localStorage.getItem('user_data')
     if (!token || !userData) {
       navigate('/login')
       return
@@ -40,8 +40,9 @@ const AdminLayout = ({ children }) => {
   }, [location.pathname])
 
   const handleLogout = () => {
-    localStorage.removeItem('admin_token')
-    localStorage.removeItem('admin_user')
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+    localStorage.removeItem('user_data')
     navigate('/')
   }
 
