@@ -32,14 +32,11 @@ const Hero = () => {
             <div className="space-y-3">
               <div className="w-24 h-16 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 flex items-center justify-center">
                 {/* Mini SCQ Logo */}
-                <svg width="20" height="20" viewBox="0 0 100 100" className="text-cyan-300">
-                  <path d="M15 25 Q15 15 25 15 L35 15 Q45 15 45 25 Q45 35 35 35 L25 35 Q15 35 15 45 Q15 55 25 55 L35 55 Q45 55 45 65" 
-                        stroke="currentColor" strokeWidth="8" fill="none" strokeLinecap="round"/>
-                  <path d="M75 25 Q65 15 55 25 L55 45 Q55 55 65 55 Q75 55 75 45" 
-                        stroke="currentColor" strokeWidth="8" fill="none" strokeLinecap="round"/>
-                  <circle cx="85" cy="40" r="12" stroke="currentColor" strokeWidth="6" fill="none"/>
-                  <path d="M80 40 L83 43 L90 36" stroke="currentColor" strokeWidth="4" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                <div className="w-8 h-8 bg-gradient-to-br from-blue-400 to-cyan-300 rounded-lg flex items-center justify-center">
+                  <div className="text-white font-bold text-xs tracking-wide" style={{ fontFamily: 'Arial, sans-serif' }}>
+                    SCQ
+                  </div>
+                </div>
               </div>
               <div className="w-20 h-12 bg-white/8 backdrop-blur-sm rounded-lg border border-white/15"></div>
               <div className="w-16 h-8 bg-white/6 backdrop-blur-sm rounded-lg border border-white/10"></div>
