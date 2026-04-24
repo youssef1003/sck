@@ -14,74 +14,110 @@ const Hero = () => {
         {/* Professional Blue Gradient Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-400"></div>
         
-        {/* Geometric Shapes and Patterns */}
+        {/* Professional Geometric Shapes - Clean Corporate Design */}
         <div className="absolute inset-0 overflow-hidden">
-          {/* Large Circle - Top Right */}
-          <div className="absolute -top-32 -right-32 w-96 h-96 bg-white/5 rounded-full"></div>
-          
-          {/* Medium Circle - Bottom Left */}
-          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-white/8 rounded-full"></div>
-          
-          {/* Geometric Lines - Top Left */}
-          <div className="absolute top-20 left-20">
-            <div className="flex flex-col gap-2">
-              <div className="w-8 h-8 bg-yellow-400 rounded"></div>
-              <div className="w-8 h-8 bg-yellow-400 rounded"></div>
-              <div className="w-8 h-2 border-2 border-white/40 rounded"></div>
-              <div className="w-8 h-2 border-2 border-white/40 rounded"></div>
+          {/* Main Grid Pattern Background */}
+          <div className="absolute inset-0 opacity-10 grid-pattern">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `
+                linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
+              `,
+              backgroundSize: '60px 60px'
+            }}></div>
+          </div>
+
+          {/* Top Left - Professional Card Stack */}
+          <div className="absolute top-16 left-16 mobile-keep">
+            <div className="space-y-3">
+              <div className="w-24 h-16 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 flex items-center justify-center">
+                <div className="w-4 h-4 bg-cyan-300 rounded"></div>
+              </div>
+              <div className="w-20 h-12 bg-white/8 backdrop-blur-sm rounded-lg border border-white/15"></div>
+              <div className="w-16 h-8 bg-white/6 backdrop-blur-sm rounded-lg border border-white/10"></div>
             </div>
           </div>
-          
-          {/* Geometric Lines - Bottom Right */}
-          <div className="absolute bottom-20 right-20">
-            <div className="flex flex-col gap-2 items-end">
-              <div className="w-8 h-8 bg-yellow-400 rounded"></div>
-              <div className="w-8 h-8 bg-yellow-400 rounded"></div>
-              <div className="w-8 h-2 border-2 border-white/40 rounded"></div>
-              <div className="w-8 h-2 border-2 border-white/40 rounded"></div>
+
+          {/* Top Right - Service Icons Grid */}
+          <div className="absolute top-20 right-20">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 flex items-center justify-center">
+                <div className="w-6 h-6 border-2 border-cyan-300 rounded"></div>
+              </div>
+              <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 flex items-center justify-center">
+                <div className="w-6 h-6 bg-cyan-300 rounded"></div>
+              </div>
+              <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 flex items-center justify-center">
+                <div className="w-6 h-2 bg-cyan-300 rounded-full"></div>
+              </div>
+              <div className="w-12 h-12 bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 flex items-center justify-center">
+                <div className="w-2 h-6 bg-cyan-300 rounded-full"></div>
+              </div>
             </div>
           </div>
-          
-          {/* Arrow Patterns - Top Right */}
-          <div className="absolute top-16 right-16">
-            <div className="text-yellow-400 text-4xl font-bold">××</div>
+
+          {/* Bottom Left - Progress Bars */}
+          <div className="absolute bottom-24 left-20">
+            <div className="space-y-3">
+              <div className="w-32 h-3 bg-white/10 rounded-full overflow-hidden">
+                <div className="w-3/4 h-full bg-gradient-to-r from-cyan-400 to-blue-500 rounded-full"></div>
+              </div>
+              <div className="w-28 h-3 bg-white/10 rounded-full overflow-hidden">
+                <div className="w-5/6 h-full bg-gradient-to-r from-blue-400 to-cyan-500 rounded-full"></div>
+              </div>
+              <div className="w-24 h-3 bg-white/10 rounded-full overflow-hidden">
+                <div className="w-2/3 h-full bg-gradient-to-r from-cyan-300 to-blue-400 rounded-full"></div>
+              </div>
+            </div>
           </div>
-          
-          {/* Arrow Patterns - Bottom Left */}
-          <div className="absolute bottom-16 left-16">
-            <div className="text-yellow-400 text-4xl font-bold">××</div>
+
+          {/* Bottom Right - Corporate Stats Cards */}
+          <div className="absolute bottom-16 right-16">
+            <div className="flex gap-3">
+              <div className="stats-pulse w-16 h-20 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 flex flex-col items-center justify-center">
+                <div className="text-cyan-300 font-bold text-lg">55</div>
+                <div className="w-8 h-1 bg-cyan-300 rounded-full mt-1"></div>
+              </div>
+              <div className="stats-pulse w-16 h-20 bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 flex flex-col items-center justify-center">
+                <div className="text-blue-300 font-bold text-lg">100</div>
+                <div className="w-8 h-1 bg-blue-300 rounded-full mt-1"></div>
+              </div>
+            </div>
           </div>
-          
-          {/* Chevron Arrows */}
+
+          {/* Center Left - Floating Elements */}
           <div className="absolute top-1/2 left-8 transform -translate-y-1/2">
-            <div className="flex">
-              <div className="w-0 h-0 border-t-[20px] border-t-transparent border-b-[20px] border-b-transparent border-r-[15px] border-r-white/20"></div>
-              <div className="w-0 h-0 border-t-[20px] border-t-transparent border-b-[20px] border-b-transparent border-r-[15px] border-r-white/20 ml-1"></div>
-              <div className="w-0 h-0 border-t-[20px] border-t-transparent border-b-[20px] border-b-transparent border-r-[15px] border-r-white/20 ml-1"></div>
+            <div className="space-y-6">
+              <div className="floating-element w-8 h-8 bg-cyan-400/20 backdrop-blur-sm rounded-lg border border-cyan-300/30 rotate-45"></div>
+              <div className="floating-element w-6 h-6 bg-blue-400/20 backdrop-blur-sm rounded-full border border-blue-300/30"></div>
+              <div className="floating-element w-10 h-2 bg-white/20 rounded-full"></div>
             </div>
           </div>
-          
-          <div className="absolute top-1/2 right-8 transform -translate-y-1/2 rotate-180">
-            <div className="flex">
-              <div className="w-0 h-0 border-t-[20px] border-t-transparent border-b-[20px] border-b-transparent border-r-[15px] border-r-white/20"></div>
-              <div className="w-0 h-0 border-t-[20px] border-t-transparent border-b-[20px] border-b-transparent border-r-[15px] border-r-white/20 ml-1"></div>
-              <div className="w-0 h-0 border-t-[20px] border-t-transparent border-b-[20px] border-b-transparent border-r-[15px] border-r-white/20 ml-1"></div>
+
+          {/* Center Right - Floating Elements */}
+          <div className="absolute top-1/2 right-8 transform -translate-y-1/2">
+            <div className="space-y-6">
+              <div className="floating-element w-8 h-8 bg-blue-400/20 backdrop-blur-sm rounded-lg border border-blue-300/30 rotate-12"></div>
+              <div className="floating-element w-6 h-6 bg-cyan-400/20 backdrop-blur-sm rounded-full border border-cyan-300/30"></div>
+              <div className="floating-element w-10 h-2 bg-white/20 rounded-full"></div>
             </div>
           </div>
+
+          {/* Subtle Connecting Lines */}
+          <div className="absolute top-1/4 left-1/4 w-32 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          <div className="absolute top-3/4 right-1/4 w-40 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          <div className="absolute top-1/2 left-1/3 w-px h-24 bg-gradient-to-b from-transparent via-white/20 to-transparent"></div>
+
+          {/* Large Background Shapes */}
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-white/5 rounded-full blur-3xl"></div>
+          <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-cyan-400/10 rounded-full blur-2xl"></div>
           
-          {/* Wave Patterns */}
-          <div className="absolute top-24 left-1/4">
-            <svg width="40" height="20" viewBox="0 0 40 20" className="text-white/30">
-              <path d="M0 10 Q10 0 20 10 T40 10" stroke="currentColor" strokeWidth="2" fill="none"/>
-              <path d="M0 15 Q10 5 20 15 T40 15" stroke="currentColor" strokeWidth="2" fill="none"/>
-            </svg>
+          {/* Professional Corner Accents */}
+          <div className="absolute top-0 left-0 w-32 h-32">
+            <div className="absolute top-4 left-4 w-8 h-8 border-t-2 border-l-2 border-white/30 rounded-tl-lg"></div>
           </div>
-          
-          <div className="absolute bottom-24 right-1/4">
-            <svg width="40" height="20" viewBox="0 0 40 20" className="text-white/30">
-              <path d="M0 10 Q10 0 20 10 T40 10" stroke="currentColor" strokeWidth="2" fill="none"/>
-              <path d="M0 15 Q10 5 20 15 T40 15" stroke="currentColor" strokeWidth="2" fill="none"/>
-            </svg>
+          <div className="absolute bottom-0 right-0 w-32 h-32">
+            <div className="absolute bottom-4 right-4 w-8 h-8 border-b-2 border-r-2 border-white/30 rounded-br-lg"></div>
           </div>
         </div>
 
