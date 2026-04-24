@@ -42,23 +42,24 @@
 
 /* SCOPED Premium Button Styles */
 .synqor-btn-primary {
-  background: #002366;
-  color: white;
+  background: white;
+  color: #002366;
   padding: 12px 32px;
   border-radius: 8px;
   font-family: 'Montserrat', sans-serif;
   font-weight: 600;
-  border: none;
+  border: 2px solid white;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 2px 8px rgba(0, 35, 102, 0.08);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .synqor-btn-primary:hover {
-  background: #C0C0C0;
+  background: #FCD34D;
   color: #002366;
+  border-color: #FCD34D;
   transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(0, 35, 102, 0.12);
+  box-shadow: 0 4px 16px rgba(252, 211, 77, 0.3);
 }
 
 /* SCOPED Premium Card Styles */

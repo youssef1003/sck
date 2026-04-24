@@ -11,43 +11,90 @@ const Hero = () => {
   return (
     <>
       <section className="synqor-hero relative min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Background Pattern - Already included in synqor-hero class */}
+        {/* Professional Blue Gradient Background */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-400"></div>
         
-        {/* Animated Background Elements */}
-        <motion.div
-          animate={{
-            scale: [1, 1.1, 1],
-            opacity: [0.1, 0.2, 0.1],
-          }}
-          transition={{
-            duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute top-20 right-20 w-96 h-96 bg-blue-900/10 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{
-            scale: [1.1, 1, 1.1],
-            opacity: [0.1, 0.15, 0.1],
-          }}
-          transition={{
-            duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut"
-          }}
-          className="absolute bottom-20 left-20 w-96 h-96 bg-slate-500/10 rounded-full blur-3xl"
-        />
+        {/* Geometric Shapes and Patterns */}
+        <div className="absolute inset-0 overflow-hidden">
+          {/* Large Circle - Top Right */}
+          <div className="absolute -top-32 -right-32 w-96 h-96 bg-white/5 rounded-full"></div>
+          
+          {/* Medium Circle - Bottom Left */}
+          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-white/8 rounded-full"></div>
+          
+          {/* Geometric Lines - Top Left */}
+          <div className="absolute top-20 left-20">
+            <div className="flex flex-col gap-2">
+              <div className="w-8 h-8 bg-yellow-400 rounded"></div>
+              <div className="w-8 h-8 bg-yellow-400 rounded"></div>
+              <div className="w-8 h-2 border-2 border-white/40 rounded"></div>
+              <div className="w-8 h-2 border-2 border-white/40 rounded"></div>
+            </div>
+          </div>
+          
+          {/* Geometric Lines - Bottom Right */}
+          <div className="absolute bottom-20 right-20">
+            <div className="flex flex-col gap-2 items-end">
+              <div className="w-8 h-8 bg-yellow-400 rounded"></div>
+              <div className="w-8 h-8 bg-yellow-400 rounded"></div>
+              <div className="w-8 h-2 border-2 border-white/40 rounded"></div>
+              <div className="w-8 h-2 border-2 border-white/40 rounded"></div>
+            </div>
+          </div>
+          
+          {/* Arrow Patterns - Top Right */}
+          <div className="absolute top-16 right-16">
+            <div className="text-yellow-400 text-4xl font-bold">××</div>
+          </div>
+          
+          {/* Arrow Patterns - Bottom Left */}
+          <div className="absolute bottom-16 left-16">
+            <div className="text-yellow-400 text-4xl font-bold">××</div>
+          </div>
+          
+          {/* Chevron Arrows */}
+          <div className="absolute top-1/2 left-8 transform -translate-y-1/2">
+            <div className="flex">
+              <div className="w-0 h-0 border-t-[20px] border-t-transparent border-b-[20px] border-b-transparent border-r-[15px] border-r-white/20"></div>
+              <div className="w-0 h-0 border-t-[20px] border-t-transparent border-b-[20px] border-b-transparent border-r-[15px] border-r-white/20 ml-1"></div>
+              <div className="w-0 h-0 border-t-[20px] border-t-transparent border-b-[20px] border-b-transparent border-r-[15px] border-r-white/20 ml-1"></div>
+            </div>
+          </div>
+          
+          <div className="absolute top-1/2 right-8 transform -translate-y-1/2 rotate-180">
+            <div className="flex">
+              <div className="w-0 h-0 border-t-[20px] border-t-transparent border-b-[20px] border-b-transparent border-r-[15px] border-r-white/20"></div>
+              <div className="w-0 h-0 border-t-[20px] border-t-transparent border-b-[20px] border-b-transparent border-r-[15px] border-r-white/20 ml-1"></div>
+              <div className="w-0 h-0 border-t-[20px] border-t-transparent border-b-[20px] border-b-transparent border-r-[15px] border-r-white/20 ml-1"></div>
+            </div>
+          </div>
+          
+          {/* Wave Patterns */}
+          <div className="absolute top-24 left-1/4">
+            <svg width="40" height="20" viewBox="0 0 40 20" className="text-white/30">
+              <path d="M0 10 Q10 0 20 10 T40 10" stroke="currentColor" strokeWidth="2" fill="none"/>
+              <path d="M0 15 Q10 5 20 15 T40 15" stroke="currentColor" strokeWidth="2" fill="none"/>
+            </svg>
+          </div>
+          
+          <div className="absolute bottom-24 right-1/4">
+            <svg width="40" height="20" viewBox="0 0 40 20" className="text-white/30">
+              <path d="M0 10 Q10 0 20 10 T40 10" stroke="currentColor" strokeWidth="2" fill="none"/>
+              <path d="M0 15 Q10 5 20 15 T40 15" stroke="currentColor" strokeWidth="2" fill="none"/>
+            </svg>
+          </div>
+        </div>
 
         {/* Main Content */}
         <div className="synqor-container relative z-10 py-20">
           <div className="max-w-6xl mx-auto text-center">
-            {/* Brand Title */}
+            {/* Smaller Brand Title */}
             <motion.h1
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
-              className="synqor-heading text-6xl md:text-8xl font-bold mb-6"
+              className="text-3xl md:text-4xl lg:text-5xl font-bold mb-8 text-white"
+              style={{ fontFamily: 'Playfair Display, serif' }}
             >
               SYNQOR GROUP
             </motion.h1>
@@ -57,7 +104,8 @@ const Hero = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="synqor-body text-xl md:text-2xl mb-4 font-medium"
+              className="text-lg md:text-xl mb-6 font-medium text-white/90"
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
               Engineering Systems | Consulting for Excellence | Securing Quality
             </motion.p>
@@ -67,7 +115,8 @@ const Hero = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="synqor-heading text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight"
+              className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight text-white"
+              style={{ fontFamily: 'Playfair Display, serif' }}
             >
               {t('hero.title')}
             </motion.h2>
@@ -77,7 +126,8 @@ const Hero = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
-              className="synqor-body text-lg md:text-xl mb-4 font-light"
+              className="text-lg md:text-xl mb-4 font-light text-white/80"
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
               {t('hero.subtitle')}
             </motion.p>
@@ -87,7 +137,8 @@ const Hero = () => {
               initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="synqor-body text-base md:text-lg mb-12 max-w-3xl mx-auto opacity-80"
+              className="text-base md:text-lg mb-12 max-w-3xl mx-auto text-white/70"
+              style={{ fontFamily: 'Montserrat, sans-serif' }}
             >
               {t('hero.description')}
             </motion.p>
