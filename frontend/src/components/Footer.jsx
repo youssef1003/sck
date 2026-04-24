@@ -23,12 +23,28 @@ const Footer = () => {
           {/* Company Info */}
           <div className="space-y-4">
             <div className={`flex items-center gap-3 ${isRTL ? 'flex-row-reverse' : ''}`}>
-              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-cyan-500 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-white font-bold text-xl">SCQ</span>
+              {/* Professional SCQ Logo */}
+              <div className="w-12 h-12 bg-gradient-to-br from-blue-600 via-blue-500 to-cyan-400 rounded-2xl flex items-center justify-center shadow-lg">
+                <svg width="28" height="28" viewBox="0 0 100 100" className="text-white">
+                  {/* S */}
+                  <path d="M15 25 Q15 15 25 15 L35 15 Q45 15 45 25 Q45 35 35 35 L25 35 Q15 35 15 45 Q15 55 25 55 L35 55 Q45 55 45 65" 
+                        stroke="currentColor" strokeWidth="6" fill="none" strokeLinecap="round"/>
+                  
+                  {/* C */}
+                  <path d="M75 25 Q65 15 55 25 L55 45 Q55 55 65 55 Q75 55 75 45" 
+                        stroke="currentColor" strokeWidth="6" fill="none" strokeLinecap="round"/>
+                  
+                  {/* Q with checkmark */}
+                  <circle cx="85" cy="40" r="12" stroke="currentColor" strokeWidth="4" fill="none"/>
+                  <path d="M80 40 L83 43 L90 36" stroke="currentColor" strokeWidth="3" fill="none" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M90 48 L95 53" stroke="currentColor" strokeWidth="3" strokeLinecap="round"/>
+                </svg>
               </div>
               <div>
-                <h3 className="text-lg font-bold">SCQ</h3>
-                <p className="text-sm text-blue-400">{isRTL ? 'استشارات إدارية' : 'Consulting'}</p>
+                <h3 className="text-lg font-bold" style={{ fontFamily: 'Playfair Display, serif' }}>SYNQOR</h3>
+                <p className="text-sm text-blue-400" style={{ fontFamily: 'Montserrat, sans-serif' }}>
+                  {isRTL ? 'أنظمة الجودة والاستشارات' : 'Quality Systems & Consulting'}
+                </p>
               </div>
             </div>
             <p className="text-gray-400 text-sm leading-relaxed">
