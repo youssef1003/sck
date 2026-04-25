@@ -53,8 +53,8 @@ apiClient.interceptors.response.use(
       status: error.response?.status
     })
 
-    // If 401 and not already retried, try to refresh token
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // If 401 and not already retried, try to refresh token (but not on login page)
+    if (error.response?.status === 401 && !originalRequest._retry && !window.location.pathname.includes('/login')) {
       originalRequest._retry = true
 
       try {
@@ -82,7 +82,11 @@ apiClient.interceptors.response.use(
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
         localStorage.removeItem('user_data')
-        window.location.href = '/login'
+        
+        // Only redirect if not already on login page
+        if (!window.location.pathname.includes('/login')) {
+          window.location.href = '/login'
+        }
         return Promise.reject(refreshError)
       }
     }

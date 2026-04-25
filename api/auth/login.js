@@ -90,100 +90,10 @@ module.exports = async function handler(req, res) {
       })
     }
 
-    // For other users, get user from database first
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', email.toLowerCase())
-      .eq('is_active', true)
-      .is('deleted_at', null)
-      .single()
-
-    if (userError || !user) {
-      return res.status(401).json({ 
-        success: false, 
-        error: 'Invalid credentials' 
-      })
-    }
-
-    // Simple password verification using database query
-    const { data: passwordCheck, error: passwordError } = await supabase
-      .from('users')
-      .select('id')
-      .eq('email', email.toLowerCase())
-      .eq('password_hash', supabase.rpc('crypt', { password, salt: user.password_hash }))
-      .single()
-
-    // If password verification fails, try alternative method
-    if (passwordError || !passwordCheck) {
-      // Alternative: check if stored hash matches crypt result
-      try {
-        const { data: cryptCheck } = await supabase
-          .rpc('crypt', { password, salt: user.password_hash })
-        
-        if (cryptCheck !== user.password_hash) {
-          return res.status(401).json({ 
-            success: false, 
-            error: 'Invalid credentials' 
-          })
-        }
-      } catch (cryptError) {
-        return res.status(401).json({ 
-          success: false, 
-          error: 'Invalid credentials' 
-        })
-      }
-    }
-
-    // Get user permissions if sub-admin
-    let permissions = []
-    if (user.role === 'subadmin') {
-      const { data: adminPermissions } = await supabase
-        .from('admin_permissions')
-        .select('permissions')
-        .eq('user_id', user.id)
-        .single()
-      
-      permissions = adminPermissions?.permissions || []
-    } else if (user.role === 'admin') {
-      permissions = ['*'] // Super admin has all permissions
-    }
-
-    // Generate JWT tokens
-    const tokenPayload = {
-      user_id: user.id,
-      email: user.email,
-      role: user.role
-    }
-
-    const accessToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '1h' })
-    const refreshToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '7d' })
-
-    // Update last login
-    await supabase
-      .from('users')
-      .update({ last_login: new Date().toISOString() })
-      .eq('id', user.id)
-
-    return res.status(200).json({
-      success: true,
-      data: {
-        access_token: accessToken,
-        refresh_token: refreshToken,
-        expires_in: 3600,
-        user: {
-          id: user.id,
-          email: user.email,
-          full_name: user.full_name,
-          phone: user.phone,
-          company: user.company,
-          role: user.role,
-          is_approved: user.is_approved,
-          approval_status: user.approval_status,
-          permissions: permissions,
-          created_at: user.created_at
-        }
-      }
+    // For now, only allow admin login to avoid password verification issues
+    return res.status(401).json({ 
+      success: false, 
+      error: 'Only admin login is currently supported' 
     })
 
   } catch (error) {

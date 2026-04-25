@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { Mail, Lock, Eye, EyeOff, ArrowRight } from 'lucide-react'
@@ -19,10 +19,22 @@ const Login = () => {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
 
+  // Clear any existing tokens when login page loads
+  useEffect(() => {
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+    localStorage.removeItem('user_data')
+  }, [])
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setIsLoading(true)
+
+    // Clear any existing tokens first
+    localStorage.removeItem('access_token')
+    localStorage.removeItem('refresh_token')
+    localStorage.removeItem('user_data')
 
     try {
       const response = await authAPI.login(formData.email, formData.password)
@@ -30,7 +42,7 @@ const Login = () => {
       if (response.success) {
         const { access_token, refresh_token, user } = response.data
         
-        // Store tokens
+        // Store new tokens
         localStorage.setItem('access_token', access_token)
         localStorage.setItem('refresh_token', refresh_token)
         localStorage.setItem('user_data', JSON.stringify(user))
