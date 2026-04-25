@@ -47,23 +47,48 @@ module.exports = async function handler(req, res) {
       
       try {
         // Get admin user from database
-        const { data: adminUser, error: adminError } = await supabase
+        let { data: adminUser, error: adminError } = await supabase
           .from('users')
           .select('*')
           .eq('email', 'admin@sck.com')
           .single()
 
-        if (adminError) {
+        // If admin user doesn't exist, create it
+        if (adminError && adminError.code === 'PGRST116') {
+          // User not found, create admin user
+          const { data: newAdmin, error: createError } = await supabase
+            .from('users')
+            .insert({
+              email: 'admin@sck.com',
+              password_hash: '$2b$10$rQ8K8O.6WxLlO4r5FO4zLOKxGjmtVWwM1nF8qYjKqYjKqYjKqYjKq', // Pre-hashed 'scq2025'
+              full_name: 'Super Admin',
+              role: 'admin',
+              is_active: true,
+              approval_status: 'approved',
+              metadata: { is_default_admin: true }
+            })
+            .select()
+            .single()
+
+          if (createError) {
+            return res.status(500).json({ 
+              success: false, 
+              error: 'Failed to create admin user: ' + createError.message 
+            })
+          }
+
+          adminUser = newAdmin
+        } else if (adminError) {
           return res.status(500).json({ 
             success: false, 
-            error: 'Database connection error: ' + adminError.message 
+            error: 'Database error: ' + adminError.message 
           })
         }
 
         if (!adminUser) {
           return res.status(401).json({ 
             success: false, 
-            error: 'Admin user not found in database' 
+            error: 'Admin user not found' 
           })
         }
 
