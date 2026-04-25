@@ -140,15 +140,7 @@ export const addBreadcrumb = (message, category = 'custom', level = 'info') => {
 export const recordMetric = (name, value, unit = 'millisecond') => {
   // Record custom metrics (simplified for compatibility)
   try {
-    // Use Sentry metrics API if available
-    Sentry.metrics?.increment(name, value, {
-      unit,
-      tags: {
-        environment: import.meta.env.MODE
-      }
-    })
-    
-    // Fallback: just log the metric
+    // Just log the metric for now (Sentry metrics API varies by version)
     console.log(`Metric: ${name} = ${value} ${unit}`)
   } catch (error) {
     console.warn('Failed to record metric:', error)
