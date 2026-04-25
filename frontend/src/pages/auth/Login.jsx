@@ -61,8 +61,29 @@ const Login = () => {
       }
     } catch (err) {
       console.error('Login error:', err)
-      const errorMessage = err.response?.data?.detail || 
-                          (isRTL ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة' : 'Invalid email or password')
+      
+      // Get error message from API response
+      let errorMessage = 'Invalid credentials'
+      
+      if (err.response?.data?.error) {
+        errorMessage = err.response.data.error
+      } else if (err.response?.data?.detail) {
+        errorMessage = err.response.data.detail
+      } else if (err.message) {
+        errorMessage = err.message
+      }
+      
+      // Translate to Arabic if needed
+      if (isRTL) {
+        if (errorMessage.includes('Only admin login')) {
+          errorMessage = 'يُسمح بتسجيل دخول المشرف العام فقط حالياً'
+        } else if (errorMessage.includes('Invalid credentials') || errorMessage.includes('Admin user not found')) {
+          errorMessage = 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
+        } else {
+          errorMessage = 'حدث خطأ في تسجيل الدخول'
+        }
+      }
+      
       setError(errorMessage)
       toast.error(errorMessage)
     } finally {

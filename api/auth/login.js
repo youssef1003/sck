@@ -25,6 +25,13 @@ module.exports = async function handler(req, res) {
   }
 
   try {
+    console.log('Login API called with:', { email, hasPassword: !!password })
+    console.log('Environment check:', {
+      hasSupabaseUrl: !!process.env.SUPABASE_URL,
+      hasSupabaseKey: !!process.env.SUPABASE_SERVICE_KEY,
+      hasJwtSecret: !!process.env.JWT_SECRET
+    })
+
     const { email, password } = req.body
 
     if (!email || !password) {
@@ -36,6 +43,8 @@ module.exports = async function handler(req, res) {
 
     // For admin login, use direct verification
     if (email.toLowerCase() === 'admin@sck.com' && password === 'scq2025') {
+      console.log('Admin login attempt detected')
+      
       // Get admin user from database
       const { data: adminUser, error: adminError } = await supabase
         .from('users')
@@ -45,12 +54,17 @@ module.exports = async function handler(req, res) {
         .is('deleted_at', null)
         .single()
 
+      console.log('Admin user query result:', { adminUser, adminError })
+
       if (adminError || !adminUser) {
+        console.log('Admin user not found or error:', adminError)
         return res.status(401).json({ 
           success: false, 
-          error: 'Admin user not found' 
+          error: 'Admin user not found in database' 
         })
       }
+
+      console.log('Admin user found, generating tokens')
 
       // Generate JWT tokens
       const tokenPayload = {
@@ -67,6 +81,8 @@ module.exports = async function handler(req, res) {
         .from('users')
         .update({ last_login: new Date().toISOString() })
         .eq('id', adminUser.id)
+
+      console.log('Login successful, returning tokens')
 
       return res.status(200).json({
         success: true,
@@ -90,10 +106,12 @@ module.exports = async function handler(req, res) {
       })
     }
 
+    console.log('Non-admin login attempt:', email)
+    
     // For now, only allow admin login to avoid password verification issues
     return res.status(401).json({ 
       success: false, 
-      error: 'Only admin login is currently supported' 
+      error: 'Only admin login is currently supported. Please use admin@sck.com' 
     })
 
   } catch (error) {
