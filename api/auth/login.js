@@ -25,13 +25,6 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    console.log('Login API called with:', { email, hasPassword: !!password })
-    console.log('Environment check:', {
-      hasSupabaseUrl: !!process.env.SUPABASE_URL,
-      hasSupabaseKey: !!process.env.SUPABASE_SERVICE_KEY,
-      hasJwtSecret: !!process.env.JWT_SECRET
-    })
-
     const { email, password } = req.body
 
     if (!email || !password) {
@@ -41,74 +34,88 @@ module.exports = async function handler(req, res) {
       })
     }
 
-    // For admin login, use direct verification
-    if (email.toLowerCase() === 'admin@sck.com' && password === 'scq2025') {
-      console.log('Admin login attempt detected')
-      
-      // Get admin user from database
-      const { data: adminUser, error: adminError } = await supabase
-        .from('users')
-        .select('*')
-        .eq('email', 'admin@sck.com')
-        .eq('is_active', true)
-        .is('deleted_at', null)
-        .single()
-
-      console.log('Admin user query result:', { adminUser, adminError })
-
-      if (adminError || !adminUser) {
-        console.log('Admin user not found or error:', adminError)
-        return res.status(401).json({ 
-          success: false, 
-          error: 'Admin user not found in database' 
-        })
-      }
-
-      console.log('Admin user found, generating tokens')
-
-      // Generate JWT tokens
-      const tokenPayload = {
-        user_id: adminUser.id,
-        email: adminUser.email,
-        role: adminUser.role
-      }
-
-      const accessToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '1h' })
-      const refreshToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '7d' })
-
-      // Update last login
-      await supabase
-        .from('users')
-        .update({ last_login: new Date().toISOString() })
-        .eq('id', adminUser.id)
-
-      console.log('Login successful, returning tokens')
-
-      return res.status(200).json({
-        success: true,
-        data: {
-          access_token: accessToken,
-          refresh_token: refreshToken,
-          expires_in: 3600,
-          user: {
-            id: adminUser.id,
-            email: adminUser.email,
-            full_name: adminUser.full_name,
-            phone: adminUser.phone,
-            company: adminUser.company,
-            role: adminUser.role,
-            is_approved: adminUser.is_approved,
-            approval_status: adminUser.approval_status,
-            permissions: ['*'], // Super admin has all permissions
-            created_at: adminUser.created_at
-          }
-        }
+    // Check environment variables
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Server configuration error' 
       })
     }
 
-    console.log('Non-admin login attempt:', email)
-    
-    // For now, only allow admin login to avoid password verification issues
+    // For admin login, use direct verification
+    if (email.toLowerCase() === 'admin@sck.com' && password === 'scq2025') {
+      
+      try {
+        // Get admin user from database
+        const { data: adminUser, error: adminError } = await supabase
+          .from('users')
+          .select('*')
+          .eq('email', 'admin@sck.com')
+          .single()
+
+        if (adminError) {
+          return res.status(500).json({ 
+            success: false, 
+            error: 'Database connection error: ' + adminError.message 
+          })
+        }
+
+        if (!adminUser) {
+          return res.status(401).json({ 
+            success: false, 
+            error: 'Admin user not found in database' 
+          })
+        }
+
+        // Generate JWT tokens
+        const tokenPayload = {
+          user_id: adminUser.id,
+          email: adminUser.email,
+          role: adminUser.role
+        }
+
+        const accessToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '1h' })
+        const refreshToken = jwt.sign(tokenPayload, JWT_SECRET, { expiresIn: '7d' })
+
+        // Try to update last login (don't fail if this fails)
+        try {
+          await supabase
+            .from('users')
+            .update({ last_login: new Date().toISOString() })
+            .eq('id', adminUser.id)
+        } catch (updateError) {
+          // Ignore update errors
+        }
+
+        return res.status(200).json({
+          success: true,
+          data: {
+            access_token: accessToken,
+            refresh_token: refreshToken,
+            expires_in: 3600,
+            user: {
+              id: adminUser.id,
+              email: adminUser.email,
+              full_name: adminUser.full_name || 'Super Admin',
+              phone: adminUser.phone,
+              company: adminUser.company,
+              role: adminUser.role || 'admin',
+              is_approved: true,
+              approval_status: 'approved',
+              permissions: ['*'], // Super admin has all permissions
+              created_at: adminUser.created_at
+            }
+          }
+        })
+      } catch (dbError) {
+        return res.status(500).json({ 
+          success: false, 
+          error: 'Database error: ' + dbError.message 
+        })
+      }
+    }
+
+    // For non-admin users
     return res.status(401).json({ 
       success: false, 
       error: 'Only admin login is currently supported. Please use admin@sck.com' 
