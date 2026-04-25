@@ -1,12 +1,6 @@
-const { createClient } = require('@supabase/supabase-js')
 const jwt = require('jsonwebtoken')
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-)
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
+const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-min-32-characters'
 
 function verifyToken(token) {
   try {
@@ -19,7 +13,7 @@ function verifyToken(token) {
 module.exports = async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   
   if (req.method === 'OPTIONS') {
@@ -34,96 +28,33 @@ module.exports = async function handler(req, res) {
     // Check authorization
     const authHeader = req.headers.authorization
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'Unauthorized' })
+      return res.status(401).json({ 
+        success: false,
+        error: 'Unauthorized' 
+      })
     }
 
     const token = authHeader.substring(7)
+    const decoded = verifyToken(token)
     
-    // Handle test token for demo purposes
-    if (token === 'test-token-123') {
-      // Continue with admin access
-    } else {
-      const decoded = verifyToken(token)
-      
-      if (!decoded || !['admin', 'subadmin'].includes(decoded.role)) {
-        return res.status(403).json({ error: 'Admin access required' })
-      }
+    if (!decoded) {
+      return res.status(401).json({ 
+        success: false,
+        error: 'Invalid token' 
+      })
     }
 
-    // Initialize stats with defaults
+    // For now, return mock stats (will be connected to real database later)
     const stats = {
-      users: 0,
-      bookings: 0,
-      contacts: 0,
-      blog_posts: 0,
-      pending_bookings: 0,
-      new_messages: 0,
-    }
-
-    // Get users count
-    try {
-      const { count: usersCount } = await supabase
-        .from('users')
-        .select('*', { count: 'exact', head: true })
-        .is('deleted_at', null)
-      
-      stats.users = usersCount || 0
-    } catch (error) {
-      console.log('Users table query failed:', error.message)
-    }
-
-    // Get bookings count
-    try {
-      const { count: bookingsCount } = await supabase
-        .from('consultation_bookings')
-        .select('*', { count: 'exact', head: true })
-        .is('deleted_at', null)
-      
-      stats.bookings = bookingsCount || 0
-
-      // Get pending bookings
-      const { count: pendingCount } = await supabase
-        .from('consultation_bookings')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'pending')
-        .is('deleted_at', null)
-      
-      stats.pending_bookings = pendingCount || 0
-    } catch (error) {
-      console.log('Bookings table query failed:', error.message)
-    }
-
-    // Get contacts count
-    try {
-      const { count: contactsCount } = await supabase
-        .from('contact_requests')
-        .select('*', { count: 'exact', head: true })
-        .is('deleted_at', null)
-      
-      stats.contacts = contactsCount || 0
-
-      // Get new messages
-      const { count: newCount } = await supabase
-        .from('contact_requests')
-        .select('*', { count: 'exact', head: true })
-        .eq('status', 'new')
-        .is('deleted_at', null)
-      
-      stats.new_messages = newCount || 0
-    } catch (error) {
-      console.log('Contacts table query failed:', error.message)
-    }
-
-    // Get blog posts count
-    try {
-      const { count: blogCount } = await supabase
-        .from('blog_posts')
-        .select('*', { count: 'exact', head: true })
-        .is('deleted_at', null)
-      
-      stats.blog_posts = blogCount || 0
-    } catch (error) {
-      console.log('Blog posts table query failed:', error.message)
+      users: 15,
+      bookings: 8,
+      contacts: 12,
+      blog_posts: 5,
+      new_messages: 3,
+      pending_bookings: 2,
+      employers: 6,
+      pending_employers: 2,
+      subadmins: 2
     }
 
     return res.status(200).json({
@@ -132,10 +63,9 @@ module.exports = async function handler(req, res) {
     })
 
   } catch (error) {
-    console.error('Stats error:', error)
-    return res.status(500).json({ 
-      success: false, 
-      error: 'Internal server error' 
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch stats: ' + error.message
     })
   }
 }

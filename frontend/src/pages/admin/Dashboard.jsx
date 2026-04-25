@@ -56,11 +56,14 @@ const AdminDashboard = () => {
 
   const quickActions = [
     { title: 'تعديل الصفحة الرئيسية', desc: 'Hero, Services, Stats', icon: Home, path: '/admin/home', color: 'blue' },
-    { title: 'إدارة التوظيف', desc: 'عرض الطلبات والمتقدمين', icon: Briefcase, path: '/admin/careers', color: 'cyan' },
-    { title: 'إدارة المستخدمين', desc: 'الأدوار والصلاحيات', icon: Users, path: '/admin/users', color: 'purple' },
-    { title: 'إدارة الحجوزات', desc: 'حجوزات الاستشارات', icon: CalendarCheck, path: '/admin/bookings', color: 'emerald' },
-    { title: 'الرسائل', desc: 'رسائل التواصل', icon: MessageSquare, path: '/admin/contacts', color: 'amber' },
-    { title: 'المدونة', desc: 'إنشاء وتعديل المقالات', icon: FileText, path: '/admin/blog', color: 'rose' },
+    { title: 'إدارة الخدمات', desc: 'تعديل صفحة خدماتنا', icon: Briefcase, path: '/admin/services', color: 'cyan' },
+    { title: 'إدارة من نحن', desc: 'تعديل صفحة من نحن', icon: Users, path: '/admin/about', color: 'purple' },
+    { title: 'إدارة تواصل معنا', desc: 'تعديل معلومات الاتصال', icon: MessageSquare, path: '/admin/contact-page', color: 'emerald' },
+    { title: 'إدارة التوظيف', desc: 'عرض الطلبات والمتقدمين', icon: Briefcase, path: '/admin/careers', color: 'amber' },
+    { title: 'إدارة المستخدمين', desc: 'الأدوار والصلاحيات', icon: Users, path: '/admin/users', color: 'rose' },
+    { title: 'إدارة الحجوزات', desc: 'حجوزات الاستشارات', icon: CalendarCheck, path: '/admin/bookings', color: 'indigo' },
+    { title: 'الرسائل', desc: 'رسائل التواصل', icon: MessageSquare, path: '/admin/contacts', color: 'pink' },
+    { title: 'المدونة', desc: 'إنشاء وتعديل المقالات', icon: FileText, path: '/admin/blog', color: 'teal' },
   ]
 
   // Check if user is Super Admin

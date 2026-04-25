@@ -29,6 +29,9 @@ import UsersManagement from './pages/admin/UsersManagement'
 import BookingsManagement from './pages/admin/BookingsManagement'
 import BlogManagement from './pages/admin/BlogManagement'
 import SubAdminsManagement from './pages/admin/SubAdminsManagement'
+import ServicesManagement from './pages/admin/ServicesManagement'
+import AboutManagement from './pages/admin/AboutManagement'
+import ContactManagement from './pages/admin/ContactManagement'
 
 function App() {
   const [loading, setLoading] = useState(() => {
@@ -70,6 +73,9 @@ function App() {
           <Route path="/admin/contacts" element={<AdminRoute anyOf={['messages_view', 'messages_edit']}><ContactsManagement /></AdminRoute>} />
           <Route path="/admin/blog" element={<AdminRoute anyOf={['blog_view', 'blog_create', 'blog_edit']}><BlogManagement /></AdminRoute>} />
           <Route path="/admin/subadmins" element={<AdminRoute superAdminOnly><SubAdminsManagement /></AdminRoute>} />
+          <Route path="/admin/services" element={<AdminRoute permission="home_edit"><ServicesManagement /></AdminRoute>} />
+          <Route path="/admin/about" element={<AdminRoute permission="home_edit"><AboutManagement /></AdminRoute>} />
+          <Route path="/admin/contact-page" element={<AdminRoute permission="home_edit"><ContactManagement /></AdminRoute>} />
 
           {/* Public Routes - With Navbar/Footer */}
           <Route path="/" element={
