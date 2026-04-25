@@ -4,6 +4,10 @@ import App from './App.jsx'
 import './index.css'
 import './i18n/config'
 import { cleanupServiceWorker } from './utils/cleanupServiceWorker'
+import { initMonitoring } from './utils/monitoring.js'
+
+// Initialize monitoring
+initMonitoring()
 
 // Clean up any old service workers and caches
 cleanupServiceWorker()

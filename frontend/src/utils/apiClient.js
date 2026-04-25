@@ -1,4 +1,5 @@
 import axios from 'axios'
+import { logError, monitorApiCall, addBreadcrumb } from './monitoring.js'
 
 // FORCE Vercel API - NO Railway URLs allowed
 const API_URL = ''  // Always use relative paths for Vercel
@@ -15,6 +16,9 @@ const apiClient = axios.create({
 // Request interceptor - Add token to requests
 apiClient.interceptors.request.use(
   (config) => {
+    // Add breadcrumb for API calls
+    addBreadcrumb(`API Request: ${config.method?.toUpperCase()} ${config.url}`, 'http')
+    
     const token = localStorage.getItem('access_token')
     if (token) {
       config.headers.Authorization = `Bearer ${token}`
@@ -22,15 +26,32 @@ apiClient.interceptors.request.use(
     return config
   },
   (error) => {
+    logError(error, { context: 'API Request Interceptor' })
     return Promise.reject(error)
   }
 )
 
 // Response interceptor - Handle token refresh
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Add success breadcrumb
+    addBreadcrumb(
+      `API Success: ${response.config.method?.toUpperCase()} ${response.config.url} - ${response.status}`, 
+      'http', 
+      'info'
+    )
+    return response
+  },
   async (error) => {
     const originalRequest = error.config
+
+    // Log API errors
+    logError(error, {
+      context: 'API Response',
+      url: originalRequest?.url,
+      method: originalRequest?.method,
+      status: error.response?.status
+    })
 
     // If 401 and not already retried, try to refresh token
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -57,6 +78,7 @@ apiClient.interceptors.response.use(
         return apiClient(originalRequest)
       } catch (refreshError) {
         // Refresh failed, logout user
+        logError(refreshError, { context: 'Token Refresh Failed' })
         localStorage.removeItem('access_token')
         localStorage.removeItem('refresh_token')
         localStorage.removeItem('user_data')
@@ -401,3 +423,47 @@ export const systemAPI = {
 }
 
 export default apiClient
+
+// ============================================================
+// File Upload APIs
+// ============================================================
+
+export const fileAPI = {
+  // Upload file
+  upload: async (fileName, fileData, bucket, folder = '') => {
+    const response = await apiClient.post('/api/upload', {
+      fileName,
+      fileData,
+      bucket,
+      folder
+    })
+    return response.data
+  },
+
+  // Delete file
+  delete: async (bucket, filePath) => {
+    const response = await apiClient.delete('/api/upload', {
+      data: { bucket, filePath }
+    })
+    return response.data
+  },
+
+  // Upload multiple files
+  uploadMultiple: async (files, bucket, folder = '') => {
+    const uploadPromises = files.map(({ fileName, fileData }) => 
+      fileAPI.upload(fileName, fileData, bucket, folder)
+    )
+    
+    const results = await Promise.allSettled(uploadPromises)
+    
+    return {
+      success: true,
+      results: results.map((result, index) => ({
+        fileName: files[index].fileName,
+        success: result.status === 'fulfilled',
+        data: result.status === 'fulfilled' ? result.value : null,
+        error: result.status === 'rejected' ? result.reason.message : null
+      }))
+    }
+  }
+}
