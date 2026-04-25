@@ -22,7 +22,11 @@ const AboutManagement = () => {
     projects_count: '1000+',
     team_size: '50+',
     hero_image: '',
-    about_image: ''
+    hero_image_caption_ar: '',
+    hero_image_caption_en: '',
+    about_image: '',
+    about_image_caption_ar: '',
+    about_image_caption_en: ''
   })
 
   const [isSaving, setIsSaving] = useState(false)
@@ -292,40 +296,104 @@ const AboutManagement = () => {
         >
           <h2 className="text-xl font-bold text-slate-900 mb-4">الصور</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                صورة الغلاف
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={aboutData.hero_image}
-                  onChange={(e) => handleChange('hero_image', e.target.value)}
-                  className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://..."
-                />
-                <button className="p-2 border border-slate-300 rounded-lg hover:bg-slate-50">
-                  <ImageIcon className="w-5 h-5 text-slate-600" />
-                </button>
+          <div className="space-y-6">
+            {/* Hero Image */}
+            <div className="p-4 bg-slate-50 rounded-xl">
+              <h3 className="text-lg font-semibold text-slate-800 mb-4">صورة الغلاف</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    رابط الصورة
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={aboutData.hero_image}
+                      onChange={(e) => handleChange('hero_image', e.target.value)}
+                      className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="https://..."
+                    />
+                    <button className="p-2 border border-slate-300 rounded-lg hover:bg-slate-50">
+                      <ImageIcon className="w-5 h-5 text-slate-600" />
+                    </button>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    نص تحت الصورة (عربي)
+                  </label>
+                  <input
+                    type="text"
+                    value={aboutData.hero_image_caption_ar}
+                    onChange={(e) => handleChange('hero_image_caption_ar', e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="مثال: مقر الشركة الرئيسي"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    نص تحت الصورة (English)
+                  </label>
+                  <input
+                    type="text"
+                    value={aboutData.hero_image_caption_en}
+                    onChange={(e) => handleChange('hero_image_caption_en', e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Example: Company Headquarters"
+                  />
+                </div>
               </div>
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-700 mb-2">
-                صورة "من نحن"
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={aboutData.about_image}
-                  onChange={(e) => handleChange('about_image', e.target.value)}
-                  className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://..."
-                />
-                <button className="p-2 border border-slate-300 rounded-lg hover:bg-slate-50">
-                  <ImageIcon className="w-5 h-5 text-slate-600" />
-                </button>
+            {/* About Image */}
+            <div className="p-4 bg-slate-50 rounded-xl">
+              <h3 className="text-lg font-semibold text-slate-800 mb-4">صورة "من نحن"</h3>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    رابط الصورة
+                  </label>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={aboutData.about_image}
+                      onChange={(e) => handleChange('about_image', e.target.value)}
+                      className="flex-1 px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                      placeholder="https://..."
+                    />
+                    <button className="p-2 border border-slate-300 rounded-lg hover:bg-slate-50">
+                      <ImageIcon className="w-5 h-5 text-slate-600" />
+                    </button>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    نص تحت الصورة (عربي)
+                  </label>
+                  <input
+                    type="text"
+                    value={aboutData.about_image_caption_ar}
+                    onChange={(e) => handleChange('about_image_caption_ar', e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="مثال: فريق العمل"
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    نص تحت الصورة (English)
+                  </label>
+                  <input
+                    type="text"
+                    value={aboutData.about_image_caption_en}
+                    onChange={(e) => handleChange('about_image_caption_en', e.target.value)}
+                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Example: Our Team"
+                  />
+                </div>
               </div>
             </div>
           </div>
