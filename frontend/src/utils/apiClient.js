@@ -1,5 +1,5 @@
 import axios from 'axios'
-import { logError, monitorApiCall, addBreadcrumb } from './monitoring.js'
+import { logError, addBreadcrumb } from './monitoring.js'
 
 // FORCE Vercel API - NO Railway URLs allowed
 const API_URL = ''  // Always use relative paths for Vercel
@@ -208,27 +208,27 @@ export const adminAPI = {
   // Blog Management
   blog: {
     getAll: async (params = {}) => {
-      const response = await apiClient.get('/api/admin/blog', { params })
+      const response = await apiClient.get('/api/admin/management?resource=blog', { params })
       return response.data
     },
 
     create: async (data) => {
-      const response = await apiClient.post('/api/admin/blog', data)
+      const response = await apiClient.post('/api/admin/management?resource=blog', data)
       return response.data
     },
 
     update: async (postId, data) => {
-      const response = await apiClient.put(`/api/admin/blog?id=${postId}`, data)
+      const response = await apiClient.put(`/api/admin/management?resource=blog&id=${postId}`, data)
       return response.data
     },
 
     togglePublish: async (postId, isPublished) => {
-      const response = await apiClient.put(`/api/admin/blog?id=${postId}`, { isPublished })
+      const response = await apiClient.put(`/api/admin/management?resource=blog&id=${postId}`, { isPublished })
       return response.data
     },
 
     delete: async (postId) => {
-      const response = await apiClient.delete(`/api/admin/blog?id=${postId}`)
+      const response = await apiClient.delete(`/api/admin/management?resource=blog&id=${postId}`)
       return response.data
     }
   }
@@ -240,32 +240,32 @@ export const adminAPI = {
 
 export const subAdminsAPI = {
   getAll: async () => {
-    const response = await apiClient.get('/api/admin/subadmins')
+    const response = await apiClient.get('/api/admin/management?resource=subadmins')
     return response.data
   },
 
   getById: async (id) => {
-    const response = await apiClient.get(`/api/admin/subadmins?id=${id}`)
+    const response = await apiClient.get(`/api/admin/management?resource=subadmins&id=${id}`)
     return response.data
   },
 
   create: async (data) => {
-    const response = await apiClient.post('/api/admin/subadmins', data)
+    const response = await apiClient.post('/api/admin/management?resource=subadmins', data)
     return response.data
   },
 
   update: async (id, data) => {
-    const response = await apiClient.put(`/api/admin/subadmins?id=${id}`, data)
+    const response = await apiClient.put(`/api/admin/management?resource=subadmins&id=${id}`, data)
     return response.data
   },
 
   delete: async (id) => {
-    const response = await apiClient.delete(`/api/admin/subadmins?id=${id}`)
+    const response = await apiClient.delete(`/api/admin/management?resource=subadmins&id=${id}`)
     return response.data
   },
 
   updatePermissions: async (id, permissions) => {
-    const response = await apiClient.put(`/api/admin/subadmins?id=${id}`, { permissions })
+    const response = await apiClient.put(`/api/admin/management?resource=subadmins&id=${id}`, { permissions })
     return response.data
   }
 }
@@ -276,12 +276,12 @@ export const subAdminsAPI = {
 
 export const employersAPI = {
   getAll: async (params = {}) => {
-    const response = await apiClient.get('/api/admin/employers', { params })
+    const response = await apiClient.get('/api/admin/management?resource=employers', { params })
     return response.data
   },
 
   approve: async (employerId, rejectionReason = null) => {
-    const response = await apiClient.post('/api/admin/employers', {
+    const response = await apiClient.post('/api/admin/management?resource=employers', {
       employerId,
       action: 'approve'
     })
@@ -289,7 +289,7 @@ export const employersAPI = {
   },
 
   reject: async (employerId, rejectionReason) => {
-    const response = await apiClient.post('/api/admin/employers', {
+    const response = await apiClient.post('/api/admin/management?resource=employers', {
       employerId,
       action: 'reject',
       rejectionReason
@@ -298,23 +298,23 @@ export const employersAPI = {
   },
 
   activate: async (id) => {
-    const response = await apiClient.put(`/api/admin/employers?id=${id}`, { isActive: true })
+    const response = await apiClient.put(`/api/admin/management?resource=employers&id=${id}`, { isActive: true })
     return response.data
   },
 
   deactivate: async (id) => {
-    const response = await apiClient.put(`/api/admin/employers?id=${id}`, { isActive: false })
+    const response = await apiClient.put(`/api/admin/management?resource=employers&id=${id}`, { isActive: false })
     return response.data
   },
 
   delete: async (id) => {
-    const response = await apiClient.delete(`/api/admin/employers?id=${id}`)
+    const response = await apiClient.delete(`/api/admin/management?resource=employers&id=${id}`)
     return response.data
   },
 
   getStats: async () => {
     // Get stats from the main employers list
-    const response = await apiClient.get('/api/admin/employers')
+    const response = await apiClient.get('/api/admin/management?resource=employers')
     const employers = response.data?.data || []
     
     return { 

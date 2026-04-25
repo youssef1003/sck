@@ -23,7 +23,7 @@ const MonitoringDashboard = () => {
   const fetchHealthData = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/system/health')
+      const response = await fetch('/api/health')
       const data = await response.json()
       
       setHealthData(data)

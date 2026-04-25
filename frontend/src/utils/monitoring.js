@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/react'
-import { BrowserTracing } from '@sentry/tracing'
 
 // Initialize Sentry
 export const initMonitoring = () => {
@@ -12,7 +11,7 @@ export const initMonitoring = () => {
       dsn: sentryDsn,
       environment: environment,
       integrations: [
-        new BrowserTracing({
+        Sentry.browserTracingIntegration({
           // Set tracing origins to connect sentry with your frontend
           tracePropagationTargets: [
             'localhost',
@@ -60,11 +59,8 @@ export const ErrorBoundary = Sentry.withErrorBoundary
 
 // Performance monitoring
 export const startTransaction = (name, op = 'navigation') => {
-  if (Sentry.startTransaction) {
-    return Sentry.startTransaction({ name, op })
-  }
-  // Fallback for newer Sentry versions
-  return Sentry.startSpan({ name, op }, () => {})
+  // Use modern Sentry span API
+  return Sentry.startSpan({ name, op }, (span) => span)
 }
 
 // Custom error logging
@@ -98,19 +94,17 @@ export const logError = (error, context = {}) => {
 
 // Performance monitoring for API calls
 export const monitorApiCall = async (apiCall, operationName) => {
-  const transaction = startTransaction(`API: ${operationName}`, 'http')
-  
-  try {
-    const result = await apiCall()
-    transaction.setStatus('ok')
-    return result
-  } catch (error) {
-    transaction.setStatus('internal_error')
-    logError(error, { operation: operationName })
-    throw error
-  } finally {
-    transaction.finish()
-  }
+  return Sentry.startSpan({ name: `API: ${operationName}`, op: 'http' }, async (span) => {
+    try {
+      const result = await apiCall()
+      span?.setStatus({ code: 1, message: 'ok' })
+      return result
+    } catch (error) {
+      span?.setStatus({ code: 2, message: 'internal_error' })
+      logError(error, { operation: operationName })
+      throw error
+    }
+  })
 }
 
 // User feedback
@@ -146,17 +140,16 @@ export const addBreadcrumb = (message, category = 'custom', level = 'info') => {
 export const recordMetric = (name, value, unit = 'millisecond') => {
   // Record custom metrics (simplified for compatibility)
   try {
-    if (Sentry.metrics && Sentry.metrics.increment) {
-      Sentry.metrics.increment(name, value, {
-        unit,
-        tags: {
-          environment: import.meta.env.MODE
-        }
-      })
-    } else {
-      // Fallback: just log the metric
-      console.log(`Metric: ${name} = ${value} ${unit}`)
-    }
+    // Use Sentry metrics API if available
+    Sentry.metrics?.increment(name, value, {
+      unit,
+      tags: {
+        environment: import.meta.env.MODE
+      }
+    })
+    
+    // Fallback: just log the metric
+    console.log(`Metric: ${name} = ${value} ${unit}`)
   } catch (error) {
     console.warn('Failed to record metric:', error)
   }
