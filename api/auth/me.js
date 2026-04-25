@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-min-32-characters'
+const JWT_SECRET = process.env.JWT_SECRET || 'sck_super_secret_key_2025_production'
 
 function verifyToken(token) {
   try {

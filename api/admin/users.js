@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken')
 
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production'
+const JWT_SECRET = process.env.JWT_SECRET || 'sck_super_secret_key_2025_production'
 
 // Initialize Supabase client only if credentials are available
 let supabase = null

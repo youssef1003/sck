@@ -1,7 +1,7 @@
 const jwt = require('jsonwebtoken')
 const { createClient } = require('@supabase/supabase-js')
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-min-32-characters'
+const JWT_SECRET = process.env.JWT_SECRET || 'sck_super_secret_key_2025_production'
 const SUPABASE_URL = process.env.SUPABASE_URL
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
 
