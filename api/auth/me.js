@@ -41,31 +41,6 @@ module.exports = async function handler(req, res) {
     }
 
     const token = authHeader.substring(7)
-    
-    // Handle test token for demo purposes
-    if (token === 'test-token-123') {
-      return res.status(200).json({
-        success: true,
-        data: {
-          user: {
-            id: '123',
-            email: 'admin@sck.com',
-            full_name: 'Super Admin',
-            phone: null,
-            company: null,
-            role: 'admin',
-            is_active: true,
-            is_approved: true,
-            approval_status: 'approved',
-            last_login_at: new Date().toISOString(),
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            permissions: ['*']
-          }
-        }
-      })
-    }
-    
     const decoded = verifyToken(token)
     
     if (!decoded) {

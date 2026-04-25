@@ -74,7 +74,7 @@ export const logError = (error, context = {}) => {
     })
     
     // Add user info if available
-    const userData = localStorage.getItem('scq_user_data')
+    const userData = localStorage.getItem('user_data')
     if (userData) {
       try {
         const user = JSON.parse(userData)

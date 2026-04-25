@@ -22,16 +22,12 @@ const AdminDashboard = () => {
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Use test data for now since API endpoints need environment variables
-        const testStats = {
-          users: 12,
-          bookings: 8,
-          contacts: 5,
-          blog_posts: 3,
-          new_messages: 2,
-          pending_bookings: 3
+        const response = await adminAPI.getStats()
+        if (response.success) {
+          setStats(response.data)
+        } else {
+          throw new Error(response.error || 'Failed to fetch stats')
         }
-        setStats(testStats)
       } catch (err) {
         setError('فشل في تحميل الإحصائيات')
         console.error(err)
