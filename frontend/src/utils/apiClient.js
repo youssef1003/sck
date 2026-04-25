@@ -183,102 +183,125 @@ export const adminAPI = {
     }
   },
 
-  // Blog Management (placeholder - will be implemented later)
+  // Blog Management
   blog: {
     getAll: async (params = {}) => {
-      // Return mock data for now
-      return {
-        success: true,
-        data: [],
-        count: 0
-      }
+      const response = await apiClient.get('/api/admin/blog', { params })
+      return response.data
     },
 
     create: async (data) => {
-      return { success: true, message: 'Post created' }
+      const response = await apiClient.post('/api/admin/blog', data)
+      return response.data
     },
 
     update: async (postId, data) => {
-      return { success: true, message: 'Post updated' }
+      const response = await apiClient.put(`/api/admin/blog?id=${postId}`, data)
+      return response.data
     },
 
     togglePublish: async (postId, isPublished) => {
-      return { success: true, message: 'Post status updated' }
+      const response = await apiClient.put(`/api/admin/blog?id=${postId}`, { isPublished })
+      return response.data
     },
 
     delete: async (postId) => {
-      return { success: true, message: 'Post deleted' }
+      const response = await apiClient.delete(`/api/admin/blog?id=${postId}`)
+      return response.data
     }
   }
 }
 
 // ============================================================
-// Sub-Admins APIs (placeholder - will be implemented later)
+// Sub-Admins APIs
 // ============================================================
 
 export const subAdminsAPI = {
   getAll: async () => {
-    return { success: true, data: [] }
+    const response = await apiClient.get('/api/admin/subadmins')
+    return response.data
   },
 
   getById: async (id) => {
-    return { success: true, data: null }
+    const response = await apiClient.get(`/api/admin/subadmins?id=${id}`)
+    return response.data
   },
 
   create: async (data) => {
-    return { success: true, message: 'Sub-admin created' }
+    const response = await apiClient.post('/api/admin/subadmins', data)
+    return response.data
   },
 
   update: async (id, data) => {
-    return { success: true, message: 'Sub-admin updated' }
+    const response = await apiClient.put(`/api/admin/subadmins?id=${id}`, data)
+    return response.data
   },
 
   delete: async (id) => {
-    return { success: true, message: 'Sub-admin deleted' }
+    const response = await apiClient.delete(`/api/admin/subadmins?id=${id}`)
+    return response.data
   },
 
   updatePermissions: async (id, permissions) => {
-    return { success: true, message: 'Permissions updated' }
+    const response = await apiClient.put(`/api/admin/subadmins?id=${id}`, { permissions })
+    return response.data
   }
 }
 
 // ============================================================
-// Employers APIs (placeholder - will be implemented later)
+// Employers APIs
 // ============================================================
 
 export const employersAPI = {
   getAll: async (params = {}) => {
-    return { success: true, data: [], count: 0 }
+    const response = await apiClient.get('/api/admin/employers', { params })
+    return response.data
   },
 
-  approve: async (id) => {
-    return { success: true, message: 'Employer approved' }
+  approve: async (employerId, rejectionReason = null) => {
+    const response = await apiClient.post('/api/admin/employers', {
+      employerId,
+      action: 'approve'
+    })
+    return response.data
   },
 
-  reject: async (id, reason) => {
-    return { success: true, message: 'Employer rejected' }
+  reject: async (employerId, rejectionReason) => {
+    const response = await apiClient.post('/api/admin/employers', {
+      employerId,
+      action: 'reject',
+      rejectionReason
+    })
+    return response.data
   },
 
   activate: async (id) => {
-    return { success: true, message: 'Employer activated' }
+    const response = await apiClient.put(`/api/admin/employers?id=${id}`, { isActive: true })
+    return response.data
   },
 
   deactivate: async (id) => {
-    return { success: true, message: 'Employer deactivated' }
+    const response = await apiClient.put(`/api/admin/employers?id=${id}`, { isActive: false })
+    return response.data
   },
 
   delete: async (id) => {
-    return { success: true, message: 'Employer deleted' }
+    const response = await apiClient.delete(`/api/admin/employers?id=${id}`)
+    return response.data
   },
 
   getStats: async () => {
+    // Get stats from the main employers list
+    const response = await apiClient.get('/api/admin/employers')
+    const employers = response.data?.data || []
+    
     return { 
       success: true, 
       data: { 
-        total: 0, 
-        pending: 0, 
-        approved: 0, 
-        rejected: 0 
+        total: employers.length,
+        pending: employers.filter(e => e.approvalStatus === 'pending').length,
+        approved: employers.filter(e => e.approvalStatus === 'approved').length,
+        rejected: employers.filter(e => e.approvalStatus === 'rejected').length
       } 
     }
   }
@@ -307,27 +330,31 @@ export const careersAPI = {
 }
 
 // ============================================================
-// Public APIs (placeholder - will be implemented later)
+// Public APIs
 // ============================================================
 
 export const publicAPI = {
   // Contact
   submitContact: async (data) => {
-    return { success: true, message: 'Message sent successfully' }
+    const response = await apiClient.post('/api/contact', data)
+    return response.data
   },
 
   // Consultation
   bookConsultation: async (data) => {
-    return { success: true, message: 'Consultation booked successfully' }
+    const response = await apiClient.post('/api/bookings', data)
+    return response.data
   },
 
   // Blog
   getBlogPosts: async (params = {}) => {
-    return { success: true, data: [], count: 0 }
+    const response = await apiClient.get('/api/admin/blog', { params })
+    return response.data
   },
 
   getBlogPost: async (postId) => {
-    return { success: true, data: null }
+    const response = await apiClient.get(`/api/admin/blog?id=${postId}`)
+    return response.data
   },
 
   // AI Chat
