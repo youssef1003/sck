@@ -62,28 +62,44 @@ export const deleteUser = async (userId) => {
 
 // ============ Bookings ============
 export const getBookings = async (params = {}) => {
-  const res = await adminApi.get('/bookings', { params })
+  const res = await adminApi.get('/manage/bookings', { params })
   return res.data
 }
 
 export const updateBookingStatus = async (bookingId, status) => {
-  const res = await adminApi.patch(`/bookings/${bookingId}/status`, null, { params: { status } })
+  const res = await adminApi.patch(`/manage/bookings/${bookingId}/status`, null, { params: { status } })
+  return res.data
+}
+
+export const deleteBooking = async (bookingId) => {
+  const res = await adminApi.delete(`/manage/bookings/${bookingId}`)
   return res.data
 }
 
 // ============ Messages ============
 export const getMessages = async (params = {}) => {
-  const res = await adminApi.get('/messages', { params })
+  const res = await adminApi.get('/manage/messages', { params })
   return res.data
 }
 
 export const updateMessageStatus = async (messageId, status) => {
-  const res = await adminApi.patch(`/messages/${messageId}/status`, null, { params: { status } })
+  const res = await adminApi.patch(`/manage/messages/${messageId}/status`, null, { params: { status } })
   return res.data
 }
 
 export const deleteMessage = async (messageId) => {
-  const res = await adminApi.delete(`/messages/${messageId}`)
+  const res = await adminApi.delete(`/manage/messages/${messageId}`)
+  return res.data
+}
+
+// ============ Content ============
+export const getPageContent = async (pageKey) => {
+  const res = await adminApi.get(`/manage/content/${pageKey}`)
+  return res.data
+}
+
+export const savePageContent = async (pageKey, content) => {
+  const res = await adminApi.post(`/manage/content/${pageKey}`, { content })
   return res.data
 }
 
