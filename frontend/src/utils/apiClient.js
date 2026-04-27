@@ -63,7 +63,7 @@ apiClient.interceptors.response.use(
           throw new Error('No refresh token')
         }
 
-        const response = await apiClient.post('/api/auth/refresh', {
+        const response = await apiClient.post('/api/auth?action=refresh', {
           refresh_token: refreshToken
         })
 
@@ -101,7 +101,7 @@ apiClient.interceptors.response.use(
 
 export const authAPI = {
   login: async (email, password) => {
-    const response = await apiClient.post('/api/auth/login', { email, password })
+    const response = await apiClient.post('/api/auth?action=login', { email, password })
     return response.data
   },
 
@@ -119,7 +119,7 @@ export const authAPI = {
   },
 
   getCurrentUser: async () => {
-    const response = await apiClient.get('/api/auth/me')
+    const response = await apiClient.get('/api/auth?action=me')
     return response.data
   },
 
@@ -132,7 +132,7 @@ export const authAPI = {
   },
 
   refreshToken: async (refreshToken) => {
-    const response = await apiClient.post('/api/auth/refresh', {
+    const response = await apiClient.post('/api/auth?action=refresh', {
       refresh_token: refreshToken
     })
     return response.data

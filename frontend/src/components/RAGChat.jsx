@@ -49,7 +49,7 @@ export default function RAGChat({ userId, onClose }) {
 
     try {
       const response = await axios.post(
-        `${API_URL}/api/rag/chat`,
+        `${API_URL}/api/rag?action=chat`,
         {
           message: input,
           conversationId: conversationId,
