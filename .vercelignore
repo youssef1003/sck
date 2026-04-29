@@ -4,3 +4,9 @@ node_modules
 *.log
 .env.local
 .DS_Store
+
+# Ignore empty API folders (use .js files only)
+api/admin/
+api/auth/
+api/rag/
+api/system/
