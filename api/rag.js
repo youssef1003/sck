@@ -162,20 +162,32 @@ async function callHuggingFaceAPI(prompt, language = 'en') {
 }
 
 async function handleChat(req, res) {
+  // Extract language early for error handling
+  const { message, conversationId, language = 'ar', userId } = req.body || {}
+  
   try {
+    console.log('=== RAG Chat Request ===')
+    console.log('Message:', message)
+    console.log('Language:', language)
+    console.log('User ID:', userId)
+    
     if (req.method !== 'POST') {
       return res.status(405).json({ 
         success: false,
-        error: 'Method not allowed' 
+        error: 'Method not allowed',
+        fallback: language === 'ar' 
+          ? 'طريقة الطلب غير مسموحة.'
+          : 'Method not allowed.'
       })
     }
-
-    const { message, conversationId, language = 'en', userId } = req.body
 
     if (!message || !message.trim()) {
       return res.status(400).json({ 
         success: false,
-        error: 'Message is required' 
+        error: 'Message is required',
+        fallback: language === 'ar' 
+          ? 'الرسالة مطلوبة.'
+          : 'Message is required.'
       })
     }
 
@@ -208,15 +220,24 @@ async function handleChat(req, res) {
       ? retrievedDocs.map((doc, idx) => `[${idx + 1}] ${doc.content}`).join('\n\n')
       : (language === 'ar' ? 'لا توجد معلومات متاحة في قاعدة البيانات.' : 'No information available in the database.')
 
-    // Build prompt for Hugging Face
-    const systemPrompt = language === 'ar'
-      ? 'أنت مساعد ذكي لشركة SCK للاستشارات. أجب بناءً على المعلومات المقدمة فقط. كن مختصراً ومفيداً.'
-      : 'You are an intelligent assistant for SCK Consulting. Answer ONLY based on the provided context. Be concise and helpful.'
+    // If we have documents, try AI response
+    let aiResponse
+    if (retrievedDocs.length > 0) {
+      // Build prompt for Hugging Face
+      const systemPrompt = language === 'ar'
+        ? 'أنت مساعد ذكي لشركة SCK للاستشارات. أجب بناءً على المعلومات المقدمة فقط. كن مختصراً ومفيداً.'
+        : 'You are an intelligent assistant for SCK Consulting. Answer ONLY based on the provided context. Be concise and helpful.'
 
-    const fullPrompt = `${systemPrompt}\n\nContext:\n${context}\n\nQuestion: ${message}\n\nAnswer:`
+      const fullPrompt = `${systemPrompt}\n\nContext:\n${context}\n\nQuestion: ${message}\n\nAnswer:`
 
-    // Get AI response from Hugging Face (FREE!)
-    const aiResponse = await callHuggingFaceAPI(fullPrompt, language)
+      // Get AI response from Hugging Face (FREE!)
+      aiResponse = await callHuggingFaceAPI(fullPrompt, language)
+    } else {
+      // Simple fallback without AI
+      aiResponse = language === 'ar'
+        ? 'مرحباً! أنا مساعد SCK للاستشارات. نحن نقدم خدمات استشارية في مجال الأنظمة الإدارية وشهادات ISO. كيف يمكنني مساعدتك؟'
+        : 'Hello! I am SCK Consulting assistant. We provide consulting services in management systems and ISO certifications. How can I help you?'
+    }
 
     // Save messages if conversation exists
     if (currentConversationId) {
@@ -237,6 +258,11 @@ async function handleChat(req, res) {
       }
     }
 
+    console.log('=== RAG Chat Response ===')
+    console.log('AI Response length:', aiResponse?.length)
+    console.log('Context used:', retrievedDocs.length)
+    console.log('Conversation ID:', currentConversationId)
+
     return res.status(200).json({
       success: true,
       response: aiResponse,
@@ -250,7 +276,10 @@ async function handleChat(req, res) {
       model: 'Hugging Face (Free)'
     })
   } catch (error) {
-    console.error('Chat handler error:', error)
+    console.error('=== Chat handler error ===')
+    console.error('Error:', error.message)
+    console.error('Stack:', error.stack)
+    // Use language from outer scope (already extracted from req.body)
     return res.status(500).json({
       success: false,
       error: error.message || 'Internal server error',
