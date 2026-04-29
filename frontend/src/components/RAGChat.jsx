@@ -3,7 +3,8 @@ import { Send, Bot, User, Loader2, AlertCircle, Sparkles } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import axios from 'axios'
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+// Use relative path for Vercel deployment (empty string = same domain)
+const API_URL = import.meta.env.VITE_API_URL || ''
 
 export default function RAGChat({ userId, onClose }) {
   const { t, i18n } = useTranslation()

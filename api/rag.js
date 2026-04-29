@@ -21,9 +21,11 @@ const CONFIG = {
 }
 
 module.exports = async function handler(req, res) {
+  // Set CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.setHeader('Content-Type', 'application/json')
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end()
@@ -32,17 +34,34 @@ module.exports = async function handler(req, res) {
   const { action } = req.query
 
   try {
+    // Validate environment variables
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+      console.error('Missing Supabase credentials')
+      return res.status(500).json({ 
+        success: false,
+        error: 'Database configuration error',
+        fallback: 'عذراً، الخدمة غير متاحة حالياً. يرجى المحاولة لاحقاً.'
+      })
+    }
+
     switch (action) {
       case 'chat':
         return await handleChat(req, res)
       case 'ingest':
         return await handleIngest(req, res)
       default:
-        return res.status(400).json({ error: 'Invalid action' })
+        return res.status(400).json({ 
+          success: false,
+          error: 'Invalid action. Use ?action=chat or ?action=ingest' 
+        })
     }
   } catch (error) {
     console.error('RAG error:', error)
-    return res.status(500).json({ error: error.message || 'Internal server error' })
+    return res.status(500).json({ 
+      success: false,
+      error: error.message || 'Internal server error',
+      fallback: 'عذراً، حدث خطأ. يرجى المحاولة مرة أخرى.'
+    })
   }
 }
 
@@ -143,86 +162,103 @@ async function callHuggingFaceAPI(prompt, language = 'en') {
 }
 
 async function handleChat(req, res) {
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
-  }
+  try {
+    if (req.method !== 'POST') {
+      return res.status(405).json({ 
+        success: false,
+        error: 'Method not allowed' 
+      })
+    }
 
-  const { message, conversationId, language = 'en', userId } = req.body
+    const { message, conversationId, language = 'en', userId } = req.body
 
-  if (!message || !message.trim()) {
-    return res.status(400).json({ error: 'Message is required' })
-  }
+    if (!message || !message.trim()) {
+      return res.status(400).json({ 
+        success: false,
+        error: 'Message is required' 
+      })
+    }
 
-  let currentConversationId = conversationId
+    let currentConversationId = conversationId
 
-  // Create conversation if needed
-  if (!currentConversationId && userId) {
-    try {
-      const { data: newConv, error } = await supabase
-        .from('chat_conversations')
-        .insert({ user_id: userId, title: message.substring(0, 50), language })
-        .select()
-        .single()
-      if (!error && newConv) {
-        currentConversationId = newConv.id
+    // Create conversation if needed
+    if (!currentConversationId && userId) {
+      try {
+        const { data: newConv, error } = await supabase
+          .from('chat_conversations')
+          .insert({ user_id: userId, title: message.substring(0, 50), language })
+          .select()
+          .single()
+        if (!error && newConv) {
+          currentConversationId = newConv.id
+        }
+      } catch (error) {
+        console.log('Could not create conversation:', error.message)
       }
-    } catch (error) {
-      console.log('Could not create conversation:', error.message)
     }
-  }
 
-  // Generate embedding (optional - will fallback to text search if fails)
-  const queryEmbedding = await generateEmbedding(message)
-  
-  // Search for relevant documents
-  const retrievedDocs = await searchSimilarDocuments(queryEmbedding, language, message)
-  
-  // Build context from retrieved documents
-  const context = retrievedDocs.length > 0
-    ? retrievedDocs.map((doc, idx) => `[${idx + 1}] ${doc.content}`).join('\n\n')
-    : (language === 'ar' ? 'لا توجد معلومات متاحة في قاعدة البيانات.' : 'No information available in the database.')
+    // Generate embedding (optional - will fallback to text search if fails)
+    const queryEmbedding = await generateEmbedding(message)
+    
+    // Search for relevant documents
+    const retrievedDocs = await searchSimilarDocuments(queryEmbedding, language, message)
+    
+    // Build context from retrieved documents
+    const context = retrievedDocs.length > 0
+      ? retrievedDocs.map((doc, idx) => `[${idx + 1}] ${doc.content}`).join('\n\n')
+      : (language === 'ar' ? 'لا توجد معلومات متاحة في قاعدة البيانات.' : 'No information available in the database.')
 
-  // Build prompt for Hugging Face
-  const systemPrompt = language === 'ar'
-    ? 'أنت مساعد ذكي لشركة SCK للاستشارات. أجب بناءً على المعلومات المقدمة فقط. كن مختصراً ومفيداً.'
-    : 'You are an intelligent assistant for SCK Consulting. Answer ONLY based on the provided context. Be concise and helpful.'
+    // Build prompt for Hugging Face
+    const systemPrompt = language === 'ar'
+      ? 'أنت مساعد ذكي لشركة SCK للاستشارات. أجب بناءً على المعلومات المقدمة فقط. كن مختصراً ومفيداً.'
+      : 'You are an intelligent assistant for SCK Consulting. Answer ONLY based on the provided context. Be concise and helpful.'
 
-  const fullPrompt = `${systemPrompt}\n\nContext:\n${context}\n\nQuestion: ${message}\n\nAnswer:`
+    const fullPrompt = `${systemPrompt}\n\nContext:\n${context}\n\nQuestion: ${message}\n\nAnswer:`
 
-  // Get AI response from Hugging Face (FREE!)
-  const aiResponse = await callHuggingFaceAPI(fullPrompt, language)
+    // Get AI response from Hugging Face (FREE!)
+    const aiResponse = await callHuggingFaceAPI(fullPrompt, language)
 
-  // Save messages if conversation exists
-  if (currentConversationId) {
-    try {
-      await supabase.from('chat_messages').insert({ 
-        conversation_id: currentConversationId, 
-        role: 'user', 
-        content: message 
-      })
-      await supabase.from('chat_messages').insert({
-        conversation_id: currentConversationId,
-        role: 'assistant',
-        content: aiResponse,
-        context_used: { retrieved_docs: retrievedDocs.map(d => ({ id: d.id, similarity: d.similarity || 0 })) }
-      })
-    } catch (error) {
-      console.log('Could not save messages:', error.message)
+    // Save messages if conversation exists
+    if (currentConversationId) {
+      try {
+        await supabase.from('chat_messages').insert({ 
+          conversation_id: currentConversationId, 
+          role: 'user', 
+          content: message 
+        })
+        await supabase.from('chat_messages').insert({
+          conversation_id: currentConversationId,
+          role: 'assistant',
+          content: aiResponse,
+          context_used: { retrieved_docs: retrievedDocs.map(d => ({ id: d.id, similarity: d.similarity || 0 })) }
+        })
+      } catch (error) {
+        console.log('Could not save messages:', error.message)
+      }
     }
-  }
 
-  return res.status(200).json({
-    success: true,
-    response: aiResponse,
-    conversationId: currentConversationId,
-    contextUsed: retrievedDocs.length,
-    sources: retrievedDocs.map(doc => ({ 
-      type: doc.source_type, 
-      id: doc.source_id, 
-      similarity: doc.similarity || 0 
-    })),
-    model: 'Hugging Face (Free)'
-  })
+    return res.status(200).json({
+      success: true,
+      response: aiResponse,
+      conversationId: currentConversationId,
+      contextUsed: retrievedDocs.length,
+      sources: retrievedDocs.map(doc => ({ 
+        type: doc.source_type, 
+        id: doc.source_id, 
+        similarity: doc.similarity || 0 
+      })),
+      model: 'Hugging Face (Free)'
+    })
+  } catch (error) {
+    console.error('Chat handler error:', error)
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error',
+      fallback: language === 'ar' 
+        ? 'عذراً، حدث خطأ. يرجى المحاولة مرة أخرى.'
+        : 'Sorry, an error occurred. Please try again.'
+    })
+  }
 }
 
 async function handleIngest(req, res) {
