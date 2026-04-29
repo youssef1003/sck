@@ -6,17 +6,18 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 )
 
-const GROK_API_KEY = process.env.GROK_API_KEY
-const GROK_API_URL = process.env.GROK_API_URL || 'https://api.x.ai/v1/chat/completions'
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY
+// Hugging Face API (FREE!)
+const HF_API_KEY = process.env.HF_API_KEY || 'hf_demo' // Free tier available
+const HF_API_URL = 'https://api-inference.huggingface.co/models'
 
 const CONFIG = {
   MAX_CONTEXT_TOKENS: 3000,
   TOP_K_RESULTS: 5,
-  SIMILARITY_THRESHOLD: 0.7,
+  SIMILARITY_THRESHOLD: 0.6, // Lower threshold for simpler matching
   MAX_CONVERSATION_HISTORY: 10,
-  GROK_MODEL: 'grok-beta',
-  EMBEDDING_MODEL: 'text-embedding-ada-002'
+  // Free Hugging Face models
+  CHAT_MODEL: 'mistralai/Mistral-7B-Instruct-v0.2', // Free, supports Arabic
+  EMBEDDING_MODEL: 'sentence-transformers/all-MiniLM-L6-v2' // Free embeddings
 }
 
 module.exports = async function handler(req, res) {
@@ -45,34 +46,100 @@ module.exports = async function handler(req, res) {
   }
 }
 
+// Generate embeddings using FREE Hugging Face
 async function generateEmbedding(text) {
-  const response = await axios.post(
-    'https://api.openai.com/v1/embeddings',
-    { input: text, model: CONFIG.EMBEDDING_MODEL },
-    { headers: { 'Authorization': `Bearer ${OPENAI_API_KEY}`, 'Content-Type': 'application/json' } }
-  )
-  return response.data.data[0].embedding
+  try {
+    const response = await axios.post(
+      `${HF_API_URL}/${CONFIG.EMBEDDING_MODEL}`,
+      { inputs: text },
+      { 
+        headers: { 
+          'Authorization': `Bearer ${HF_API_KEY}`,
+          'Content-Type': 'application/json' 
+        },
+        timeout: 30000
+      }
+    )
+    
+    // Hugging Face returns embeddings directly
+    return response.data
+  } catch (error) {
+    console.error('Embedding error:', error.message)
+    // Fallback: simple text-based matching without embeddings
+    return null
+  }
 }
 
-async function searchSimilarDocuments(queryEmbedding, language = null) {
-  const { data, error } = await supabase.rpc('search_similar_documents', {
-    query_embedding: queryEmbedding,
-    match_threshold: CONFIG.SIMILARITY_THRESHOLD,
-    match_count: CONFIG.TOP_K_RESULTS,
-    filter_language: language,
-    filter_tenant_id: null
-  })
+// Search documents - with fallback to simple text search
+async function searchSimilarDocuments(queryEmbedding, language = null, queryText = '') {
+  // If embeddings available, use vector search
+  if (queryEmbedding) {
+    try {
+      const { data, error } = await supabase.rpc('search_similar_documents', {
+        query_embedding: queryEmbedding,
+        match_threshold: CONFIG.SIMILARITY_THRESHOLD,
+        match_count: CONFIG.TOP_K_RESULTS,
+        filter_language: language,
+        filter_tenant_id: null
+      })
+      if (!error && data && data.length > 0) {
+        return data
+      }
+    } catch (error) {
+      console.log('Vector search failed, falling back to text search')
+    }
+  }
+  
+  // Fallback: Simple text search
+  let query = supabase
+    .from('rag_documents')
+    .select('*')
+    .ilike('content', `%${queryText}%`)
+    .limit(CONFIG.TOP_K_RESULTS)
+  
+  if (language) {
+    query = query.eq('language', language)
+  }
+  
+  const { data, error } = await query
   if (error) throw error
+  
   return data || []
 }
 
-async function callGrokAPI(messages) {
-  const response = await axios.post(
-    GROK_API_URL,
-    { model: CONFIG.GROK_MODEL, messages, temperature: 0.7, max_tokens: 1000 },
-    { headers: { 'Authorization': `Bearer ${GROK_API_KEY}`, 'Content-Type': 'application/json' }, timeout: 30000 }
-  )
-  return response.data.choices[0].message.content
+// Call FREE Hugging Face API for chat
+async function callHuggingFaceAPI(prompt, language = 'en') {
+  try {
+    const response = await axios.post(
+      `${HF_API_URL}/${CONFIG.CHAT_MODEL}`,
+      { 
+        inputs: prompt,
+        parameters: {
+          max_new_tokens: 500,
+          temperature: 0.7,
+          top_p: 0.95,
+          return_full_text: false
+        }
+      },
+      { 
+        headers: { 
+          'Authorization': `Bearer ${HF_API_KEY}`,
+          'Content-Type': 'application/json' 
+        },
+        timeout: 30000
+      }
+    )
+    
+    // Extract generated text
+    const generatedText = response.data[0]?.generated_text || response.data
+    return typeof generatedText === 'string' ? generatedText : JSON.stringify(generatedText)
+  } catch (error) {
+    console.error('Hugging Face API error:', error.message)
+    // Fallback response
+    return language === 'ar' 
+      ? 'عذراً، حدث خطأ في معالجة طلبك. يرجى المحاولة مرة أخرى.'
+      : 'Sorry, there was an error processing your request. Please try again.'
+  }
 }
 
 async function handleChat(req, res) {
@@ -86,48 +153,62 @@ async function handleChat(req, res) {
     return res.status(400).json({ error: 'Message is required' })
   }
 
-  if (!GROK_API_KEY || !OPENAI_API_KEY) {
-    return res.status(500).json({ error: 'API keys not configured' })
-  }
-
   let currentConversationId = conversationId
 
+  // Create conversation if needed
   if (!currentConversationId && userId) {
-    const { data: newConv, error } = await supabase
-      .from('chat_conversations')
-      .insert({ user_id: userId, title: message.substring(0, 50), language })
-      .select()
-      .single()
-    if (error) throw error
-    currentConversationId = newConv.id
+    try {
+      const { data: newConv, error } = await supabase
+        .from('chat_conversations')
+        .insert({ user_id: userId, title: message.substring(0, 50), language })
+        .select()
+        .single()
+      if (!error && newConv) {
+        currentConversationId = newConv.id
+      }
+    } catch (error) {
+      console.log('Could not create conversation:', error.message)
+    }
   }
 
+  // Generate embedding (optional - will fallback to text search if fails)
   const queryEmbedding = await generateEmbedding(message)
-  const retrievedDocs = await searchSimilarDocuments(queryEmbedding, language)
   
+  // Search for relevant documents
+  const retrievedDocs = await searchSimilarDocuments(queryEmbedding, language, message)
+  
+  // Build context from retrieved documents
   const context = retrievedDocs.length > 0
     ? retrievedDocs.map((doc, idx) => `[${idx + 1}] ${doc.content}`).join('\n\n')
-    : (language === 'ar' ? 'لا توجد معلومات متاحة.' : 'No information available.')
+    : (language === 'ar' ? 'لا توجد معلومات متاحة في قاعدة البيانات.' : 'No information available in the database.')
 
+  // Build prompt for Hugging Face
   const systemPrompt = language === 'ar'
-    ? 'أنت مساعد ذكي. أجب بناءً على المعلومات المقدمة فقط.'
-    : 'You are an intelligent assistant. Answer ONLY based on the provided context.'
+    ? 'أنت مساعد ذكي لشركة SCK للاستشارات. أجب بناءً على المعلومات المقدمة فقط. كن مختصراً ومفيداً.'
+    : 'You are an intelligent assistant for SCK Consulting. Answer ONLY based on the provided context. Be concise and helpful.'
 
-  const messages = [
-    { role: 'system', content: systemPrompt },
-    { role: 'user', content: `${language === 'ar' ? 'السياق' : 'Context'}:\n${context}\n\n${language === 'ar' ? 'السؤال' : 'Question'}: ${message}` }
-  ]
+  const fullPrompt = `${systemPrompt}\n\nContext:\n${context}\n\nQuestion: ${message}\n\nAnswer:`
 
-  const aiResponse = await callGrokAPI(messages)
+  // Get AI response from Hugging Face (FREE!)
+  const aiResponse = await callHuggingFaceAPI(fullPrompt, language)
 
+  // Save messages if conversation exists
   if (currentConversationId) {
-    await supabase.from('chat_messages').insert({ conversation_id: currentConversationId, role: 'user', content: message })
-    await supabase.from('chat_messages').insert({
-      conversation_id: currentConversationId,
-      role: 'assistant',
-      content: aiResponse,
-      context_used: { retrieved_docs: retrievedDocs.map(d => ({ id: d.id, similarity: d.similarity })) }
-    })
+    try {
+      await supabase.from('chat_messages').insert({ 
+        conversation_id: currentConversationId, 
+        role: 'user', 
+        content: message 
+      })
+      await supabase.from('chat_messages').insert({
+        conversation_id: currentConversationId,
+        role: 'assistant',
+        content: aiResponse,
+        context_used: { retrieved_docs: retrievedDocs.map(d => ({ id: d.id, similarity: d.similarity || 0 })) }
+      })
+    } catch (error) {
+      console.log('Could not save messages:', error.message)
+    }
   }
 
   return res.status(200).json({
@@ -135,7 +216,12 @@ async function handleChat(req, res) {
     response: aiResponse,
     conversationId: currentConversationId,
     contextUsed: retrievedDocs.length,
-    sources: retrievedDocs.map(doc => ({ type: doc.source_type, id: doc.source_id, similarity: doc.similarity }))
+    sources: retrievedDocs.map(doc => ({ 
+      type: doc.source_type, 
+      id: doc.source_id, 
+      similarity: doc.similarity || 0 
+    })),
+    model: 'Hugging Face (Free)'
   })
 }
 
@@ -168,16 +254,18 @@ async function handleIngest(req, res) {
     chunks.push(currentChunk.trim())
   }
 
+  // Generate embeddings (optional - can work without them)
   const embeddings = []
   for (const chunk of chunks) {
     const emb = await generateEmbedding(chunk)
     embeddings.push(emb)
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise(resolve => setTimeout(resolve, 200)) // Rate limiting
   }
 
+  // Prepare documents
   const documents = chunks.map((chunk, index) => ({
     content: chunk,
-    embedding: embeddings[index],
+    embedding: embeddings[index] || null, // null if embedding failed
     metadata: metadata || {},
     source_type: metadata?.sourceType || 'text',
     source_id: metadata?.sourceId || null,
@@ -187,12 +275,14 @@ async function handleIngest(req, res) {
     language: metadata?.language || 'en'
   }))
 
+  // Insert into database
   const { error } = await supabase.from('rag_documents').insert(documents)
   if (error) throw error
 
   return res.status(200).json({
     success: true,
     chunksProcessed: documents.length,
-    totalChunks: chunks.length
+    totalChunks: chunks.length,
+    model: 'Hugging Face (Free)'
   })
 }
