@@ -1,10 +1,18 @@
 const { createClient } = require('@supabase/supabase-js')
 const jwt = require('jsonwebtoken')
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-)
+// Initialize Supabase with error checking
+const SUPABASE_URL = process.env.SUPABASE_URL
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
+
+if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+  console.error('Missing Supabase credentials:', {
+    hasUrl: !!SUPABASE_URL,
+    hasKey: !!SUPABASE_SERVICE_KEY
+  })
+}
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 const JWT_SECRET = process.env.JWT_SECRET || 'sck_super_secret_key_2025_production'
 
@@ -19,7 +27,17 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ success: true })
   }
 
-  const { action } = req.query
+  // Normalize action - remove any spaces, backslashes, or special characters
+  const rawAction = req.query.action || ''
+  const action = String(rawAction).trim().replace(/[\\/\s]/g, '').toLowerCase()
+
+  console.log('Auth request:', {
+    method: req.method,
+    rawAction,
+    normalizedAction: action,
+    hasBody: !!req.body,
+    bodyKeys: req.body ? Object.keys(req.body) : []
+  })
 
   try {
     switch (action) {
@@ -52,9 +70,17 @@ async function handleLogin(req, res) {
     })
   }
 
-  const { email, password } = req.body
+  // Support both email and username fields (as Arabic UI says "البريد الإلكتروني أو اسم المستخدم")
+  const identifier = req.body.email || req.body.username || req.body.identifier
+  const password = req.body.password
 
-  if (!email || !password) {
+  console.log('Login attempt:', {
+    identifier,
+    hasPassword: !!password,
+    bodyKeys: Object.keys(req.body || {})
+  })
+
+  if (!identifier || !password) {
     return res.status(400).json({ 
       success: false,
       message: 'Email and password are required' 
@@ -63,9 +89,22 @@ async function handleLogin(req, res) {
 
   try {
     // Call login_user function from database
+    // This function uses crypt() to verify password against password_hash
+    console.log('Calling Supabase RPC login_user with identifier:', identifier)
+    
     const { data: result, error } = await supabase.rpc('login_user', {
-      p_email: email,
+      p_email: identifier,
       p_password: password
+    })
+
+    console.log('Supabase RPC result:', {
+      hasData: !!result,
+      isArray: Array.isArray(result),
+      dataLength: result ? result.length : 0,
+      hasError: !!error,
+      errorMessage: error?.message,
+      errorDetails: error?.details,
+      errorHint: error?.hint
     })
 
     if (error) {
@@ -76,14 +115,33 @@ async function handleLogin(req, res) {
       })
     }
 
-    if (!result || result.length === 0) {
+    // Handle both array and single object responses
+    let user = null
+    if (Array.isArray(result)) {
+      if (result.length === 0) {
+        console.log('No user found - empty array')
+        return res.status(401).json({ 
+          success: false,
+          message: 'Invalid email or password' 
+        })
+      }
+      user = result[0]
+    } else if (result && typeof result === 'object') {
+      user = result
+    } else {
+      console.log('No user found - invalid result type')
       return res.status(401).json({ 
         success: false,
         message: 'Invalid email or password' 
       })
     }
 
-    const user = result[0]
+    console.log('User found:', {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      is_active: user.is_active
+    })
 
     // Check if user is active
     if (!user.is_active) {
@@ -119,8 +177,11 @@ async function handleLogin(req, res) {
       { expiresIn: '30d' }
     )
 
+    console.log('Login successful for:', user.email)
+
     return res.status(200).json({
       success: true,
+      message: 'Login successful',
       token: access_token, // For backward compatibility
       data: {
         access_token,
@@ -131,7 +192,8 @@ async function handleLogin(req, res) {
           full_name: user.full_name,
           role: user.role,
           phone: user.phone,
-          company: user.company
+          company: user.company,
+          is_active: user.is_active
         }
       }
     })
