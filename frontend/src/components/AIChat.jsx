@@ -13,21 +13,41 @@ function AIChat() {
 
     const userMessage = { role: 'user', content: input }
     setMessages(prev => [...prev, userMessage])
+    const userInput = input
     setInput('')
     setIsLoading(true)
 
     try {
-      const apiUrl = '' // Force Vercel API
-      const response = await fetch(`${apiUrl}/api/ai/chat`, {
+      const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: input })
+        body: JSON.stringify({ 
+          message: userInput,
+          history: messages,
+          language: 'ar'
+        })
       })
 
+      // Check content type before parsing
+      const contentType = response.headers.get('content-type') || ''
+      if (!contentType.includes('application/json')) {
+        const text = await response.text()
+        throw new Error(`Expected JSON but got: ${text.slice(0, 150)}`)
+      }
+
       const data = await response.json()
-      setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to get response')
+      }
+
+      if (data.success && data.reply) {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.reply }])
+      } else {
+        throw new Error('Invalid response format')
+      }
     } catch (error) {
-      console.error('Error:', error)
+      console.error('AI Chat Error:', error)
       setMessages(prev => [...prev, { 
         role: 'assistant', 
         content: 'Sorry, I encountered an error. Please try again.' 

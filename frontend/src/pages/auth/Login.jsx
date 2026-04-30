@@ -40,11 +40,20 @@ const Login = () => {
       const response = await authAPI.login(formData.email, formData.password)
       
       if (response.success) {
-        const { access_token, refresh_token, user } = response.data
+        // Handle both old format (token) and new format (data.access_token)
+        const access_token = response.data?.access_token || response.token
+        const refresh_token = response.data?.refresh_token
+        const user = response.data?.user || response.user
+        
+        if (!access_token || !user) {
+          throw new Error('Invalid response format from server')
+        }
         
         // Store new tokens
         localStorage.setItem('access_token', access_token)
-        localStorage.setItem('refresh_token', refresh_token)
+        if (refresh_token) {
+          localStorage.setItem('refresh_token', refresh_token)
+        }
         localStorage.setItem('user_data', JSON.stringify(user))
         
         // Show success message
@@ -65,7 +74,9 @@ const Login = () => {
       // Get error message from API response
       let errorMessage = 'Invalid credentials'
       
-      if (err.response?.data?.error) {
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message
+      } else if (err.response?.data?.error) {
         errorMessage = err.response.data.error
       } else if (err.response?.data?.detail) {
         errorMessage = err.response.data.detail
@@ -77,8 +88,10 @@ const Login = () => {
       if (isRTL) {
         if (errorMessage.includes('Only admin login')) {
           errorMessage = 'يُسمح بتسجيل دخول المشرف العام فقط حالياً'
-        } else if (errorMessage.includes('Invalid credentials') || errorMessage.includes('Admin user not found')) {
+        } else if (errorMessage.includes('Invalid') || errorMessage.includes('password')) {
           errorMessage = 'البريد الإلكتروني أو كلمة المرور غير صحيحة'
+        } else if (errorMessage.includes('inactive')) {
+          errorMessage = 'الحساب غير نشط. يرجى التواصل مع الدعم'
         } else {
           errorMessage = 'حدث خطأ في تسجيل الدخول'
         }

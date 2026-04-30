@@ -13,9 +13,10 @@ module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.setHeader('Content-Type', 'application/json')
 
   if (req.method === 'OPTIONS') {
-    return res.status(200).end()
+    return res.status(200).json({ success: true })
   }
 
   const { action } = req.query
@@ -29,11 +30,17 @@ module.exports = async function handler(req, res) {
       case 'refresh':
         return await handleRefresh(req, res)
       default:
-        return res.status(400).json({ error: 'Invalid action' })
+        return res.status(400).json({ 
+          success: false,
+          message: 'Invalid action. Use: login, me, or refresh' 
+        })
     }
   } catch (error) {
     console.error('Auth error:', error)
-    return res.status(500).json({ error: error.message || 'Internal server error' })
+    return res.status(500).json({ 
+      success: false,
+      message: error.message || 'Internal server error' 
+    })
   }
 }
 
@@ -41,42 +48,38 @@ async function handleLogin(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ 
       success: false,
-      error: 'Method not allowed' 
+      message: 'Method not allowed' 
     })
   }
 
   const { email, password } = req.body
 
-  console.log('Login attempt:', { email, hasPassword: !!password })
-
   if (!email || !password) {
     return res.status(400).json({ 
       success: false,
-      error: 'Email and password required' 
+      message: 'Email and password are required' 
     })
   }
 
   try {
-    // Simple approach: Get user and verify password using SQL
+    // Call login_user function from database
     const { data: result, error } = await supabase.rpc('login_user', {
       p_email: email,
       p_password: password
     })
 
-    console.log('Login RPC result:', { result, error })
-
     if (error) {
       console.error('Login RPC error:', error)
       return res.status(401).json({ 
         success: false,
-        error: 'Invalid credentials'
+        message: 'Invalid email or password'
       })
     }
 
     if (!result || result.length === 0) {
       return res.status(401).json({ 
         success: false,
-        error: 'Invalid credentials' 
+        message: 'Invalid email or password' 
       })
     }
 
@@ -86,7 +89,7 @@ async function handleLogin(req, res) {
     if (!user.is_active) {
       return res.status(403).json({ 
         success: false,
-        error: 'Account is inactive' 
+        message: 'Account is inactive. Please contact support.' 
       })
     }
 
@@ -116,10 +119,9 @@ async function handleLogin(req, res) {
       { expiresIn: '30d' }
     )
 
-    console.log('Login successful for:', user.email)
-
     return res.status(200).json({
       success: true,
+      token: access_token, // For backward compatibility
       data: {
         access_token,
         refresh_token,
@@ -137,7 +139,7 @@ async function handleLogin(req, res) {
     console.error('Login exception:', error)
     return res.status(500).json({ 
       success: false,
-      error: 'Internal server error' 
+      message: 'Internal server error. Please try again later.' 
     })
   }
 }

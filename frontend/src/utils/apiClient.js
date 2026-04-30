@@ -96,6 +96,34 @@ apiClient.interceptors.response.use(
 )
 
 // ============================================================
+// Safe API Helper - Checks JSON responses
+// ============================================================
+
+export const safeFetch = async (url, options = {}) => {
+  try {
+    const response = await fetch(url, options)
+    
+    // Check content type
+    const contentType = response.headers.get('content-type') || ''
+    if (!contentType.includes('application/json')) {
+      const text = await response.text()
+      throw new Error(`Expected JSON but got: ${text.slice(0, 150)}`)
+    }
+    
+    const data = await response.json()
+    
+    if (!response.ok) {
+      throw new Error(data.message || `HTTP ${response.status}: ${response.statusText}`)
+    }
+    
+    return data
+  } catch (error) {
+    logError(error, { context: 'Safe Fetch', url })
+    throw error
+  }
+}
+
+// ============================================================
 // Authentication APIs
 // ============================================================
 
