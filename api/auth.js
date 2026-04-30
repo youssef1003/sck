@@ -58,8 +58,15 @@ async function handleLogin(req, res) {
       user_password: password
     })
 
-    if (error || !users || users.length === 0) {
-      console.error('Login error:', error)
+    if (error) {
+      console.error('Login RPC error:', error)
+      return res.status(401).json({ 
+        success: false,
+        error: 'Invalid credentials' 
+      })
+    }
+
+    if (!users || users.length === 0) {
       return res.status(401).json({ 
         success: false,
         error: 'Invalid credentials' 
