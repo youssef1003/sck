@@ -39,10 +39,15 @@ module.exports = async function handler(req, res) {
 
 async function handleLogin(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    return res.status(405).json({ 
+      success: false,
+      error: 'Method not allowed' 
+    })
   }
 
   const { email, password } = req.body
+
+  console.log('Login attempt:', { email, hasPassword: !!password })
 
   if (!email || !password) {
     return res.status(400).json({ 
@@ -52,48 +57,30 @@ async function handleLogin(req, res) {
   }
 
   try {
-    // Get user by email first
-    const { data: users, error: fetchError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('email', email)
-      .is('deleted_at', null)
-      .limit(1)
+    // Simple approach: Get user and verify password using SQL
+    const { data: result, error } = await supabase.rpc('login_user', {
+      p_email: email,
+      p_password: password
+    })
 
-    if (fetchError) {
-      console.error('Fetch user error:', fetchError)
-      return res.status(500).json({ 
+    console.log('Login RPC result:', { result, error })
+
+    if (error) {
+      console.error('Login RPC error:', error)
+      return res.status(401).json({ 
         success: false,
-        error: 'Database error' 
+        error: 'Invalid credentials'
       })
     }
 
-    if (!users || users.length === 0) {
+    if (!result || result.length === 0) {
       return res.status(401).json({ 
         success: false,
         error: 'Invalid credentials' 
       })
     }
 
-    const user = users[0]
-
-    // Verify password using SQL query
-    const { data: verifyResult, error: verifyError } = await supabase.rpc('verify_password_match', {
-      stored_hash: user.password_hash,
-      input_password: password
-    })
-
-    // If RPC fails, try direct comparison (fallback)
-    if (verifyError || !verifyResult) {
-      console.log('RPC verify failed, using fallback')
-      // For now, just check if password_hash exists (temporary)
-      if (!user.password_hash) {
-        return res.status(401).json({ 
-          success: false,
-          error: 'Invalid credentials' 
-        })
-      }
-    }
+    const user = result[0]
 
     // Check if user is active
     if (!user.is_active) {
@@ -128,6 +115,8 @@ async function handleLogin(req, res) {
       JWT_SECRET,
       { expiresIn: '30d' }
     )
+
+    console.log('Login successful for:', user.email)
 
     return res.status(200).json({
       success: true,
