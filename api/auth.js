@@ -45,58 +45,101 @@ async function handleLogin(req, res) {
   const { email, password } = req.body
 
   if (!email || !password) {
-    return res.status(400).json({ error: 'Email and password required' })
+    return res.status(400).json({ 
+      success: false,
+      error: 'Email and password required' 
+    })
   }
 
-  // Query user
-  const { data: users, error } = await supabase
-    .from('users')
-    .select('*')
-    .eq('email', email)
-    .limit(1)
+  try {
+    // Use verify_user_password function from database
+    const { data: users, error } = await supabase.rpc('verify_user_password', {
+      user_email: email,
+      user_password: password
+    })
 
-  if (error || !users || users.length === 0) {
-    return res.status(401).json({ error: 'Invalid credentials' })
-  }
-
-  const user = users[0]
-
-  // Simple password check (in production, use bcrypt)
-  if (user.password !== password) {
-    return res.status(401).json({ error: 'Invalid credentials' })
-  }
-
-  // Generate JWT
-  const token = jwt.sign(
-    {
-      userId: user.id,
-      email: user.email,
-      role: user.role || 'user'
-    },
-    JWT_SECRET,
-    { expiresIn: '7d' }
-  )
-
-  return res.status(200).json({
-    success: true,
-    token,
-    user: {
-      id: user.id,
-      email: user.email,
-      name: user.name,
-      role: user.role
+    if (error || !users || users.length === 0) {
+      console.error('Login error:', error)
+      return res.status(401).json({ 
+        success: false,
+        error: 'Invalid credentials' 
+      })
     }
-  })
+
+    const user = users[0]
+
+    // Check if user is active
+    if (!user.is_active) {
+      return res.status(403).json({ 
+        success: false,
+        error: 'Account is inactive' 
+      })
+    }
+
+    // Update last login
+    await supabase
+      .from('users')
+      .update({ last_login_at: new Date().toISOString() })
+      .eq('id', user.id)
+
+    // Generate JWT tokens
+    const access_token = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        role: user.role || 'user'
+      },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    )
+
+    const refresh_token = jwt.sign(
+      {
+        userId: user.id,
+        type: 'refresh'
+      },
+      JWT_SECRET,
+      { expiresIn: '30d' }
+    )
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        access_token,
+        refresh_token,
+        user: {
+          id: user.id,
+          email: user.email,
+          full_name: user.full_name,
+          role: user.role,
+          phone: user.phone,
+          company: user.company
+        }
+      }
+    })
+  } catch (error) {
+    console.error('Login exception:', error)
+    return res.status(500).json({ 
+      success: false,
+      error: 'Internal server error' 
+    })
+  }
 }
 
 async function handleMe(req, res) {
   if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    return res.status(405).json({ 
+      success: false,
+      error: 'Method not allowed' 
+    })
   }
 
   const authHeader = req.headers.authorization
   if (!authHeader) {
-    return res.status(401).json({ error: 'No authorization header' })
+    return res.status(401).json({ 
+      success: false,
+      error: 'No authorization header' 
+    })
   }
 
   const token = authHeader.replace('Bearer ', '')
@@ -106,53 +149,122 @@ async function handleMe(req, res) {
     
     const { data: user, error } = await supabase
       .from('users')
-      .select('id, email, name, role, created_at')
+      .select('id, email, full_name, phone, company, role, is_active, created_at')
       .eq('id', decoded.userId)
+      .is('deleted_at', null)
       .single()
 
     if (error || !user) {
-      return res.status(404).json({ error: 'User not found' })
+      return res.status(404).json({ 
+        success: false,
+        error: 'User not found' 
+      })
+    }
+
+    if (!user.is_active) {
+      return res.status(403).json({ 
+        success: false,
+        error: 'Account is inactive' 
+      })
     }
 
     return res.status(200).json({
       success: true,
-      user
+      data: {
+        user: {
+          id: user.id,
+          email: user.email,
+          full_name: user.full_name,
+          phone: user.phone,
+          company: user.company,
+          role: user.role,
+          created_at: user.created_at
+        }
+      }
     })
   } catch (error) {
-    return res.status(401).json({ error: 'Invalid token' })
+    console.error('Get user error:', error)
+    return res.status(401).json({ 
+      success: false,
+      error: 'Invalid token' 
+    })
   }
 }
 
 async function handleRefresh(req, res) {
   if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' })
+    return res.status(405).json({ 
+      success: false,
+      error: 'Method not allowed' 
+    })
   }
 
-  const { token } = req.body
+  const { refresh_token } = req.body
 
-  if (!token) {
-    return res.status(400).json({ error: 'Token required' })
+  if (!refresh_token) {
+    return res.status(400).json({ 
+      success: false,
+      error: 'Refresh token required' 
+    })
   }
 
   try {
-    const decoded = jwt.verify(token, JWT_SECRET)
+    const decoded = jwt.verify(refresh_token, JWT_SECRET)
     
-    // Generate new token
-    const newToken = jwt.sign(
+    if (decoded.type !== 'refresh') {
+      return res.status(401).json({ 
+        success: false,
+        error: 'Invalid refresh token' 
+      })
+    }
+
+    // Get user to verify still active
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, email, role, is_active')
+      .eq('id', decoded.userId)
+      .is('deleted_at', null)
+      .single()
+
+    if (error || !user || !user.is_active) {
+      return res.status(401).json({ 
+        success: false,
+        error: 'User not found or inactive' 
+      })
+    }
+    
+    // Generate new tokens
+    const access_token = jwt.sign(
       {
-        userId: decoded.userId,
-        email: decoded.email,
-        role: decoded.role
+        userId: user.id,
+        email: user.email,
+        role: user.role
       },
       JWT_SECRET,
       { expiresIn: '7d' }
     )
 
+    const new_refresh_token = jwt.sign(
+      {
+        userId: user.id,
+        type: 'refresh'
+      },
+      JWT_SECRET,
+      { expiresIn: '30d' }
+    )
+
     return res.status(200).json({
       success: true,
-      token: newToken
+      data: {
+        access_token,
+        refresh_token: new_refresh_token
+      }
     })
   } catch (error) {
-    return res.status(401).json({ error: 'Invalid token' })
+    console.error('Refresh token error:', error)
+    return res.status(401).json({ 
+      success: false,
+      error: 'Invalid or expired refresh token' 
+    })
   }
 }

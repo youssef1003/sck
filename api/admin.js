@@ -64,18 +64,59 @@ module.exports = async function handler(req, res) {
 
 // Stats handler
 async function handleStats(req, res) {
-  const { data: users } = await supabase.from('users').select('*', { count: 'exact' })
-  const { data: bookings } = await supabase.from('consultation_bookings').select('*', { count: 'exact' })
-  const { data: contacts } = await supabase.from('contact_requests').select('*', { count: 'exact' })
+  try {
+    // Get counts with proper error handling
+    const { count: usersCount } = await supabase
+      .from('users')
+      .select('*', { count: 'exact', head: true })
+      .is('deleted_at', null)
 
-  return res.status(200).json({
-    success: true,
-    stats: {
-      totalUsers: users?.length || 0,
-      totalBookings: bookings?.length || 0,
-      totalContacts: contacts?.length || 0
-    }
-  })
+    const { count: bookingsCount } = await supabase
+      .from('consultation_bookings')
+      .select('*', { count: 'exact', head: true })
+      .is('deleted_at', null)
+
+    const { count: contactsCount } = await supabase
+      .from('contact_requests')
+      .select('*', { count: 'exact', head: true })
+      .is('deleted_at', null)
+
+    const { count: blogCount } = await supabase
+      .from('blog_posts')
+      .select('*', { count: 'exact', head: true })
+      .is('deleted_at', null)
+
+    // Get pending counts
+    const { count: pendingBookings } = await supabase
+      .from('consultation_bookings')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'pending')
+      .is('deleted_at', null)
+
+    const { count: newContacts } = await supabase
+      .from('contact_requests')
+      .select('*', { count: 'exact', head: true })
+      .eq('status', 'new')
+      .is('deleted_at', null)
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        totalUsers: usersCount || 0,
+        totalBookings: bookingsCount || 0,
+        totalContacts: contactsCount || 0,
+        totalBlogPosts: blogCount || 0,
+        pendingBookings: pendingBookings || 0,
+        newContacts: newContacts || 0
+      }
+    })
+  } catch (error) {
+    console.error('Stats error:', error)
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to fetch stats'
+    })
+  }
 }
 
 // Users handler
