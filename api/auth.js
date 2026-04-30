@@ -179,13 +179,26 @@ async function handleLogin(req, res) {
 
     console.log('Login successful for:', user.email)
 
+    // Return FULLY backward compatible response with ALL possible token/user locations
     return res.status(200).json({
       success: true,
       message: 'Login successful',
       token: access_token, // For backward compatibility
+      access_token: access_token, // Also at root level
+      refresh_token: refresh_token, // Also at root level
+      user: {  // Also at root level
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        role: user.role,
+        phone: user.phone,
+        company: user.company,
+        is_active: user.is_active
+      },
       data: {
         access_token,
         refresh_token,
+        token: access_token, // Also in data
         user: {
           id: user.id,
           email: user.email,
@@ -250,6 +263,16 @@ async function handleMe(req, res) {
 
     return res.status(200).json({
       success: true,
+      user: {  // Also at root level for compatibility
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        phone: user.phone,
+        company: user.company,
+        role: user.role,
+        created_at: user.created_at,
+        is_active: user.is_active
+      },
       data: {
         user: {
           id: user.id,
@@ -258,7 +281,8 @@ async function handleMe(req, res) {
           phone: user.phone,
           company: user.company,
           role: user.role,
-          created_at: user.created_at
+          created_at: user.created_at,
+          is_active: user.is_active
         }
       }
     })

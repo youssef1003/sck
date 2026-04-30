@@ -14,42 +14,70 @@ const supabase = createClient(
 module.exports = async function handler(req, res) {
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*')
-  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
   res.setHeader('Content-Type', 'application/json')
+
+  console.log('AI Chat request:', {
+    method: req.method,
+    hasBody: !!req.body,
+    bodyKeys: req.body ? Object.keys(req.body) : []
+  })
 
   // Handle OPTIONS
   if (req.method === 'OPTIONS') {
     return res.status(200).json({ success: true })
   }
 
-  // Only POST allowed
+  // Handle GET - return status
+  if (req.method === 'GET') {
+    return res.status(200).json({
+      success: true,
+      message: 'AI chat endpoint is working. Use POST to send messages.',
+      status: 'online'
+    })
+  }
+
+  // Only POST allowed for chat
   if (req.method !== 'POST') {
     return res.status(405).json({
       success: false,
-      message: 'Method not allowed. Use POST.'
+      message: 'Method not allowed. Use POST to send messages or GET for status.'
     })
   }
 
   try {
     const { message, history = [], language = 'ar' } = req.body
 
+    console.log('AI Chat message:', {
+      hasMessage: !!message,
+      messageLength: message ? message.length : 0,
+      language
+    })
+
     // Validate input
     if (!message || typeof message !== 'string' || !message.trim()) {
       return res.status(400).json({
         success: false,
-        message: 'Message is required and must be a non-empty string'
+        message: 'Message is required and must be a non-empty string',
+        reply: language === 'ar' 
+          ? 'الرجاء إدخال رسالة صحيحة'
+          : 'Please enter a valid message'
       })
     }
 
     // Check if AI is available
     const hasAI = !!(process.env.HF_API_KEY || process.env.OPENAI_API_KEY)
 
+    console.log('AI availability:', { hasAI })
+
     if (!hasAI) {
       // Fallback response when no AI provider is configured
       const fallbackReply = language === 'ar'
         ? 'مرحباً! أنا مساعد SCK للاستشارات الإدارية. نحن نقدم خدمات استشارية متخصصة في الأنظمة الإدارية وشهادات ISO. كيف يمكنني مساعدتك؟'
         : 'Hello! I am SCK Consulting assistant. We provide specialized consulting services in management systems and ISO certifications. How can I help you?'
+
+      console.log('Returning fallback response (no AI key)')
 
       return res.status(200).json({
         success: true,
@@ -96,7 +124,7 @@ module.exports = async function handler(req, res) {
     } catch (aiError) {
       console.error('AI processing error:', aiError)
       
-      // Fallback on AI error
+      // Fallback on AI error - always return success with error message as reply
       const errorReply = language === 'ar'
         ? 'عذراً، حدث خطأ في معالجة طلبك. يرجى المحاولة مرة أخرى.'
         : 'Sorry, there was an error processing your request. Please try again.'
@@ -110,9 +138,16 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     console.error('Chat endpoint error:', error)
     
-    return res.status(500).json({
-      success: false,
-      message: 'Internal server error. Please try again later.'
+    // Even on error, return success with error message as reply to avoid frontend crashes
+    const language = req.body?.language || 'ar'
+    const errorReply = language === 'ar'
+      ? 'عذراً، المساعد الذكي غير متاح حالياً. حاول مرة أخرى لاحقاً.'
+      : 'Sorry, AI Assistant is currently unavailable. Please try again later.'
+    
+    return res.status(200).json({
+      success: true,
+      reply: errorReply,
+      error: process.env.NODE_ENV !== 'production' ? error.message : undefined
     })
   }
 }
