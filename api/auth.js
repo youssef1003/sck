@@ -74,13 +74,20 @@ async function handleLogin(req, res) {
   const identifier = req.body.email || req.body.username || req.body.identifier
   const password = req.body.password
 
-  console.log('Login attempt:', {
-    identifier,
+  console.log('=== LOGIN DEBUG START ===')
+  console.log('AUTH DEBUG:', {
+    method: req.method,
+    rawAction: req.query.action,
+    normalizedAction: req.query.action ? String(req.query.action).trim().replace(/[\\/\s]/g, '').toLowerCase() : '',
+    bodyKeys: Object.keys(req.body || {}),
+    hasIdentifier: !!identifier,
+    identifierValue: identifier,
     hasPassword: !!password,
-    bodyKeys: Object.keys(req.body || {})
+    passwordLength: password ? password.length : 0
   })
 
   if (!identifier || !password) {
+    console.log('ERROR: Missing credentials')
     return res.status(400).json({ 
       success: false,
       message: 'Email and password are required' 
@@ -90,36 +97,53 @@ async function handleLogin(req, res) {
   try {
     // Call login_user function from database
     // This function uses crypt() to verify password against password_hash
-    console.log('Calling Supabase RPC login_user with identifier:', identifier)
+    console.log('Calling Supabase RPC login_user with:', {
+      p_email: identifier,
+      passwordProvided: true
+    })
     
     const { data: result, error } = await supabase.rpc('login_user', {
       p_email: identifier,
       p_password: password
     })
 
-    console.log('Supabase RPC result:', {
+    console.log('SUPABASE RPC DEBUG:', {
+      rpcName: 'login_user',
       hasData: !!result,
       isArray: Array.isArray(result),
-      dataLength: result ? result.length : 0,
+      dataLength: Array.isArray(result) ? result.length : (result ? 1 : 0),
       hasError: !!error,
       errorMessage: error?.message,
+      errorCode: error?.code,
       errorDetails: error?.details,
-      errorHint: error?.hint
+      errorHint: error?.hint,
+      resultType: typeof result,
+      resultKeys: result ? Object.keys(result) : []
     })
 
     if (error) {
-      console.error('Login RPC error:', error)
+      console.error('Login RPC error:', {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint
+      })
       return res.status(401).json({ 
         success: false,
-        message: 'Invalid email or password'
+        message: 'Invalid email or password',
+        debug: process.env.NODE_ENV !== 'production' ? {
+          error: error.message,
+          code: error.code
+        } : undefined
       })
     }
 
     // Handle both array and single object responses
     let user = null
     if (Array.isArray(result)) {
+      console.log('Result is array with length:', result.length)
       if (result.length === 0) {
-        console.log('No user found - empty array')
+        console.log('ERROR: No user found - empty array')
         return res.status(401).json({ 
           success: false,
           message: 'Invalid email or password' 
@@ -127,9 +151,10 @@ async function handleLogin(req, res) {
       }
       user = result[0]
     } else if (result && typeof result === 'object') {
+      console.log('Result is object')
       user = result
     } else {
-      console.log('No user found - invalid result type')
+      console.log('ERROR: No user found - invalid result type:', typeof result)
       return res.status(401).json({ 
         success: false,
         message: 'Invalid email or password' 
@@ -145,6 +170,7 @@ async function handleLogin(req, res) {
 
     // Check if user is active
     if (!user.is_active) {
+      console.log('ERROR: User is inactive')
       return res.status(403).json({ 
         success: false,
         message: 'Account is inactive. Please contact support.' 
@@ -177,7 +203,8 @@ async function handleLogin(req, res) {
       { expiresIn: '30d' }
     )
 
-    console.log('Login successful for:', user.email)
+    console.log('Login successful for:', user.email, 'role:', user.role)
+    console.log('=== LOGIN DEBUG END ===')
 
     // Return FULLY backward compatible response with ALL possible token/user locations
     return res.status(200).json({
@@ -212,9 +239,11 @@ async function handleLogin(req, res) {
     })
   } catch (error) {
     console.error('Login exception:', error)
+    console.log('=== LOGIN DEBUG END (ERROR) ===')
     return res.status(500).json({ 
       success: false,
-      message: 'Internal server error. Please try again later.' 
+      message: 'Internal server error. Please try again later.',
+      debug: process.env.NODE_ENV !== 'production' ? error.message : undefined
     })
   }
 }
