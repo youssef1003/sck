@@ -1,20 +1,41 @@
 const { createClient } = require('@supabase/supabase-js')
 const jwt = require('jsonwebtoken')
 
-// Initialize Supabase with error checking
-const SUPABASE_URL = process.env.SUPABASE_URL
-const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY
+// Initialize Supabase with error checking and safe trimming
+const SUPABASE_URL = process.env.SUPABASE_URL?.trim().replace(/^["']|["']$/g, '') || ''
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY?.trim().replace(/^["']|["']$/g, '') || ''
+const JWT_SECRET = process.env.JWT_SECRET?.trim().replace(/^["']|["']$/g, '') || 'sck_super_secret_key_2025_production'
+
+console.log('AUTH INIT:', {
+  hasUrl: !!SUPABASE_URL,
+  urlValid: SUPABASE_URL.startsWith('https://') && SUPABASE_URL.includes('.supabase.co'),
+  urlLength: SUPABASE_URL.length,
+  hasKey: !!SUPABASE_SERVICE_KEY,
+  keyLength: SUPABASE_SERVICE_KEY.length,
+  hasJwtSecret: !!JWT_SECRET
+})
 
 if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-  console.error('Missing Supabase credentials:', {
+  console.error('CRITICAL: Missing Supabase credentials:', {
     hasUrl: !!SUPABASE_URL,
     hasKey: !!SUPABASE_SERVICE_KEY
   })
 }
 
-const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+if (!SUPABASE_URL.startsWith('https://') || !SUPABASE_URL.includes('.supabase.co')) {
+  console.error('CRITICAL: Invalid SUPABASE_URL format:', {
+    url: SUPABASE_URL.substring(0, 30) + '...',
+    startsWithHttps: SUPABASE_URL.startsWith('https://'),
+    includesSupabase: SUPABASE_URL.includes('.supabase.co')
+  })
+}
 
-const JWT_SECRET = process.env.JWT_SECRET || 'sck_super_secret_key_2025_production'
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
 
 module.exports = async function handler(req, res) {
   // Enable CORS

@@ -5,11 +5,16 @@
 
 const { createClient } = require('@supabase/supabase-js')
 
-// Initialize Supabase
-const supabase = createClient(
-  process.env.SUPABASE_URL || '',
-  process.env.SUPABASE_SERVICE_KEY || ''
-)
+// Initialize Supabase with safe trimming
+const SUPABASE_URL = process.env.SUPABASE_URL?.trim().replace(/^["']|["']$/g, '') || ''
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY?.trim().replace(/^["']|["']$/g, '') || ''
+
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
+  auth: {
+    autoRefreshToken: false,
+    persistSession: false
+  }
+})
 
 module.exports = async function handler(req, res) {
   // CORS headers
