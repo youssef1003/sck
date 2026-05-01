@@ -13,6 +13,8 @@ import Careers from './pages/Careers'
 import Contact from './pages/Contact'
 import Blog from './pages/Blog'
 import BlogPost from './pages/BlogPost'
+import Consultation from './pages/Consultation'
+import EmployerRequest from './pages/EmployerRequest'
 import NotFound from './pages/NotFound'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
@@ -150,6 +152,28 @@ function App() {
               <Navbar />
               <main className="flex-grow">
                 <BlogPost />
+              </main>
+              <Footer />
+              <AIChat />
+            </div>
+          } />
+          
+          <Route path="/consultation" element={
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-grow">
+                <Consultation />
+              </main>
+              <Footer />
+              <AIChat />
+            </div>
+          } />
+          
+          <Route path="/employer-request" element={
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-grow">
+                <EmployerRequest />
               </main>
               <Footer />
               <AIChat />
