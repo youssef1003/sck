@@ -53,6 +53,8 @@ module.exports = async function handler(req, res) {
         return await handleManage(req, res)
       case 'blog':
         return await handleBlog(req, res)
+      case 'page-content':
+        return await handlePageContent(req, res)
       default:
         return res.status(400).json({ error: 'Invalid action' })
     }
@@ -397,6 +399,99 @@ async function handleBlog(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   } catch (error) {
     console.error('Blog handler error:', error)
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error'
+    })
+  }
+}
+
+// Page Content handler
+async function handlePageContent(req, res) {
+  try {
+    const { page_key } = req.query
+
+    // GET - Get page content
+    if (req.method === 'GET') {
+      if (!page_key) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing page_key parameter'
+        })
+      }
+
+      const { data, error } = await supabase
+        .from('page_content')
+        .select('*')
+        .eq('page_key', page_key)
+        .single()
+
+      if (error && error.code !== 'PGRST116') throw error
+
+      return res.status(200).json({
+        success: true,
+        data: data || null
+      })
+    }
+
+    // POST/PUT - Save page content
+    if (req.method === 'POST' || req.method === 'PUT') {
+      const { page_key: bodyPageKey, content } = req.body
+
+      const pageKey = bodyPageKey || page_key
+
+      if (!pageKey || !content) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing page_key or content'
+        })
+      }
+
+      // Check if page exists
+      const { data: existing } = await supabase
+        .from('page_content')
+        .select('id')
+        .eq('page_key', pageKey)
+        .single()
+
+      let result
+
+      if (existing) {
+        // Update existing
+        const { data, error } = await supabase
+          .from('page_content')
+          .update({
+            content,
+            updated_at: new Date().toISOString()
+          })
+          .eq('page_key', pageKey)
+          .select()
+
+        if (error) throw error
+        result = data[0]
+      } else {
+        // Insert new
+        const { data, error } = await supabase
+          .from('page_content')
+          .insert({
+            page_key: pageKey,
+            content
+          })
+          .select()
+
+        if (error) throw error
+        result = data[0]
+      }
+
+      return res.status(200).json({
+        success: true,
+        data: result
+      })
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' })
+  } catch (error) {
+    console.error('Page content handler error:', error)
     return res.status(500).json({
       success: false,
       error: error.message || 'Internal server error'

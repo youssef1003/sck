@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Save, Image as ImageIcon } from 'lucide-react'
+import { Save, Image as ImageIcon, Loader } from 'lucide-react'
 import toast from 'react-hot-toast'
+import axios from 'axios'
 
 const AboutManagement = () => {
   const [aboutData, setAboutData] = useState({
@@ -9,27 +10,54 @@ const AboutManagement = () => {
     title_en: 'About Us',
     subtitle_ar: 'SCQ للاستشارات الإدارية',
     subtitle_en: 'SCQ Management Consulting',
-    description_ar: 'نحن شركة رائدة في مجال الاستشارات الإدارية مع أكثر من 55 عاماً من الخبرة في تقديم حلول مبتكرة للشركات والمؤسسات.',
-    description_en: 'We are a leading management consulting firm with over 55 years of experience in providing innovative solutions for companies and organizations.',
-    mission_ar: 'مهمتنا هي مساعدة المؤسسات على تحقيق التميز التشغيلي والنمو المستدام من خلال حلول استشارية مبتكرة.',
-    mission_en: 'Our mission is to help organizations achieve operational excellence and sustainable growth through innovative consulting solutions.',
-    vision_ar: 'أن نكون الشريك الاستشاري الأول للمؤسسات في المنطقة.',
-    vision_en: 'To be the first consulting partner for organizations in the region.',
-    values_ar: ['التميز', 'الابتكار', 'النزاهة', 'الشراكة'],
-    values_en: ['Excellence', 'Innovation', 'Integrity', 'Partnership'],
-    years_experience: '55',
+    description_ar: 'نحن في SCQ نؤمن بأن كل شركة لديها القدرة على النمو مع الاستراتيجية الصحيحة',
+    description_en: 'At SCQ, we believe that every company has the ability to grow with the right strategy',
+    mission_ar: 'تقديم حلول إدارية عالية التأثير باستخدام استراتيجيات حديثة وبيانات وتكنولوجيا متقدمة',
+    mission_en: 'Providing high-impact management solutions using modern strategies, data, and advanced technology',
+    vision_ar: 'أن نصبح منصة استشارات رقمية رائدة في الشرق الأوسط تحول كيفية نمو الشركات واتخاذ القرارات',
+    vision_en: 'To become a leading digital consulting platform in the Middle East that transforms how companies grow and make decisions',
+    values_ar: ['التميز', 'الابتكار', 'النزاهة', 'الشراكة', 'النتائج'],
+    values_en: ['Excellence', 'Innovation', 'Integrity', 'Partnership', 'Results'],
+    years_experience: '25+',
     clients_count: '500+',
     projects_count: '1000+',
     team_size: '50+',
-    hero_image: '',
+    hero_image: 'https://images.unsplash.com/photo-1552664730-d307ca884978?w=1200&h=600&fit=crop',
     hero_image_caption_ar: '',
     hero_image_caption_en: '',
-    about_image: '',
+    about_image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=800&h=600&fit=crop',
     about_image_caption_ar: '',
     about_image_caption_en: ''
   })
 
   const [isSaving, setIsSaving] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  // Load existing content
+  useEffect(() => {
+    loadContent()
+  }, [])
+
+  const loadContent = async () => {
+    setIsLoading(true)
+    try {
+      const token = localStorage.getItem('access_token')
+      const response = await axios.get('/api/admin?action=page-content&page_key=about', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+
+      if (response.data.success && response.data.data) {
+        setAboutData(response.data.data.content)
+      }
+    } catch (error) {
+      console.error('Failed to load content:', error)
+      // Keep default values
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const handleChange = (field, value) => {
     setAboutData({ ...aboutData, [field]: value })
@@ -53,16 +81,40 @@ const AboutManagement = () => {
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      // Save to localStorage for now (will be connected to API later)
-      localStorage.setItem('about_data', JSON.stringify(aboutData))
+      const token = localStorage.getItem('access_token')
       
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      toast.success('تم حفظ التغييرات بنجاح!')
+      const response = await axios.post('/api/admin?action=page-content', {
+        page_key: 'about',
+        content: aboutData
+      }, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.data.success) {
+        toast.success('تم حفظ التغييرات بنجاح! ✅')
+      } else {
+        throw new Error(response.data.error || 'Failed to save')
+      }
     } catch (error) {
-      toast.error('فشل في حفظ التغييرات')
+      console.error('Save error:', error)
+      toast.error('فشل في حفظ التغييرات ❌')
     } finally {
       setIsSaving(false)
     }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader className="w-12 h-12 animate-spin text-blue-600 mx-auto mb-4" />
+          <p className="text-slate-600">جاري تحميل المحتوى...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

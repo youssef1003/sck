@@ -1,7 +1,51 @@
+import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Target, Eye, Award, Users } from 'lucide-react'
 
 const About = () => {
+  const [content, setContent] = useState(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchContent()
+  }, [])
+
+  const fetchContent = async () => {
+    try {
+      const response = await fetch('/api/page-content?page_key=about')
+      const result = await response.json()
+      
+      if (result.success && result.data) {
+        setContent(result.data.content)
+      }
+    } catch (error) {
+      console.error('Failed to fetch about content:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Default content if API fails
+  const defaultContent = {
+    title_ar: 'من نحن',
+    description_ar: 'نحن في SCQ نؤمن بأن كل شركة لديها القدرة على النمو مع الاستراتيجية الصحيحة',
+    vision_ar: 'أن نصبح منصة استشارات رقمية رائدة في الشرق الأوسط تحول كيفية نمو الشركات واتخاذ القرارات',
+    mission_ar: 'تقديم حلول إدارية عالية التأثير باستخدام استراتيجيات حديثة وبيانات وتكنولوجيا متقدمة',
+    values_ar: ['التميز', 'الشراكة', 'النتائج']
+  }
+
+  const data = content || defaultContent
+
+  if (loading) {
+    return (
+      <div className="pt-20 min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">جاري التحميل...</p>
+        </div>
+      </div>
+    )
+  }
   return (
     <div className="pt-20">
       {/* Hero Section */}
@@ -12,7 +56,7 @@ const About = () => {
             animate={{ opacity: 1, y: 0 }}
             className="text-5xl md:text-6xl font-bold mb-6"
           >
-            من نحن
+            {data.title_ar || 'من نحن'}
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 30 }}
@@ -20,7 +64,7 @@ const About = () => {
             transition={{ delay: 0.2 }}
             className="text-xl text-gray-200 max-w-3xl mx-auto"
           >
-            نحن في SCQ نؤمن بأن كل شركة لديها القدرة على النمو مع الاستراتيجية الصحيحة
+            {data.description_ar || 'نحن في SCQ نؤمن بأن كل شركة لديها القدرة على النمو مع الاستراتيجية الصحيحة'}
           </motion.p>
         </div>
       </section>
@@ -40,7 +84,7 @@ const About = () => {
               </div>
               <h2 className="text-3xl font-bold text-primary mb-4">رؤيتنا</h2>
               <p className="text-gray-700 leading-relaxed text-lg">
-                أن نصبح منصة استشارات رقمية رائدة في الشرق الأوسط تحول كيفية نمو الشركات واتخاذ القرارات
+                {data.vision_ar || 'أن نصبح منصة استشارات رقمية رائدة في الشرق الأوسط'}
               </p>
             </motion.div>
 
@@ -55,7 +99,7 @@ const About = () => {
               </div>
               <h2 className="text-3xl font-bold text-primary mb-4">مهمتنا</h2>
               <p className="text-gray-700 leading-relaxed text-lg">
-                تقديم حلول إدارية عالية التأثير باستخدام استراتيجيات حديثة وبيانات وتكنولوجيا متقدمة
+                {data.mission_ar || 'تقديم حلول إدارية عالية التأثير باستخدام استراتيجيات حديثة'}
               </p>
             </motion.div>
           </div>
@@ -114,26 +158,25 @@ const About = () => {
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            {[
-              { icon: Award, title: 'التميز', desc: 'نسعى دائماً لتقديم أعلى مستويات الجودة' },
-              { icon: Users, title: 'الشراكة', desc: 'نبني علاقات طويلة الأمد مع عملائنا' },
-              { icon: Target, title: 'النتائج', desc: 'نركز على تحقيق نتائج ملموسة وقابلة للقياس' }
-            ].map((value, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="text-center p-8 bg-gray-50 rounded-2xl hover:shadow-lg transition-shadow"
-              >
-                <div className="w-16 h-16 bg-gradient-to-br from-secondary to-yellow-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <value.icon className="text-white" size={28} />
-                </div>
-                <h3 className="text-xl font-bold text-primary mb-3">{value.title}</h3>
-                <p className="text-gray-600">{value.desc}</p>
-              </motion.div>
-            ))}
+            {(data.values_ar || ['التميز', 'الشراكة', 'النتائج']).slice(0, 3).map((value, index) => {
+              const icons = [Award, Users, Target]
+              const Icon = icons[index] || Award
+              return (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="text-center p-8 bg-gray-50 rounded-2xl hover:shadow-lg transition-shadow"
+                >
+                  <div className="w-16 h-16 bg-gradient-to-br from-secondary to-yellow-600 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                    <Icon className="text-white" size={28} />
+                  </div>
+                  <h3 className="text-xl font-bold text-primary mb-3">{value}</h3>
+                </motion.div>
+              )
+            })}
           </div>
         </div>
       </section>
