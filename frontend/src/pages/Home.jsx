@@ -3,6 +3,8 @@ import Services from '../components/home/Services'
 import WhyChooseUs from '../components/home/WhyChooseUs'
 import Stats from '../components/home/Stats'
 import Legacy from '../components/home/Legacy'
+import QualityConsulting from '../components/home/QualityConsulting'
+import IntegratedHRSolutions from '../components/home/IntegratedHRSolutions'
 import CTA from '../components/home/CTA'
 
 const Home = () => {
@@ -11,6 +13,8 @@ const Home = () => {
       <Hero />
       <Stats />
       <Legacy />
+      <QualityConsulting />
+      <IntegratedHRSolutions />
       <Services />
       <WhyChooseUs />
       <CTA />
