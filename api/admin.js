@@ -237,7 +237,7 @@ async function handleBlog(req, res) {
         query = query.or(`title.ilike.%${search}%,author.ilike.%${search}%,content.ilike.%${search}%`)
       }
 
-      query = query.range(offset, offset + limit - 1)
+      query = query.range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1)
 
       const { data, error, count } = await query
 
@@ -285,8 +285,14 @@ async function handleBlog(req, res) {
 
     // PUT - Update blog post
     if (req.method === 'PUT') {
-      const postId = req.url.split('/').pop().split('?')[0]
-      const { title, excerpt, content, author, category, image_url, booking_link } = req.body
+      const { id, title, excerpt, content, author, category, image_url, booking_link } = req.body
+
+      if (!id) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing post ID'
+        })
+      }
 
       const updates = {}
       if (title !== undefined) updates.title = title
@@ -301,10 +307,17 @@ async function handleBlog(req, res) {
       const { data, error } = await supabase
         .from('blog_posts')
         .update(updates)
-        .eq('id', postId)
+        .eq('id', id)
         .select()
 
       if (error) throw error
+
+      if (!data || data.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Post not found'
+        })
+      }
 
       return res.status(200).json({
         success: true,
@@ -314,19 +327,32 @@ async function handleBlog(req, res) {
 
     // PATCH - Toggle publish status
     if (req.method === 'PATCH') {
-      const postId = req.url.split('/').pop().split('?')[0]
-      const { is_published } = req.query
+      const { id, is_published } = req.body
+
+      if (!id) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing post ID'
+        })
+      }
 
       const { data, error } = await supabase
         .from('blog_posts')
         .update({ 
-          is_published: is_published === 'true',
+          is_published: is_published,
           updated_at: new Date().toISOString()
         })
-        .eq('id', postId)
+        .eq('id', id)
         .select()
 
       if (error) throw error
+
+      if (!data || data.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Post not found'
+        })
+      }
 
       return res.status(200).json({
         success: true,
@@ -336,17 +362,31 @@ async function handleBlog(req, res) {
 
     // DELETE - Soft delete blog post
     if (req.method === 'DELETE') {
-      const postId = req.url.split('/').pop()
+      const { id } = req.body
+
+      if (!id) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing post ID'
+        })
+      }
 
       const { data, error } = await supabase
         .from('blog_posts')
         .update({ 
           deleted_at: new Date().toISOString()
         })
-        .eq('id', postId)
+        .eq('id', id)
         .select()
 
       if (error) throw error
+
+      if (!data || data.length === 0) {
+        return res.status(404).json({
+          success: false,
+          error: 'Post not found'
+        })
+      }
 
       return res.status(200).json({
         success: true,

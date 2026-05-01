@@ -144,17 +144,20 @@ export const createBlogPost = async (post) => {
 }
 
 export const updateBlogPost = async (postId, post) => {
-  const res = await adminApi.put(`/${postId}?action=blog`, post)
+  // Send postId in the body, not in URL
+  const res = await adminApi.put(`?action=blog`, { ...post, id: postId })
   return res.data
 }
 
 export const toggleBlogPublish = async (postId, isPublished) => {
-  const res = await adminApi.patch(`/${postId}/publish?action=blog`, null, { params: { is_published: isPublished } })
+  // Send postId in the body
+  const res = await adminApi.patch(`?action=blog`, { id: postId, is_published: isPublished })
   return res.data
 }
 
 export const deleteBlogPost = async (postId) => {
-  const res = await adminApi.delete(`/${postId}?action=blog`)
+  // Send postId in the body
+  const res = await adminApi.delete(`?action=blog`, { data: { id: postId } })
   return res.data
 }
 
