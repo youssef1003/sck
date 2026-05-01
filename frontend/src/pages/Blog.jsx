@@ -17,17 +17,17 @@ const Blog = () => {
   const fetchBlogPosts = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/admin?action=blog&limit=100')
+      const response = await fetch('/api/blog?limit=100')
       const result = await response.json()
       
       if (result.success && result.data) {
-        // Filter only published posts
-        const publishedPosts = result.data.filter(post => post.is_published)
-        setPosts(publishedPosts)
+        setPosts(result.data)
+      } else {
+        console.error('Failed to fetch posts:', result.error)
+        setPosts([])
       }
     } catch (error) {
       console.error('Failed to fetch blog posts:', error)
-      // Keep empty array on error
       setPosts([])
     } finally {
       setLoading(false)
