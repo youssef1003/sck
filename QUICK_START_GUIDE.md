@@ -1,228 +1,391 @@
-# 🚀 دليل البدء السريع - SCQ Platform
+# Quick Start Guide - SCQ GROUP Production Upgrade
 
-## 📋 المحتويات
-1. [تشغيل المشروع](#تشغيل-المشروع)
-2. [حسابات التجربة](#حسابات-التجربة)
-3. [الميزات الجديدة](#الميزات-الجديدة)
-4. [استكشاف المشروع](#استكشاف-المشروع)
+## What's Been Done ✅
+
+**Phase 1 & 2 are complete!**
+
+- ✅ Removed all security vulnerabilities
+- ✅ Implemented backend permission system
+- ✅ Protected all dangerous endpoints
+- ✅ Created complete database migration
+- ✅ Seeded 8 services and 4 recruitment packages
+
+**Branch:** `production-scq-recruitment-system`
 
 ---
 
-## 🎯 تشغيل المشروع
+## Immediate Next Steps
 
-### الخطوة 1: تشغيل Frontend
+### 1. Run the Database Migration (5 minutes)
+
+1. Open Supabase Dashboard → SQL Editor
+2. Copy entire contents of `supabase/migrations/20260501_scq_recruitment_content_system.sql`
+3. Paste and click "Run"
+4. Verify success message
+
+**What this creates:**
+- 8 service pages (policies, HR planning, payroll, etc.)
+- 4 recruitment packages (Bronze, Silver, Gold, Platinum)
+- Quote requests table
+- Candidate profiles table (with experiences, languages, skills)
+- Audit logs table
+- Content blocks
+
+### 2. Set Environment Variables (2 minutes)
+
+In Vercel Dashboard → Settings → Environment Variables:
+
+```bash
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_KEY=your-service-role-key
+JWT_SECRET=your-strong-secret-min-32-chars
+DEBUG_SECRET=optional-for-test-endpoints
+```
+
+**⚠️ CRITICAL:** JWT_SECRET must be set - no fallback anymore!
+
+### 3. Test Current Changes (5 minutes)
+
 ```bash
 cd frontend
-npm run dev
+npm install
+npm run build
 ```
-**سيعمل على:** `http://localhost:3000`
 
-### الخطوة 2: تشغيل Backend (في terminal آخر)
+If build succeeds, deploy to Vercel:
 ```bash
-cd backend
-uvicorn main:app --reload
+git push origin production-scq-recruitment-system
 ```
-**سيعمل على:** `http://localhost:8000`
+
+Then test:
+- Login at `/login` - should work
+- Admin dashboard - should work
+- Blog management - should work
 
 ---
 
-## 👥 حسابات التجربة
+## What to Build Next
 
-### 🔴 Admin (مدير النظام)
-```
-Username: admin
-Password: scq2025
-الصلاحيات: كاملة
+### Option A: Backend APIs First (Recommended)
+
+Create these files in order:
+
+1. **`api/services.js`** (15 min)
+   - GET all services
+   - GET service by slug
+
+2. **`api/recruitment-packages.js`** (10 min)
+   - GET all packages
+
+3. **`api/quote-requests.js`** (20 min)
+   - POST submit quote request
+
+4. **`api/candidates.js`** (30 min)
+   - POST submit candidate registration
+   - Auto-generate candidate code
+
+5. **Extend `api/admin.js`** (60 min)
+   - Add `action=services` handler
+   - Add `action=packages` handler
+   - Add `action=quote-requests` handler
+   - Add `action=candidates` handler (with contact masking)
+   - Add `action=subadmins` handler
+   - Add `action=audit-logs` handler
+
+### Option B: Public Pages First
+
+1. **Update Home Page** (30 min)
+   - Add "أنظمة الجودة والاستشارات" section
+   - Add 8 service cards
+
+2. **Services Page** (45 min)
+   - `/services` - list all services
+   - `/services/:slug` - service details
+
+3. **Recruitment Packages Page** (30 min)
+   - `/recruitment-packages` - show 4 packages
+
+4. **Quote Request Form** (60 min)
+   - `/quote-request` - multi-section form
+
+5. **Candidate Registration Form** (90 min)
+   - `/candidate/register` - 7-step form
+
+---
+
+## Code Templates
+
+### Template: Public API Endpoint
+
+```javascript
+// api/services.js
+const { createClient } = require('@supabase/supabase-js')
+
+const supabase = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_KEY
+)
+
+module.exports = async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type')
+
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end()
+  }
+
+  if (req.method === 'GET') {
+    const { slug } = req.query
+
+    if (slug) {
+      // Get single service
+      const { data, error } = await supabase
+        .from('service_pages')
+        .select('*')
+        .eq('slug', slug)
+        .eq('is_active', true)
+        .is('deleted_at', null)
+        .single()
+
+      if (error) {
+        return res.status(404).json({ 
+          success: false, 
+          error: 'Service not found' 
+        })
+      }
+
+      return res.status(200).json({ success: true, data })
+    }
+
+    // Get all services
+    const { data, error } = await supabase
+      .from('service_pages')
+      .select('*')
+      .eq('is_active', true)
+      .is('deleted_at', null)
+      .order('sort_order', { ascending: true })
+
+    if (error) {
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch services' 
+      })
+    }
+
+    return res.status(200).json({ success: true, data })
+  }
+
+  return res.status(405).json({ error: 'Method not allowed' })
+}
 ```
 
-### 🟠 Sub-Admin (مساعد مدير)
-```
-Username: subadmin1
-Password: scq2025sub1
-الصلاحيات: محدودة
+### Template: Admin API Handler (add to api/admin.js)
+
+```javascript
+// Add to switch statement in main handler
+case 'services':
+  return await handleServices(req, res, admin)
+
+// Add new handler function
+async function handleServices(req, res, admin) {
+  // Check permissions
+  if (req.method === 'GET') {
+    if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'services_view'))) {
+      return res.status(403).json({ error: 'Insufficient permissions' })
+    }
+  } else if (req.method === 'POST') {
+    if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'services_create'))) {
+      return res.status(403).json({ error: 'Insufficient permissions' })
+    }
+  } else if (req.method === 'PUT') {
+    if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'services_edit'))) {
+      return res.status(403).json({ error: 'Insufficient permissions' })
+    }
+  } else if (req.method === 'DELETE') {
+    if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'services_delete'))) {
+      return res.status(403).json({ error: 'Insufficient permissions' })
+    }
+  }
+
+  if (req.method === 'GET') {
+    const { data, error } = await supabase
+      .from('service_pages')
+      .select('*')
+      .is('deleted_at', null)
+      .order('sort_order', { ascending: true })
+
+    if (error) throw error
+    return res.status(200).json({ success: true, data })
+  }
+
+  if (req.method === 'POST') {
+    const { data, error } = await supabase
+      .from('service_pages')
+      .insert({ ...req.body, created_by: admin.userId })
+      .select()
+
+    if (error) throw error
+
+    // Log action
+    await supabase.from('admin_audit_logs').insert({
+      actor_user_id: admin.userId,
+      action: 'create',
+      resource_type: 'service_page',
+      resource_id: data[0].id,
+      metadata: { title: data[0].title_ar }
+    })
+
+    return res.status(200).json({ success: true, data: data[0] })
+  }
+
+  if (req.method === 'PUT') {
+    const { id, ...updates } = req.body
+    const { data, error } = await supabase
+      .from('service_pages')
+      .update({ ...updates, updated_by: admin.userId, updated_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+
+    if (error) throw error
+
+    // Log action
+    await supabase.from('admin_audit_logs').insert({
+      actor_user_id: admin.userId,
+      action: 'update',
+      resource_type: 'service_page',
+      resource_id: id
+    })
+
+    return res.status(200).json({ success: true, data: data[0] })
+  }
+
+  if (req.method === 'DELETE') {
+    const { id } = req.body
+    const { data, error } = await supabase
+      .from('service_pages')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+
+    if (error) throw error
+
+    // Log action
+    await supabase.from('admin_audit_logs').insert({
+      actor_user_id: admin.userId,
+      action: 'delete',
+      resource_type: 'service_page',
+      resource_id: id
+    })
+
+    return res.status(200).json({ success: true })
+  }
+
+  return res.status(405).json({ error: 'Method not allowed' })
+}
 ```
 
-### 🟢 User (عميل عادي)
-```
-سجل حساب جديد من /register
-اختر: Client (باحث عن خدمة)
-```
+### Template: React Page
 
-### 🟣 Employer (صاحب عمل)
-```
-سجل حساب جديد من /register
-اختر: Employer (أبحث عن موظفين)
+```jsx
+// frontend/src/pages/Services.jsx
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
+import axios from 'axios'
+
+export default function Services() {
+  const [services, setServices] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchServices()
+  }, [])
+
+  const fetchServices = async () => {
+    try {
+      const response = await axios.get('/api/services')
+      setServices(response.data.data || [])
+    } catch (error) {
+      console.error('Error fetching services:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  if (loading) {
+    return <div className="text-center py-20">جاري التحميل...</div>
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-12">
+      <h1 className="text-4xl font-bold text-center mb-12">خدماتنا الاستشارية</h1>
+      
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {services.map(service => (
+          <Link 
+            key={service.id} 
+            to={`/services/${service.slug}`}
+            className="bg-white rounded-lg shadow-lg p-6 hover:shadow-xl transition"
+          >
+            <div className="text-4xl mb-4">{service.icon}</div>
+            <h3 className="text-2xl font-bold mb-3">{service.title_ar}</h3>
+            <p className="text-gray-600 mb-4">{service.short_description_ar}</p>
+            <span className="text-blue-600 font-semibold">اعرف المزيد ←</span>
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
 ```
 
 ---
 
-## ✨ الميزات الجديدة
+## Testing Checklist
 
-### 1️⃣ User Dashboard (`/dashboard`)
-**ماذا يمكنك أن تفعل:**
-- ✅ عرض وتعديل معلوماتك الشخصية
-- ✅ متابعة حجوزاتك الاستشارية
-- ✅ قراءة رسائلك
-- ✅ متابعة طلبات التوظيف (إن وجدت)
+After implementing each feature, test:
 
-**كيف تجربها:**
-1. سجل حساب جديد كـ Client
-2. اذهب لـ `/services` واحجز استشارة
-3. اذهب لـ `/contact` وأرسل رسالة
-4. ارجع لـ `/dashboard` لرؤية كل شيء
+- ✅ API endpoint returns correct data
+- ✅ Frontend displays data correctly
+- ✅ Forms validate correctly
+- ✅ Success/error messages show
+- ✅ Permissions work (try as subadmin)
+- ✅ Audit logs created (for admin actions)
+- ✅ Build succeeds: `npm run build`
 
 ---
 
-### 2️⃣ Employer Dashboard (`/employer/dashboard`)
-**ماذا يمكنك أن تفعل:**
-- ✅ عرض جميع المتقدمين للوظائف
-- ✅ بحث وفلترة المتقدمين
-- ✅ عرض تفاصيل كل متقدم
-- ✅ التواصل مع المتقدمين (بريد/هاتف)
+## Common Issues & Solutions
 
-**كيف تجربها:**
-1. سجل حساب جديد كـ Employer
-2. سيتم توجيهك تلقائياً لـ `/employer/dashboard`
-3. ستشاهد جميع المتقدمين للوظائف
+### Issue: "JWT_SECRET is not defined"
+**Solution:** Set JWT_SECRET in Vercel environment variables
 
----
+### Issue: "Cannot access table"
+**Solution:** Run the migration SQL file in Supabase
 
-### 3️⃣ Admin HomeEditor (`/admin/home`)
-**ماذا يمكنك أن تفعل:**
-- ✅ تعديل Hero Section
-- ✅ تعديل الإحصائيات (4 إحصائيات)
-- ✅ إضافة/تعديل/حذف الخدمات
-- ✅ إضافة/تعديل/حذف آراء العملاء
+### Issue: "Permission denied"
+**Solution:** Check user has correct permission in `users.permissions` column
 
-**كيف تجربها:**
-1. سجل دخول كـ Admin
-2. اذهب لـ `/admin/home`
-3. عدّل أي محتوى
-4. اضغط "حفظ التغييرات"
-5. اذهب للصفحة الرئيسية `/` لرؤية التغييرات
+### Issue: "Candidate contact info visible"
+**Solution:** Check backend masks data for users without `candidates_view_contact_info`
 
 ---
 
-### 4️⃣ Admin EmployersManagement (`/admin/employers`)
-**ماذا يمكنك أن تفعل:**
-- ✅ عرض جميع أصحاب العمل
-- ✅ الموافقة على الحسابات الجديدة
-- ✅ رفض الطلبات
-- ✅ إيقاف الحسابات
-- ✅ حذف الحسابات
+## Need Help?
 
-**كيف تجربها:**
-1. سجل حساب Employer جديد
-2. سجل دخول كـ Admin
-3. اذهب لـ `/admin/employers`
-4. ستجد الحساب الجديد "قيد المراجعة"
-5. وافق عليه أو ارفضه
+**Check these files:**
+- `PRODUCTION_UPGRADE_STATUS.md` - Detailed status
+- `IMPLEMENTATION_SUMMARY.md` - Complete summary
+- `supabase/migrations/20260501_scq_recruitment_content_system.sql` - Database schema
+
+**Ask me to:**
+- Create specific API endpoints
+- Create specific frontend pages
+- Debug permission issues
+- Review code before deployment
 
 ---
 
-## 🗺️ استكشاف المشروع
-
-### 📍 الصفحات العامة (بدون تسجيل دخول)
-```
-/                  → الصفحة الرئيسية
-/about             → من نحن
-/services          → خدماتنا
-/careers           → التوظيف
-/blog              → المدونة
-/contact           → تواصل معنا
-/login             → تسجيل الدخول
-/register          → إنشاء حساب
-```
-
-### 👤 صفحات المستخدم (تحتاج تسجيل دخول)
-```
-/dashboard         → لوحة تحكم العميل
-/employer/dashboard → لوحة تحكم صاحب العمل
-```
-
-### 🔐 صفحات الإدارة (Admin فقط)
-```
-/admin/dashboard   → لوحة التحكم الرئيسية
-/admin/users       → إدارة المستخدمين
-/admin/bookings    → إدارة الحجوزات
-/admin/contacts    → إدارة الرسائل
-/admin/blog        → إدارة المدونة
-/admin/careers     → إدارة التوظيف
-/admin/home        → تعديل الصفحة الرئيسية ✨ جديد
-/admin/employers   → إدارة أصحاب العمل ✨ جديد
-```
-
----
-
-## 🎨 سيناريوهات التجربة
-
-### سيناريو 1: تجربة العميل
-```
-1. افتح المتصفح → http://localhost:3000
-2. اضغط "إنشاء حساب"
-3. املأ البيانات واختر "Client"
-4. سجل دخول
-5. اذهب لـ "خدماتنا" واحجز استشارة
-6. اذهب لـ "تواصل معنا" وأرسل رسالة
-7. ارجع لـ "لوحة التحكم" لرؤية حجوزاتك ورسائلك
-```
-
-### سيناريو 2: تجربة صاحب العمل
-```
-1. افتح المتصفح → http://localhost:3000
-2. اضغط "إنشاء حساب"
-3. املأ البيانات واختر "Employer"
-4. سجل دخول
-5. ستُوجه تلقائياً لـ "لوحة تحكم صاحب العمل"
-6. شاهد جميع المتقدمين للوظائف
-7. ابحث وفلتر حسب الحالة
-```
-
-### سيناريو 3: تجربة الإدارة
-```
-1. سجل دخول كـ Admin (admin / scq2025)
-2. اذهب لـ "تعديل الصفحة الرئيسية"
-3. غيّر العنوان الرئيسي
-4. أضف خدمة جديدة
-5. احفظ التغييرات
-6. اذهب للصفحة الرئيسية لرؤية التغييرات
-7. اذهب لـ "إدارة أصحاب العمل"
-8. وافق على حساب صاحب عمل جديد
-```
-
----
-
-## 🐛 حل المشاكل الشائعة
-
-### المشكلة: "Cannot GET /dashboard"
-**الحل:** تأكد من تشغيل Frontend على المنفذ الصحيح
-
-### المشكلة: "Network Error"
-**الحل:** تأكد من تشغيل Backend على `http://localhost:8000`
-
-### المشكلة: "لا أرى بياناتي"
-**الحل:** البيانات محفوظة في localStorage، امسح الـ cache وأعد المحاولة
-
-### المشكلة: "الصفحة فارغة"
-**الحل:** تأكد من تسجيل الدخول أولاً
-
----
-
-## 📞 الدعم
-
-إذا واجهت أي مشكلة:
-1. تحقق من Console في المتصفح (F12)
-2. تحقق من Terminal للـ Backend
-3. تأكد من تشغيل كل من Frontend و Backend
-
----
-
-## 🎉 استمتع بالتجربة!
-
-المشروع الآن **جاهز للعرض** و**خالٍ من الأخطاء**! 🚀
-
-**ملاحظة:** هذا إصدار تجريبي، بعض الميزات (مثل Email Verification) ستُضاف بعد شراء الدومين.
-
----
-
-**آخر تحديث:** 19 أبريل 2026
+**Current Status:** Phase 1 & 2 Complete ✅  
+**Next:** Phase 3 - Backend APIs  
+**Estimated Time:** 2-3 hours for all backend APIs
