@@ -159,10 +159,13 @@ const Blog = () => {
                     )}
 
                     {/* Read More */}
-                    <button className="flex items-center space-x-2 space-x-reverse text-secondary font-semibold group-hover:gap-3 transition-all w-full justify-center">
+                    <Link
+                      to={`/blog/${post.id}`}
+                      className="flex items-center space-x-2 space-x-reverse text-secondary font-semibold group-hover:gap-3 transition-all w-full justify-center"
+                    >
                       <span>اقرأ المزيد</span>
                       <ArrowLeft size={18} className="group-hover:-translate-x-1 transition-transform" />
-                    </button>
+                    </Link>
                   </div>
                 </motion.article>
               ))}

@@ -12,6 +12,7 @@ import Services from './pages/Services'
 import Careers from './pages/Careers'
 import Contact from './pages/Contact'
 import Blog from './pages/Blog'
+import BlogPost from './pages/BlogPost'
 import NotFound from './pages/NotFound'
 import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
@@ -138,6 +139,17 @@ function App() {
               <Navbar />
               <main className="flex-grow">
                 <Blog />
+              </main>
+              <Footer />
+              <AIChat />
+            </div>
+          } />
+          
+          <Route path="/blog/:id" element={
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-grow">
+                <BlogPost />
               </main>
               <Footer />
               <AIChat />
