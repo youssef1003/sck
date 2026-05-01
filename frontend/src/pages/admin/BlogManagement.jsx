@@ -13,7 +13,7 @@ const BlogManagement = () => {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingPost, setEditingPost] = useState(null)
   const [formData, setFormData] = useState({
-    title: '', excerpt: '', content: '', author: 'فريق SCK', category: 'استراتيجية', image_url: ''
+    title: '', excerpt: '', content: '', author: 'فريق SCK', category: 'استراتيجية', image_url: '', booking_link: '/consultation'
   })
   const [saving, setSaving] = useState(false)
 
@@ -48,7 +48,7 @@ const BlogManagement = () => {
 
   const openCreateModal = () => {
     setEditingPost(null)
-    setFormData({ title: '', excerpt: '', content: '', author: 'فريق SCK', category: 'استراتيجية', image_url: '' })
+    setFormData({ title: '', excerpt: '', content: '', author: 'فريق SCK', category: 'استراتيجية', image_url: '', booking_link: '/consultation' })
     setIsModalOpen(true)
   }
 
@@ -56,7 +56,7 @@ const BlogManagement = () => {
     setEditingPost(post)
     setFormData({
       title: post.title, excerpt: post.excerpt, content: post.content,
-      author: post.author, category: post.category, image_url: post.image_url || ''
+      author: post.author, category: post.category, image_url: post.image_url || '', booking_link: post.booking_link || '/consultation'
     })
     setIsModalOpen(true)
   }
@@ -238,6 +238,13 @@ const BlogManagement = () => {
                   <input type="url" value={formData.image_url} onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
                     className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none"
                     placeholder="https://..." dir="ltr" />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">رابط حجز الاستشارة</label>
+                  <input type="text" value={formData.booking_link} onChange={(e) => setFormData({ ...formData, booking_link: e.target.value })}
+                    className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none"
+                    placeholder="/consultation" dir="ltr" />
+                  <p className="text-xs text-slate-500 mt-1">سيظهر زر "احجز استشارة" في المقال يوجه للرابط المحدد</p>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-slate-700 mb-2">المقتطف *</label>

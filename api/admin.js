@@ -51,6 +51,8 @@ module.exports = async function handler(req, res) {
         return await handleBackup(req, res)
       case 'manage':
         return await handleManage(req, res)
+      case 'blog':
+        return await handleBlog(req, res)
       default:
         return res.status(400).json({ error: 'Invalid action' })
     }
@@ -106,8 +108,12 @@ async function handleStats(req, res) {
         totalBookings: bookingsCount || 0,
         totalContacts: contactsCount || 0,
         totalBlogPosts: blogCount || 0,
+        blog_posts: blogCount || 0,
         pendingBookings: pendingBookings || 0,
-        newContacts: newContacts || 0
+        newContacts: newContacts || 0,
+        new_messages: newContacts || 0,
+        bookings: bookingsCount || 0,
+        contacts: contactsCount || 0
       }
     })
   } catch (error) {
@@ -212,4 +218,148 @@ async function handleManage(req, res) {
   }
 
   return res.status(400).json({ error: 'Invalid operation' })
+}
+
+// Blog handler
+async function handleBlog(req, res) {
+  try {
+    // GET - List blog posts
+    if (req.method === 'GET') {
+      const { search, limit = 50, offset = 0 } = req.query
+      
+      let query = supabase
+        .from('blog_posts')
+        .select('*', { count: 'exact' })
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+
+      if (search) {
+        query = query.or(`title.ilike.%${search}%,author.ilike.%${search}%,content.ilike.%${search}%`)
+      }
+
+      query = query.range(offset, offset + limit - 1)
+
+      const { data, error, count } = await query
+
+      if (error) throw error
+
+      return res.status(200).json({
+        success: true,
+        data: data || [],
+        count: count || 0
+      })
+    }
+
+    // POST - Create new blog post
+    if (req.method === 'POST') {
+      const { title, excerpt, content, author, category, image_url, booking_link } = req.body
+
+      if (!title || !excerpt || !content) {
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required fields: title, excerpt, content'
+        })
+      }
+
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .insert({
+          title,
+          excerpt,
+          content,
+          author: author || 'فريق SCK',
+          category: category || 'استراتيجية',
+          image_url: image_url || null,
+          booking_link: booking_link || '/consultation',
+          is_published: true
+        })
+        .select()
+
+      if (error) throw error
+
+      return res.status(200).json({
+        success: true,
+        data: data[0]
+      })
+    }
+
+    // PUT - Update blog post
+    if (req.method === 'PUT') {
+      const postId = req.url.split('/').pop().split('?')[0]
+      const { title, excerpt, content, author, category, image_url, booking_link } = req.body
+
+      const updates = {}
+      if (title !== undefined) updates.title = title
+      if (excerpt !== undefined) updates.excerpt = excerpt
+      if (content !== undefined) updates.content = content
+      if (author !== undefined) updates.author = author
+      if (category !== undefined) updates.category = category
+      if (image_url !== undefined) updates.image_url = image_url
+      if (booking_link !== undefined) updates.booking_link = booking_link
+      updates.updated_at = new Date().toISOString()
+
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .update(updates)
+        .eq('id', postId)
+        .select()
+
+      if (error) throw error
+
+      return res.status(200).json({
+        success: true,
+        data: data[0]
+      })
+    }
+
+    // PATCH - Toggle publish status
+    if (req.method === 'PATCH') {
+      const postId = req.url.split('/').pop().split('?')[0]
+      const { is_published } = req.query
+
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .update({ 
+          is_published: is_published === 'true',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', postId)
+        .select()
+
+      if (error) throw error
+
+      return res.status(200).json({
+        success: true,
+        data: data[0]
+      })
+    }
+
+    // DELETE - Soft delete blog post
+    if (req.method === 'DELETE') {
+      const postId = req.url.split('/').pop()
+
+      const { data, error } = await supabase
+        .from('blog_posts')
+        .update({ 
+          deleted_at: new Date().toISOString()
+        })
+        .eq('id', postId)
+        .select()
+
+      if (error) throw error
+
+      return res.status(200).json({
+        success: true,
+        data: data[0]
+      })
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' })
+  } catch (error) {
+    console.error('Blog handler error:', error)
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Internal server error'
+    })
+  }
 }

@@ -105,27 +105,27 @@ export const savePageContent = async (pageKey, content) => {
 
 // ============ Blog ============
 export const getBlogPosts = async (params = {}) => {
-  const res = await adminApi.get('/blog', { params })
+  const res = await adminApi.get('?action=blog', { params })
   return res.data
 }
 
 export const createBlogPost = async (post) => {
-  const res = await adminApi.post('/blog', post)
+  const res = await adminApi.post('?action=blog', post)
   return res.data
 }
 
 export const updateBlogPost = async (postId, post) => {
-  const res = await adminApi.put(`/blog/${postId}`, post)
+  const res = await adminApi.put(`/${postId}?action=blog`, post)
   return res.data
 }
 
 export const toggleBlogPublish = async (postId, isPublished) => {
-  const res = await adminApi.patch(`/blog/${postId}/publish`, null, { params: { is_published: isPublished } })
+  const res = await adminApi.patch(`/${postId}/publish?action=blog`, null, { params: { is_published: isPublished } })
   return res.data
 }
 
 export const deleteBlogPost = async (postId) => {
-  const res = await adminApi.delete(`/blog/${postId}`)
+  const res = await adminApi.delete(`/${postId}?action=blog`)
   return res.data
 }
 
