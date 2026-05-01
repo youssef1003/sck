@@ -35,71 +35,100 @@ adminApi.interceptors.response.use(
 
 // ============ Dashboard ============
 export const getStats = async () => {
-  const res = await adminApi.get('/stats')
+  const res = await adminApi.get('?action=stats')
   return res.data
 }
 
 // ============ Users ============
 export const getUsers = async (params = {}) => {
-  const res = await adminApi.get('/users', { params })
+  const res = await adminApi.get('?action=users', { params })
   return res.data
 }
 
 export const updateUserRole = async (userId, role) => {
-  const res = await adminApi.patch(`/users/${userId}/role`, null, { params: { role } })
+  const res = await adminApi.patch(`?action=users`, { userId, role })
   return res.data
 }
 
 export const updateUserStatus = async (userId, isActive) => {
-  const res = await adminApi.patch(`/users/${userId}/status`, null, { params: { is_active: isActive } })
+  const res = await adminApi.patch(`?action=users`, { userId, is_active: isActive })
   return res.data
 }
 
 export const deleteUser = async (userId) => {
-  const res = await adminApi.delete(`/users/${userId}`)
+  const res = await adminApi.delete(`?action=users`, { data: { userId } })
   return res.data
 }
 
 // ============ Bookings ============
 export const getBookings = async (params = {}) => {
-  const res = await adminApi.get('/manage/bookings', { params })
+  const res = await adminApi.post('?action=manage', { 
+    table: 'consultation_bookings',
+    operation: 'select'
+  })
   return res.data
 }
 
 export const updateBookingStatus = async (bookingId, status) => {
-  const res = await adminApi.patch(`/manage/bookings/${bookingId}/status`, null, { params: { status } })
+  const res = await adminApi.post('?action=manage', {
+    table: 'consultation_bookings',
+    operation: 'update',
+    data: { id: bookingId, status }
+  })
   return res.data
 }
 
 export const deleteBooking = async (bookingId) => {
-  const res = await adminApi.delete(`/manage/bookings/${bookingId}`)
+  const res = await adminApi.post('?action=manage', {
+    table: 'consultation_bookings',
+    operation: 'delete',
+    data: { id: bookingId }
+  })
   return res.data
 }
 
 // ============ Messages ============
 export const getMessages = async (params = {}) => {
-  const res = await adminApi.get('/manage/messages', { params })
+  const res = await adminApi.post('?action=manage', {
+    table: 'contact_requests',
+    operation: 'select'
+  })
   return res.data
 }
 
 export const updateMessageStatus = async (messageId, status) => {
-  const res = await adminApi.patch(`/manage/messages/${messageId}/status`, null, { params: { status } })
+  const res = await adminApi.post('?action=manage', {
+    table: 'contact_requests',
+    operation: 'update',
+    data: { id: messageId, status }
+  })
   return res.data
 }
 
 export const deleteMessage = async (messageId) => {
-  const res = await adminApi.delete(`/manage/messages/${messageId}`)
+  const res = await adminApi.post('?action=manage', {
+    table: 'contact_requests',
+    operation: 'delete',
+    data: { id: messageId }
+  })
   return res.data
 }
 
 // ============ Content ============
 export const getPageContent = async (pageKey) => {
-  const res = await adminApi.get(`/manage/content/${pageKey}`)
+  const res = await adminApi.post('?action=manage', {
+    table: 'page_content',
+    operation: 'select'
+  })
   return res.data
 }
 
 export const savePageContent = async (pageKey, content) => {
-  const res = await adminApi.post(`/manage/content/${pageKey}`, { content })
+  const res = await adminApi.post('?action=manage', {
+    table: 'page_content',
+    operation: 'update',
+    data: { page_key: pageKey, content }
+  })
   return res.data
 }
 
