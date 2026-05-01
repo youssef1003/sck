@@ -1,15 +1,23 @@
 const { createClient } = require('@supabase/supabase-js')
 const jwt = require('jsonwebtoken')
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-)
+const SUPABASE_URL = process.env.SUPABASE_URL?.trim().replace(/^["']|["']$/g, '')
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY?.trim().replace(/^["']|["']$/g, '')
+const JWT_SECRET = process.env.JWT_SECRET?.trim().replace(/^["']|["']$/g, '')
 
-const JWT_SECRET = process.env.JWT_SECRET || 'sck_super_secret_key_2025_production'
+// Validate critical environment variables
+if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !JWT_SECRET) {
+  console.error('CRITICAL: Missing required environment variables for admin API')
+}
 
-// Verify admin token
-function verifyAdmin(req) {
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+
+// ============================================================
+// Authentication & Authorization Helpers
+// ============================================================
+
+// Verify and decode JWT token
+function verifyAuth(req) {
   const authHeader = req.headers.authorization
   if (!authHeader) {
     throw new Error('No authorization header')
@@ -18,12 +26,67 @@ function verifyAdmin(req) {
   const token = authHeader.replace('Bearer ', '')
   const decoded = jwt.verify(token, JWT_SECRET)
   
-  if (decoded.role !== 'admin') {
-    throw new Error('Not authorized')
-  }
-  
   return decoded
 }
+
+// Check if user has required permission
+async function hasPermission(userId, permission) {
+  // Get user with permissions
+  const { data: user, error } = await supabase
+    .from('users')
+    .select('role, permissions')
+    .eq('id', userId)
+    .eq('is_active', true)
+    .is('deleted_at', null)
+    .single()
+
+  if (error || !user) {
+    return false
+  }
+
+  // Super admin has all permissions
+  if (user.role === 'admin' || user.role === 'super_admin') {
+    return true
+  }
+
+  // Check subadmin permissions
+  if (user.role === 'subadmin') {
+    const permissions = user.permissions || []
+    return permissions.includes(permission)
+  }
+
+  return false
+}
+
+// Require admin or specific permission
+async function requireAdminOrPermission(req, permission = null) {
+  const decoded = verifyAuth(req)
+  
+  // Super admin always allowed
+  if (decoded.role === 'admin' || decoded.role === 'super_admin') {
+    return decoded
+  }
+
+  // If no specific permission required, just check if subadmin
+  if (!permission) {
+    if (decoded.role === 'subadmin') {
+      return decoded
+    }
+    throw new Error('Not authorized')
+  }
+
+  // Check specific permission
+  const allowed = await hasPermission(decoded.userId, permission)
+  if (!allowed) {
+    throw new Error('Insufficient permissions')
+  }
+
+  return decoded
+}
+
+// ============================================================
+// Main Handler
+// ============================================================
 
 module.exports = async function handler(req, res) {
   // Enable CORS
@@ -36,38 +99,48 @@ module.exports = async function handler(req, res) {
   }
 
   try {
-    // Verify admin
-    const admin = verifyAdmin(req)
+    // Verify authentication
+    const admin = await requireAdminOrPermission(req)
 
     // Route based on query parameter
     const { action } = req.query
 
     switch (action) {
       case 'stats':
-        return await handleStats(req, res)
+        return await handleStats(req, res, admin)
       case 'users':
-        return await handleUsers(req, res)
+        return await handleUsers(req, res, admin)
       case 'backup':
-        return await handleBackup(req, res)
-      case 'manage':
-        return await handleManage(req, res)
+        return await handleBackup(req, res, admin)
       case 'blog':
-        return await handleBlog(req, res)
+        return await handleBlog(req, res, admin)
       case 'page-content':
-        return await handlePageContent(req, res)
+        return await handlePageContent(req, res, admin)
       default:
         return res.status(400).json({ error: 'Invalid action' })
     }
   } catch (error) {
-    console.error('Admin error:', error)
-    return res.status(error.message === 'Not authorized' ? 403 : 500).json({
+    console.error('Admin error:', error.message)
+    const status = error.message.includes('authorized') || error.message.includes('permission') ? 403 : 500
+    return res.status(status).json({
       error: error.message || 'Internal server error'
     })
   }
 }
 
-// Stats handler
-async function handleStats(req, res) {
+// ============================================================
+// Stats Handler
+// ============================================================
+
+async function handleStats(req, res, admin) {
+  // Check permission
+  if (admin.role === 'subadmin') {
+    const canView = await hasPermission(admin.userId, 'analytics_view')
+    if (!canView) {
+      return res.status(403).json({ error: 'Insufficient permissions' })
+    }
+  }
+
   try {
     // Get counts with proper error handling
     const { count: usersCount } = await supabase
@@ -119,16 +192,38 @@ async function handleStats(req, res) {
       }
     })
   } catch (error) {
-    console.error('Stats error:', error)
+    console.error('Stats error:', error.message)
     return res.status(500).json({
       success: false,
-      error: error.message || 'Failed to fetch stats'
+      error: 'Failed to fetch stats'
     })
   }
 }
 
-// Users handler
-async function handleUsers(req, res) {
+// ============================================================
+// Users Handler
+// ============================================================
+
+async function handleUsers(req, res, admin) {
+  // Check permissions
+  if (req.method === 'GET') {
+    if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'users_view'))) {
+      return res.status(403).json({ error: 'Insufficient permissions' })
+    }
+  } else if (req.method === 'POST') {
+    if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'users_create'))) {
+      return res.status(403).json({ error: 'Insufficient permissions' })
+    }
+  } else if (req.method === 'PUT') {
+    if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'users_edit'))) {
+      return res.status(403).json({ error: 'Insufficient permissions' })
+    }
+  } else if (req.method === 'DELETE') {
+    if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'users_delete'))) {
+      return res.status(403).json({ error: 'Insufficient permissions' })
+    }
+  }
+
   if (req.method === 'GET') {
     const { data, error } = await supabase
       .from('users')
@@ -173,8 +268,16 @@ async function handleUsers(req, res) {
   }
 }
 
-// Backup handler
-async function handleBackup(req, res) {
+// ============================================================
+// Backup Handler - Super Admin Only
+// ============================================================
+
+async function handleBackup(req, res, admin) {
+  // Only super admin can backup
+  if (admin.role !== 'admin' && admin.role !== 'super_admin') {
+    return res.status(403).json({ error: 'Super admin only' })
+  }
+
   const { data: users } = await supabase.from('users').select('*')
   const { data: bookings } = await supabase.from('consultation_bookings').select('*')
   const { data: contacts } = await supabase.from('contact_requests').select('*')
@@ -190,41 +293,35 @@ async function handleBackup(req, res) {
   })
 }
 
-// Manage handler
-async function handleManage(req, res) {
-  const { table, operation, data } = req.body
+// ============================================================
+// Blog Handler
+// ============================================================
 
-  if (operation === 'select') {
-    const { data: result, error } = await supabase.from(table).select('*')
-    if (error) throw error
-    return res.status(200).json({ success: true, data: result })
-  }
-
-  if (operation === 'insert') {
-    const { data: result, error } = await supabase.from(table).insert(data).select()
-    if (error) throw error
-    return res.status(200).json({ success: true, data: result })
-  }
-
-  if (operation === 'update') {
-    const { id, ...updates } = data
-    const { data: result, error } = await supabase.from(table).update(updates).eq('id', id).select()
-    if (error) throw error
-    return res.status(200).json({ success: true, data: result })
-  }
-
-  if (operation === 'delete') {
-    const { error } = await supabase.from(table).delete().eq('id', data.id)
-    if (error) throw error
-    return res.status(200).json({ success: true })
-  }
-
-  return res.status(400).json({ error: 'Invalid operation' })
-}
-
-// Blog handler
-async function handleBlog(req, res) {
+async function handleBlog(req, res, admin) {
   try {
+    // Check permissions
+    if (req.method === 'GET') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'blog_view'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    } else if (req.method === 'POST') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'blog_create'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    } else if (req.method === 'PUT') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'blog_edit'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    } else if (req.method === 'PATCH') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'blog_publish'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    } else if (req.method === 'DELETE') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'blog_delete'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    }
+
     // GET - List blog posts
     if (req.method === 'GET') {
       const { search, limit = 50, offset = 0 } = req.query
@@ -254,7 +351,7 @@ async function handleBlog(req, res) {
 
     // POST - Create new blog post
     if (req.method === 'POST') {
-      const { title, excerpt, content, author, category, image_url, booking_link } = req.body
+      const { title, excerpt, content, author, category, image_url, booking_link, button_text } = req.body
 
       if (!title || !excerpt || !content) {
         return res.status(400).json({
@@ -269,10 +366,11 @@ async function handleBlog(req, res) {
           title,
           excerpt,
           content,
-          author: author || 'فريق SCK',
+          author: author || 'فريق SCQ',
           category: category || 'استراتيجية',
           image_url: image_url || null,
           booking_link: booking_link || '/consultation',
+          button_text: button_text || 'احجز استشارة',
           is_published: true
         })
         .select()
@@ -287,7 +385,7 @@ async function handleBlog(req, res) {
 
     // PUT - Update blog post
     if (req.method === 'PUT') {
-      const { id, title, excerpt, content, author, category, image_url, booking_link } = req.body
+      const { id, title, excerpt, content, author, category, image_url, booking_link, button_text } = req.body
 
       if (!id) {
         return res.status(400).json({
@@ -304,6 +402,7 @@ async function handleBlog(req, res) {
       if (category !== undefined) updates.category = category
       if (image_url !== undefined) updates.image_url = image_url
       if (booking_link !== undefined) updates.booking_link = booking_link
+      if (button_text !== undefined) updates.button_text = button_text
       updates.updated_at = new Date().toISOString()
 
       const { data, error } = await supabase
@@ -398,16 +497,24 @@ async function handleBlog(req, res) {
 
     return res.status(405).json({ error: 'Method not allowed' })
   } catch (error) {
-    console.error('Blog handler error:', error)
+    console.error('Blog handler error:', error.message)
     return res.status(500).json({
       success: false,
-      error: error.message || 'Internal server error'
+      error: 'Internal server error'
     })
   }
 }
 
-// Page Content handler
-async function handlePageContent(req, res) {
+// ============================================================
+// Page Content Handler
+// ============================================================
+
+async function handlePageContent(req, res, admin) {
+  // Check permissions
+  if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'home_edit'))) {
+    return res.status(403).json({ error: 'Insufficient permissions' })
+  }
+
   try {
     const { page_key } = req.query
 
@@ -491,10 +598,10 @@ async function handlePageContent(req, res) {
 
     return res.status(405).json({ error: 'Method not allowed' })
   } catch (error) {
-    console.error('Page content handler error:', error)
+    console.error('Page content handler error:', error.message)
     return res.status(500).json({
       success: false,
-      error: error.message || 'Internal server error'
+      error: 'Internal server error'
     })
   }
 }

@@ -295,6 +295,39 @@ async function handleIngest(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
+  // Require authentication for RAG ingestion
+  const authHeader = req.headers.authorization
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ 
+      success: false, 
+      error: 'Authentication required for RAG ingestion' 
+    })
+  }
+
+  // Verify token and check permissions
+  try {
+    const token = authHeader.replace('Bearer ', '')
+    const jwt = require('jsonwebtoken')
+    const JWT_SECRET = process.env.JWT_SECRET?.trim().replace(/^["']|["']$/g, '')
+    const decoded = jwt.verify(token, JWT_SECRET)
+    
+    // Only admin or subadmin with rag_ingest permission can ingest
+    if (decoded.role !== 'admin' && decoded.role !== 'super_admin') {
+      // Check if subadmin has rag_ingest permission
+      const { data: user } = await supabase
+        .from('users')
+        .select('permissions')
+        .eq('id', decoded.userId)
+        .single()
+      
+      if (!user || !user.permissions || !user.permissions.includes('rag_ingest')) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    }
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid token' })
+  }
+
   const { content, metadata } = req.body
 
   if (!content || !content.trim()) {

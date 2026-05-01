@@ -1,14 +1,17 @@
 const { createClient } = require('@supabase/supabase-js')
 const jwt = require('jsonwebtoken')
 
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-)
+const SUPABASE_URL = process.env.SUPABASE_URL?.trim().replace(/^["']|["']$/g, '')
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY?.trim().replace(/^["']|["']$/g, '')
+const JWT_SECRET = process.env.JWT_SECRET?.trim().replace(/^["']|["']$/g, '')
 
-// JWT Secret
-const JWT_SECRET = process.env.JWT_SECRET || 'sck_super_secret_key_2025_production'
+// Validate critical environment variables
+if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !JWT_SECRET) {
+  console.error('CRITICAL: Missing required environment variables for upload API')
+}
+
+// Initialize Supabase client
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
 
 // Verify JWT token
 const verifyToken = (token) => {
@@ -80,6 +83,25 @@ module.exports = async function handler(req, res) {
 
 // Handle file upload
 async function handleUpload(req, res) {
+  // Require authentication for uploads
+  const authHeader = req.headers.authorization
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return res.status(401).json({ 
+      success: false, 
+      error: 'Authentication required for file upload' 
+    })
+  }
+
+  const token = authHeader.substring(7)
+  const decoded = verifyToken(token)
+  
+  if (!decoded) {
+    return res.status(401).json({ 
+      success: false, 
+      error: 'Invalid token' 
+    })
+  }
+
   try {
     const { fileName, fileData, bucket, folder = '' } = req.body
 
