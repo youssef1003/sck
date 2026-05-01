@@ -48,12 +48,16 @@ const AboutManagement = () => {
         }
       })
 
-      if (response.data.success && response.data.data) {
+      if (response.data.success && response.data.data && response.data.data.content) {
+        // Load from database
         setAboutData(response.data.data.content)
+      } else {
+        // Keep default values if no data in database
+        console.log('No data in database, using defaults')
       }
     } catch (error) {
       console.error('Failed to load content:', error)
-      // Keep default values
+      // Keep default values on error
     } finally {
       setIsLoading(false)
     }
