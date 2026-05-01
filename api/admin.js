@@ -116,6 +116,18 @@ module.exports = async function handler(req, res) {
         return await handleBlog(req, res, admin)
       case 'page-content':
         return await handlePageContent(req, res, admin)
+      case 'services':
+        return await handleServices(req, res, admin)
+      case 'packages':
+        return await handlePackages(req, res, admin)
+      case 'quote-requests':
+        return await handleQuoteRequests(req, res, admin)
+      case 'candidates':
+        return await handleCandidates(req, res, admin)
+      case 'subadmins':
+        return await handleSubadmins(req, res, admin)
+      case 'audit-logs':
+        return await handleAuditLogs(req, res, admin)
       default:
         return res.status(400).json({ error: 'Invalid action' })
     }
@@ -603,5 +615,681 @@ async function handlePageContent(req, res, admin) {
       success: false,
       error: 'Internal server error'
     })
+  }
+}
+
+
+// ============================================================
+// Services Handler
+// ============================================================
+
+async function handleServices(req, res, admin) {
+  try {
+    // Check permissions
+    if (req.method === 'GET') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'services_view'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    } else if (req.method === 'POST') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'services_create'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    } else if (req.method === 'PUT') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'services_edit'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    } else if (req.method === 'DELETE') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'services_delete'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    }
+
+    if (req.method === 'GET') {
+      const { data, error } = await supabase
+        .from('service_pages')
+        .select('*')
+        .is('deleted_at', null)
+        .order('sort_order', { ascending: true })
+
+      if (error) throw error
+      return res.status(200).json({ success: true, data: data || [] })
+    }
+
+    if (req.method === 'POST') {
+      const { data, error } = await supabase
+        .from('service_pages')
+        .insert({ ...req.body, created_by: admin.userId })
+        .select()
+
+      if (error) throw error
+
+      // Log action
+      await supabase.from('admin_audit_logs').insert({
+        actor_user_id: admin.userId,
+        action: 'create',
+        resource_type: 'service_page',
+        resource_id: data[0].id,
+        metadata: { title: data[0].title_ar }
+      })
+
+      return res.status(200).json({ success: true, data: data[0] })
+    }
+
+    if (req.method === 'PUT') {
+      const { id, ...updates } = req.body
+      const { data, error } = await supabase
+        .from('service_pages')
+        .update({ ...updates, updated_by: admin.userId, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+
+      if (error) throw error
+
+      // Log action
+      await supabase.from('admin_audit_logs').insert({
+        actor_user_id: admin.userId,
+        action: 'update',
+        resource_type: 'service_page',
+        resource_id: id
+      })
+
+      return res.status(200).json({ success: true, data: data[0] })
+    }
+
+    if (req.method === 'DELETE') {
+      const { id } = req.body
+      const { data, error } = await supabase
+        .from('service_pages')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+
+      if (error) throw error
+
+      // Log action
+      await supabase.from('admin_audit_logs').insert({
+        actor_user_id: admin.userId,
+        action: 'delete',
+        resource_type: 'service_page',
+        resource_id: id
+      })
+
+      return res.status(200).json({ success: true })
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' })
+  } catch (error) {
+    console.error('Services handler error:', error.message)
+    return res.status(500).json({ success: false, error: 'Internal server error' })
+  }
+}
+
+// ============================================================
+// Packages Handler
+// ============================================================
+
+async function handlePackages(req, res, admin) {
+  try {
+    // Check permissions
+    if (req.method === 'GET') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'packages_view'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    } else if (req.method === 'POST') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'packages_create'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    } else if (req.method === 'PUT') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'packages_edit'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    } else if (req.method === 'DELETE') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'packages_delete'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    }
+
+    if (req.method === 'GET') {
+      const { data, error } = await supabase
+        .from('recruitment_packages')
+        .select('*')
+        .is('deleted_at', null)
+        .order('sort_order', { ascending: true })
+
+      if (error) throw error
+      return res.status(200).json({ success: true, data: data || [] })
+    }
+
+    if (req.method === 'POST') {
+      const { data, error } = await supabase
+        .from('recruitment_packages')
+        .insert({ ...req.body, created_by: admin.userId })
+        .select()
+
+      if (error) throw error
+
+      // Log action
+      await supabase.from('admin_audit_logs').insert({
+        actor_user_id: admin.userId,
+        action: 'create',
+        resource_type: 'recruitment_package',
+        resource_id: data[0].id,
+        metadata: { name: data[0].name_ar }
+      })
+
+      return res.status(200).json({ success: true, data: data[0] })
+    }
+
+    if (req.method === 'PUT') {
+      const { id, ...updates } = req.body
+      const { data, error } = await supabase
+        .from('recruitment_packages')
+        .update({ ...updates, updated_by: admin.userId, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+
+      if (error) throw error
+
+      // Log action
+      await supabase.from('admin_audit_logs').insert({
+        actor_user_id: admin.userId,
+        action: 'update',
+        resource_type: 'recruitment_package',
+        resource_id: id
+      })
+
+      return res.status(200).json({ success: true, data: data[0] })
+    }
+
+    if (req.method === 'DELETE') {
+      const { id } = req.body
+      const { data, error } = await supabase
+        .from('recruitment_packages')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+
+      if (error) throw error
+
+      // Log action
+      await supabase.from('admin_audit_logs').insert({
+        actor_user_id: admin.userId,
+        action: 'delete',
+        resource_type: 'recruitment_package',
+        resource_id: id
+      })
+
+      return res.status(200).json({ success: true })
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' })
+  } catch (error) {
+    console.error('Packages handler error:', error.message)
+    return res.status(500).json({ success: false, error: 'Internal server error' })
+  }
+}
+
+// ============================================================
+// Quote Requests Handler
+// ============================================================
+
+async function handleQuoteRequests(req, res, admin) {
+  try {
+    // Check permissions
+    if (req.method === 'GET') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'quote_requests_view'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    } else if (req.method === 'PUT') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'quote_requests_edit'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    } else if (req.method === 'DELETE') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'quote_requests_delete'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    }
+
+    if (req.method === 'GET') {
+      const { status, search, limit = 50, offset = 0 } = req.query
+
+      let query = supabase
+        .from('quote_requests')
+        .select('*', { count: 'exact' })
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+
+      if (status) {
+        query = query.eq('status', status)
+      }
+
+      if (search) {
+        query = query.or(`company_name.ilike.%${search}%,representative_name.ilike.%${search}%,email.ilike.%${search}%`)
+      }
+
+      query = query.range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1)
+
+      const { data, error, count } = await query
+
+      if (error) throw error
+      return res.status(200).json({ success: true, data: data || [], count: count || 0 })
+    }
+
+    if (req.method === 'PUT') {
+      const { id, ...updates } = req.body
+      const { data, error } = await supabase
+        .from('quote_requests')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+
+      if (error) throw error
+
+      // Log action
+      await supabase.from('admin_audit_logs').insert({
+        actor_user_id: admin.userId,
+        action: 'update',
+        resource_type: 'quote_request',
+        resource_id: id,
+        metadata: { status: updates.status }
+      })
+
+      return res.status(200).json({ success: true, data: data[0] })
+    }
+
+    if (req.method === 'DELETE') {
+      const { id } = req.body
+      const { data, error } = await supabase
+        .from('quote_requests')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+
+      if (error) throw error
+
+      // Log action
+      await supabase.from('admin_audit_logs').insert({
+        actor_user_id: admin.userId,
+        action: 'delete',
+        resource_type: 'quote_request',
+        resource_id: id
+      })
+
+      return res.status(200).json({ success: true })
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' })
+  } catch (error) {
+    console.error('Quote requests handler error:', error.message)
+    return res.status(500).json({ success: false, error: 'Internal server error' })
+  }
+}
+
+// ============================================================
+// Candidates Handler (with contact info masking)
+// ============================================================
+
+async function handleCandidates(req, res, admin) {
+  try {
+    // Check permissions
+    const canViewContactInfo = admin.role === 'admin' || admin.role === 'super_admin' || 
+                                await hasPermission(admin.userId, 'candidates_view_contact_info')
+
+    if (req.method === 'GET') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'candidates_view'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+
+      const { search, city, sector, verification_status, limit = 50, offset = 0 } = req.query
+
+      let query = supabase
+        .from('candidate_profiles')
+        .select(`
+          *,
+          candidate_experiences(*),
+          candidate_languages(*),
+          candidate_computer_skills(*)
+        `, { count: 'exact' })
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+
+      if (city) {
+        query = query.eq('city', city)
+      }
+
+      if (sector) {
+        query = query.eq('functional_sector', sector)
+      }
+
+      if (verification_status) {
+        query = query.eq('verification_status', verification_status)
+      }
+
+      if (search) {
+        query = query.or(`candidate_code.ilike.%${search}%,current_job_title.ilike.%${search}%`)
+      }
+
+      query = query.range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1)
+
+      const { data, error, count } = await query
+
+      if (error) throw error
+
+      // Mask contact info if user doesn't have permission
+      const sanitizedData = data.map(candidate => {
+        if (!canViewContactInfo) {
+          return {
+            ...candidate,
+            full_name: '***',
+            national_id: '***',
+            mobile: '***',
+            email: '***'
+          }
+        }
+        return candidate
+      })
+
+      return res.status(200).json({ 
+        success: true, 
+        data: sanitizedData || [], 
+        count: count || 0,
+        canViewContactInfo 
+      })
+    }
+
+    if (req.method === 'PUT') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'candidates_edit'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+
+      const { id, ...updates } = req.body
+
+      // Check if trying to verify - requires special permission
+      if (updates.verification_status && updates.verification_status !== 'pending') {
+        if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'candidates_verify'))) {
+          return res.status(403).json({ error: 'Insufficient permissions to verify candidates' })
+        }
+      }
+
+      const { data, error } = await supabase
+        .from('candidate_profiles')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+
+      if (error) throw error
+
+      // Log action
+      await supabase.from('admin_audit_logs').insert({
+        actor_user_id: admin.userId,
+        action: 'update',
+        resource_type: 'candidate_profile',
+        resource_id: id,
+        metadata: { 
+          verification_status: updates.verification_status,
+          premium_badge: updates.premium_badge
+        }
+      })
+
+      return res.status(200).json({ success: true, data: data[0] })
+    }
+
+    if (req.method === 'DELETE') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'candidates_delete'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+
+      const { id } = req.body
+      const { data, error } = await supabase
+        .from('candidate_profiles')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+
+      if (error) throw error
+
+      // Log action
+      await supabase.from('admin_audit_logs').insert({
+        actor_user_id: admin.userId,
+        action: 'delete',
+        resource_type: 'candidate_profile',
+        resource_id: id
+      })
+
+      return res.status(200).json({ success: true })
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' })
+  } catch (error) {
+    console.error('Candidates handler error:', error.message)
+    return res.status(500).json({ success: false, error: 'Internal server error' })
+  }
+}
+
+// ============================================================
+// Subadmins Handler (replaces localStorage)
+// ============================================================
+
+async function handleSubadmins(req, res, admin) {
+  try {
+    // Only super admin or users with subadmin permissions can manage subadmins
+    if (admin.role === 'subadmin') {
+      if (req.method === 'GET' && !(await hasPermission(admin.userId, 'subadmins_view'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+      if (req.method === 'POST' && !(await hasPermission(admin.userId, 'subadmins_create'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+      if (req.method === 'PUT' && !(await hasPermission(admin.userId, 'subadmins_edit'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+      if (req.method === 'DELETE' && !(await hasPermission(admin.userId, 'subadmins_delete'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    }
+
+    if (req.method === 'GET') {
+      const { data, error } = await supabase
+        .from('users')
+        .select('id, email, full_name, role, permissions, is_active, created_at')
+        .eq('role', 'subadmin')
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      return res.status(200).json({ success: true, data: data || [] })
+    }
+
+    if (req.method === 'POST') {
+      const { email, full_name, password, permissions } = req.body
+
+      if (!email || !full_name || !password) {
+        return res.status(400).json({ error: 'Missing required fields' })
+      }
+
+      // Hash password using pgcrypto
+      const { data, error } = await supabase.rpc('create_user_with_password', {
+        p_email: email,
+        p_full_name: full_name,
+        p_password: password,
+        p_role: 'subadmin',
+        p_permissions: permissions || []
+      })
+
+      if (error) {
+        console.error('Create subadmin error:', error.message)
+        return res.status(500).json({ error: 'Failed to create subadmin' })
+      }
+
+      // Log action
+      await supabase.from('admin_audit_logs').insert({
+        actor_user_id: admin.userId,
+        action: 'create',
+        resource_type: 'subadmin',
+        resource_id: data.id,
+        metadata: { email, full_name }
+      })
+
+      return res.status(200).json({ success: true, data })
+    }
+
+    if (req.method === 'PUT') {
+      const { id, full_name, permissions, is_active, password } = req.body
+
+      if (!id) {
+        return res.status(400).json({ error: 'Missing user ID' })
+      }
+
+      // Prevent subadmin from editing super admin
+      const { data: targetUser } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', id)
+        .single()
+
+      if (targetUser && (targetUser.role === 'admin' || targetUser.role === 'super_admin')) {
+        if (admin.role === 'subadmin') {
+          return res.status(403).json({ error: 'Cannot edit super admin' })
+        }
+      }
+
+      const updates = {}
+      if (full_name !== undefined) updates.full_name = full_name
+      if (permissions !== undefined) {
+        // Subadmin cannot grant permissions they don't have
+        if (admin.role === 'subadmin') {
+          const adminPermissions = await hasPermission(admin.userId, 'subadmins_manage_permissions')
+          if (!adminPermissions) {
+            return res.status(403).json({ error: 'Cannot manage permissions' })
+          }
+        }
+        updates.permissions = permissions
+      }
+      if (is_active !== undefined) updates.is_active = is_active
+      updates.updated_at = new Date().toISOString()
+
+      // Update password if provided
+      if (password) {
+        const { error: pwError } = await supabase.rpc('update_user_password', {
+          p_user_id: id,
+          p_new_password: password
+        })
+
+        if (pwError) {
+          console.error('Update password error:', pwError.message)
+        }
+      }
+
+      const { data, error } = await supabase
+        .from('users')
+        .update(updates)
+        .eq('id', id)
+        .select()
+
+      if (error) throw error
+
+      // Log action
+      await supabase.from('admin_audit_logs').insert({
+        actor_user_id: admin.userId,
+        action: 'update',
+        resource_type: 'subadmin',
+        resource_id: id
+      })
+
+      return res.status(200).json({ success: true, data: data[0] })
+    }
+
+    if (req.method === 'DELETE') {
+      const { id } = req.body
+
+      if (!id) {
+        return res.status(400).json({ error: 'Missing user ID' })
+      }
+
+      // Prevent subadmin from deleting super admin
+      const { data: targetUser } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', id)
+        .single()
+
+      if (targetUser && (targetUser.role === 'admin' || targetUser.role === 'super_admin')) {
+        if (admin.role === 'subadmin') {
+          return res.status(403).json({ error: 'Cannot delete super admin' })
+        }
+      }
+
+      const { data, error } = await supabase
+        .from('users')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+
+      if (error) throw error
+
+      // Log action
+      await supabase.from('admin_audit_logs').insert({
+        actor_user_id: admin.userId,
+        action: 'delete',
+        resource_type: 'subadmin',
+        resource_id: id
+      })
+
+      return res.status(200).json({ success: true })
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' })
+  } catch (error) {
+    console.error('Subadmins handler error:', error.message)
+    return res.status(500).json({ success: false, error: 'Internal server error' })
+  }
+}
+
+// ============================================================
+// Audit Logs Handler
+// ============================================================
+
+async function handleAuditLogs(req, res, admin) {
+  try {
+    // Check permissions
+    if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'analytics_view'))) {
+      return res.status(403).json({ error: 'Insufficient permissions' })
+    }
+
+    if (req.method === 'GET') {
+      const { actor_user_id, resource_type, action, limit = 100, offset = 0 } = req.query
+
+      let query = supabase
+        .from('admin_audit_logs')
+        .select(`
+          *,
+          users:actor_user_id(email, full_name)
+        `, { count: 'exact' })
+        .order('created_at', { ascending: false })
+
+      if (actor_user_id) {
+        query = query.eq('actor_user_id', actor_user_id)
+      }
+
+      if (resource_type) {
+        query = query.eq('resource_type', resource_type)
+      }
+
+      if (action) {
+        query = query.eq('action', action)
+      }
+
+      query = query.range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1)
+
+      const { data, error, count } = await query
+
+      if (error) throw error
+      return res.status(200).json({ success: true, data: data || [], count: count || 0 })
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' })
+  } catch (error) {
+    console.error('Audit logs handler error:', error.message)
+    return res.status(500).json({ success: false, error: 'Internal server error' })
   }
 }

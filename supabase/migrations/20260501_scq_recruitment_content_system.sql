@@ -477,6 +477,61 @@ ALTER TABLE admin_audit_logs ENABLE ROW LEVEL SECURITY;
 -- RLS policies are optional. APIs handle authorization.
 
 -- ============================================================
+-- 12. HELPER FUNCTIONS FOR USER MANAGEMENT
+-- ============================================================
+
+-- Function to create user with hashed password
+CREATE OR REPLACE FUNCTION create_user_with_password(
+  p_email TEXT,
+  p_full_name TEXT,
+  p_password TEXT,
+  p_role TEXT DEFAULT 'client',
+  p_permissions JSONB DEFAULT '[]'::jsonb
+)
+RETURNS TABLE (
+  id UUID,
+  email TEXT,
+  full_name TEXT,
+  role TEXT
+) AS $$
+DECLARE
+  v_user_id UUID;
+BEGIN
+  INSERT INTO users (email, full_name, password_hash, role, permissions, is_active)
+  VALUES (
+    p_email,
+    p_full_name,
+    crypt(p_password, gen_salt('bf')),
+    p_role,
+    p_permissions,
+    true
+  )
+  RETURNING users.id INTO v_user_id;
+
+  RETURN QUERY
+  SELECT users.id, users.email, users.full_name, users.role
+  FROM users
+  WHERE users.id = v_user_id;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to update user password
+CREATE OR REPLACE FUNCTION update_user_password(
+  p_user_id UUID,
+  p_new_password TEXT
+)
+RETURNS BOOLEAN AS $$
+BEGIN
+  UPDATE users
+  SET password_hash = crypt(p_new_password, gen_salt('bf')),
+      updated_at = NOW()
+  WHERE id = p_user_id;
+
+  RETURN FOUND;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- ============================================================
 -- MIGRATION COMPLETE
 -- ============================================================
 
