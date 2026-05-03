@@ -58,11 +58,47 @@ module.exports = async function handler(req, res) {
         computer_skills
       } = req.body
 
-      // Validation
+      // Validation - Required fields
       if (!full_name || !mobile || !email) {
         return res.status(400).json({
           success: false,
           error: 'Missing required fields: full_name, mobile, email'
+        })
+      }
+
+      // Server-side validation - Additional required fields for data quality
+      if (!nationality) {
+        return res.status(400).json({
+          success: false,
+          error: 'الجنسية مطلوبة - Nationality is required'
+        })
+      }
+
+      if (!gender) {
+        return res.status(400).json({
+          success: false,
+          error: 'الجنس مطلوب - Gender is required'
+        })
+      }
+
+      if (!city) {
+        return res.status(400).json({
+          success: false,
+          error: 'المدينة مطلوبة - City is required'
+        })
+      }
+
+      if (!education_level) {
+        return res.status(400).json({
+          success: false,
+          error: 'المستوى التعليمي مطلوب - Education level is required'
+        })
+      }
+
+      if (!functional_sector) {
+        return res.status(400).json({
+          success: false,
+          error: 'القطاع الوظيفي مطلوب - Functional sector is required'
         })
       }
 
@@ -169,20 +205,36 @@ module.exports = async function handler(req, res) {
       }
 
       // Insert computer skills
-      if (computer_skills && Array.isArray(computer_skills) && computer_skills.length > 0) {
-        const skillsData = computer_skills.map((skill, index) => ({
-          candidate_id: candidateId,
-          skill: skill.skill,
-          level: skill.level,
-          sort_order: index
-        }))
+      // Convert object format { excel: "جيد", word: "ممتاز", powerpoint: "جيد جدا" }
+      // to array format [{ skill: "Excel", level: "جيد" }, ...]
+      if (computer_skills && typeof computer_skills === 'object') {
+        const skillsArray = []
+        
+        if (computer_skills.excel) {
+          skillsArray.push({ skill: 'Excel', level: computer_skills.excel })
+        }
+        if (computer_skills.word) {
+          skillsArray.push({ skill: 'Word', level: computer_skills.word })
+        }
+        if (computer_skills.powerpoint) {
+          skillsArray.push({ skill: 'PowerPoint', level: computer_skills.powerpoint })
+        }
 
-        const { error: skillsError } = await supabase
-          .from('candidate_computer_skills')
-          .insert(skillsData)
+        if (skillsArray.length > 0) {
+          const skillsData = skillsArray.map((skill, index) => ({
+            candidate_id: candidateId,
+            skill: skill.skill,
+            level: skill.level,
+            sort_order: index
+          }))
 
-        if (skillsError) {
-          console.error('Computer skills insert error:', skillsError.message)
+          const { error: skillsError } = await supabase
+            .from('candidate_computer_skills')
+            .insert(skillsData)
+
+          if (skillsError) {
+            console.error('Computer skills insert error:', skillsError.message)
+          }
         }
       }
 

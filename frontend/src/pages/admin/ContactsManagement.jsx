@@ -12,52 +12,110 @@ import {
   ArrowLeft,
   CheckCircle,
   Clock,
-  Trash2
+  Trash2,
+  Loader,
+  AlertCircle
 } from 'lucide-react'
+import { getContactRequests, updateContactRequest, deleteContactRequest } from '../../utils/adminApi'
 
 const ContactsManagement = () => {
   const [contacts, setContacts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const [searchTerm, setSearchTerm] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [selectedContact, setSelectedContact] = useState(null)
 
   useEffect(() => {
-    // Load contacts
     loadContacts()
   }, [])
 
-  const loadContacts = () => {
-    const storedContacts = JSON.parse(localStorage.getItem('scq_contacts') || '[]')
-    setContacts(storedContacts.sort((a, b) => new Date(b.date) - new Date(a.date)))
+  const loadContacts = async () => {
+    try {
+      setLoading(true)
+      const response = await getContactRequests()
+      setContacts(response.data || [])
+    } catch (error) {
+      console.error('Error loading contacts:', error)
+      setError('فشل في تحميل الرسائل')
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleStatusChange = (contactId, newStatus) => {
-    const updatedContacts = contacts.map(contact =>
-      contact.id === contactId ? { ...contact, status: newStatus } : contact
-    )
-    setContacts(updatedContacts)
-    localStorage.setItem('scq_contacts', JSON.stringify(updatedContacts))
+  const handleStatusChange = async (contactId, newStatus) => {
+    try {
+      await updateContactRequest(contactId, {
+        status: newStatus
+      })
+      
+      const updatedContacts = contacts.map(contact =>
+        contact.id === contactId ? { ...contact, status: newStatus } : contact
+      )
+      setContacts(updatedContacts)
+      
+      if (selectedContact?.id === contactId) {
+        setSelectedContact({ ...selectedContact, status: newStatus })
+      }
+    } catch (error) {
+      console.error('Error updating status:', error)
+      alert('فشل في تحديث الحالة')
+    }
   }
 
-  const handleDelete = (contactId) => {
-    if (window.confirm('هل أنت متأكد من حذف هذه الرسالة؟')) {
+  const handleDelete = async (contactId) => {
+    if (!window.confirm('هل أنت متأكد من حذف هذه الرسالة؟')) return
+    
+    try {
+      await deleteContactRequest(contactId)
+      
       const updatedContacts = contacts.filter(contact => contact.id !== contactId)
       setContacts(updatedContacts)
-      localStorage.setItem('scq_contacts', JSON.stringify(updatedContacts))
       setSelectedContact(null)
+    } catch (error) {
+      console.error('Error deleting contact:', error)
+      alert('فشل في حذف الرسالة')
     }
   }
 
   const filteredContacts = contacts.filter(contact => {
     const matchesSearch = 
-      contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.phone.includes(searchTerm)
+      contact.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      contact.phone?.includes(searchTerm)
     
     const matchesFilter = filterStatus === 'all' || contact.status === filterStatus
     
     return matchesSearch && matchesFilter
   })
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader className="w-12 h-12 text-blue-600 animate-spin mx-auto mb-4" />
+          <p className="text-slate-600">جاري تحميل الرسائل...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center">
+        <div className="text-center">
+          <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+          <p className="text-red-600 mb-4">{error}</p>
+          <button
+            onClick={loadContacts}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          >
+            إعادة المحاولة
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   const getStatusBadge = (status) => {
     const styles = {

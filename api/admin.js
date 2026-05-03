@@ -128,6 +128,8 @@ module.exports = async function handler(req, res) {
         return await handleSubadmins(req, res, admin)
       case 'audit-logs':
         return await handleAuditLogs(req, res, admin)
+      case 'contact-requests':
+        return await handleContactRequests(req, res, admin)
       default:
         return res.status(400).json({ error: 'Invalid action' })
     }
@@ -1252,7 +1254,7 @@ async function handleSubadmins(req, res, admin) {
 async function handleAuditLogs(req, res, admin) {
   try {
     // Check permissions
-    if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'analytics_view'))) {
+    if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'audit_logs_view'))) {
       return res.status(403).json({ error: 'Insufficient permissions' })
     }
 
@@ -1290,6 +1292,102 @@ async function handleAuditLogs(req, res, admin) {
     return res.status(405).json({ error: 'Method not allowed' })
   } catch (error) {
     console.error('Audit logs handler error:', error.message)
+    return res.status(500).json({ success: false, error: 'Internal server error' })
+  }
+}
+
+// ============================================================
+// Contact Requests Handler
+// ============================================================
+
+async function handleContactRequests(req, res, admin) {
+  try {
+    // Check permissions
+    if (req.method === 'GET') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'contact_requests_view'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    } else if (req.method === 'PUT') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'contact_requests_edit'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    } else if (req.method === 'DELETE') {
+      if (admin.role === 'subadmin' && !(await hasPermission(admin.userId, 'contact_requests_delete'))) {
+        return res.status(403).json({ error: 'Insufficient permissions' })
+      }
+    }
+
+    if (req.method === 'GET') {
+      const { status, search, limit = 50, offset = 0 } = req.query
+
+      let query = supabase
+        .from('contact_requests')
+        .select('*', { count: 'exact' })
+        .is('deleted_at', null)
+        .order('created_at', { ascending: false })
+
+      if (status) {
+        query = query.eq('status', status)
+      }
+
+      if (search) {
+        query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%,business_type.ilike.%${search}%`)
+      }
+
+      query = query.range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1)
+
+      const { data, error, count } = await query
+
+      if (error) throw error
+      return res.status(200).json({ success: true, data: data || [], count: count || 0 })
+    }
+
+    if (req.method === 'PUT') {
+      const { id, ...updates } = req.body
+      const { data, error } = await supabase
+        .from('contact_requests')
+        .update({ ...updates, updated_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+
+      if (error) throw error
+
+      // Log action
+      await supabase.from('admin_audit_logs').insert({
+        actor_user_id: admin.userId,
+        action: 'update',
+        resource_type: 'contact_request',
+        resource_id: id,
+        metadata: { status: updates.status }
+      })
+
+      return res.status(200).json({ success: true, data: data[0] })
+    }
+
+    if (req.method === 'DELETE') {
+      const { id } = req.body
+      const { data, error } = await supabase
+        .from('contact_requests')
+        .update({ deleted_at: new Date().toISOString() })
+        .eq('id', id)
+        .select()
+
+      if (error) throw error
+
+      // Log action
+      await supabase.from('admin_audit_logs').insert({
+        actor_user_id: admin.userId,
+        action: 'delete',
+        resource_type: 'contact_request',
+        resource_id: id
+      })
+
+      return res.status(200).json({ success: true })
+    }
+
+    return res.status(405).json({ error: 'Method not allowed' })
+  } catch (error) {
+    console.error('Contact requests handler error:', error.message)
     return res.status(500).json({ success: false, error: 'Internal server error' })
   }
 }

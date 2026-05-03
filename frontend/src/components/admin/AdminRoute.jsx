@@ -10,15 +10,16 @@ const AdminRoute = ({ children, permission, anyOf, superAdminOnly = false }) => 
     return <Navigate to="/login" replace />
   }
 
-  // Check if user is admin or subadmin
-  if (userData.role !== 'admin' && userData.role !== 'subadmin') {
+  // Check if user is super_admin, admin, or subadmin
+  const isAdmin = userData.role === 'super_admin' || userData.role === 'admin' || userData.role === 'subadmin'
+  if (!isAdmin) {
     return <Navigate to="/login" replace />
   }
 
   // Check permissions if specified
   if (permission || anyOf || superAdminOnly) {
-    // Super Admin bypass
-    if (userData.role === 'admin') {
+    // Super Admin bypass (both super_admin and admin roles)
+    if (isSuperAdmin()) {
       return <AdminLayout>{children}</AdminLayout>
     }
 

@@ -14,7 +14,12 @@ import {
   X,
   ChevronLeft,
   Bell,
-  Shield
+  Shield,
+  Package,
+  DollarSign,
+  UserCheck,
+  Edit,
+  ClipboardList
 } from 'lucide-react'
 import { hasAnyPermission, getCurrentUserPermissions, isSuperAdmin, PERMISSIONS } from '../../utils/permissions'
 
@@ -57,10 +62,34 @@ const AdminLayout = ({ children }) => {
       permissions: [] // Always visible
     },
     { 
-      title: 'الصفحة الرئيسية', 
+      title: 'المحتوى الرئيسي', 
       icon: Home, 
-      path: '/admin/home', 
-      permissions: [PERMISSIONS.HOME_EDIT]
+      path: '/admin/home-content', 
+      permissions: ['content_view', 'content_edit', 'home_edit']
+    },
+    { 
+      title: 'الخدمات', 
+      icon: Briefcase, 
+      path: '/admin/services', 
+      permissions: ['services_view', 'services_edit']
+    },
+    { 
+      title: 'باقات التوظيف', 
+      icon: Package, 
+      path: '/admin/packages', 
+      permissions: ['packages_view', 'packages_edit']
+    },
+    { 
+      title: 'طلبات الأسعار', 
+      icon: DollarSign, 
+      path: '/admin/quote-requests', 
+      permissions: ['quote_requests_view', 'quote_requests_edit']
+    },
+    { 
+      title: 'المرشحين', 
+      icon: UserCheck, 
+      path: '/admin/candidates', 
+      permissions: ['candidates_view', 'candidates_edit']
     },
     { 
       title: 'المستخدمون', 
@@ -102,8 +131,13 @@ const AdminLayout = ({ children }) => {
       title: 'المساعدين', 
       icon: Shield, 
       path: '/admin/subadmins', 
-      permissions: [PERMISSIONS.SUBADMINS_VIEW],
-      superAdminOnly: true
+      permissions: ['subadmins_view', 'subadmins_edit']
+    },
+    { 
+      title: 'سجلات التدقيق', 
+      icon: ClipboardList, 
+      path: '/admin/audit-logs', 
+      permissions: ['audit_logs_view']
     },
   ]
 

@@ -89,13 +89,8 @@ const Navbar = () => {
             <LanguageSwitcher />
             
             {user ? (
-              <Link
-                to="/dashboard"
-                className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all duration-300 bg-blue-600 text-white hover:bg-blue-700 shadow-md ml-2"
-              >
-                <User className="w-4 h-4" />
-                <span className="max-w-[80px] truncate text-sm">{user.fullName}</span>
-              </Link>
+              // User dashboard deferred - hide for minimal launch
+              null
             ) : (
               <>
                 <Link
@@ -106,13 +101,7 @@ const Navbar = () => {
                   <span>{isRTL ? 'دخول' : 'Login'}</span>
                 </Link>
                 
-                <Link
-                  to="/register"
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-lg font-medium transition-all duration-300 bg-blue-600 text-white hover:bg-blue-700 shadow-md text-sm"
-                >
-                  <User className="w-4 h-4" />
-                  <span>{isRTL ? 'تسجيل' : 'Sign Up'}</span>
-                </Link>
+                {/* Public registration deferred - hide for minimal launch */}
               </>
             )}
           </div>
@@ -160,14 +149,8 @@ const Navbar = () => {
               </div>
               
               {user ? (
-                <Link
-                  to="/dashboard"
-                  onClick={() => setIsOpen(false)}
-                  className={`flex items-center gap-2 w-full px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
-                >
-                  <User className="w-5 h-5" />
-                  <span className="truncate">{user.fullName}</span>
-                </Link>
+                // User dashboard deferred - hide for minimal launch
+                null
               ) : (
                 <div className="space-y-3">
                   <Link
@@ -179,14 +162,7 @@ const Navbar = () => {
                     {isRTL ? 'تسجيل الدخول' : 'Login'}
                   </Link>
                   
-                  <Link
-                    to="/register"
-                    onClick={() => setIsOpen(false)}
-                    className={`flex items-center gap-2 w-full px-4 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors ${isRTL ? 'flex-row-reverse' : ''}`}
-                  >
-                    <User className="w-5 h-5" />
-                    {isRTL ? 'إنشاء حساب جديد' : 'Create Account'}
-                  </Link>
+                  {/* Public registration deferred - hide for minimal launch */}
                 </div>
               )}
             </div>

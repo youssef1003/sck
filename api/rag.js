@@ -6,8 +6,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 )
 
-// Hugging Face API (FREE!)
-const HF_API_KEY = process.env.HF_API_KEY || 'hf_demo' // Free tier available
+// Hugging Face API - PRODUCTION SAFETY: No fallback key
+const HF_API_KEY = process.env.HF_API_KEY
 const HF_API_URL = 'https://api-inference.huggingface.co/models'
 
 const CONFIG = {
@@ -41,6 +41,16 @@ module.exports = async function handler(req, res) {
         success: false,
         error: 'Database configuration error',
         fallback: 'عذراً، الخدمة غير متاحة حالياً. يرجى المحاولة لاحقاً.'
+      })
+    }
+
+    // Validate HF_API_KEY for production safety
+    if (!HF_API_KEY && action === 'chat') {
+      console.error('Missing HF_API_KEY - RAG chat disabled')
+      return res.status(503).json({
+        success: false,
+        error: 'AI service not configured',
+        fallback: 'عذراً، خدمة الذكاء الاصطناعي غير متاحة حالياً. يرجى المحاولة لاحقاً.'
       })
     }
 

@@ -175,6 +175,7 @@ async function handleLogin(req, res) {
     )
 
     // Return FULLY backward compatible response with ALL possible token/user locations
+    // CRITICAL: Include permissions in user object
     return res.status(200).json({
       success: true,
       message: 'Login successful',
@@ -186,6 +187,7 @@ async function handleLogin(req, res) {
         email: user.email,
         full_name: user.full_name,
         role: user.role,
+        permissions: user.permissions || [],
         phone: user.phone,
         company: user.company,
         is_active: user.is_active
@@ -199,6 +201,7 @@ async function handleLogin(req, res) {
           email: user.email,
           full_name: user.full_name,
           role: user.role,
+          permissions: user.permissions || [],
           phone: user.phone,
           company: user.company,
           is_active: user.is_active
@@ -237,7 +240,7 @@ async function handleMe(req, res) {
     
     const { data: user, error } = await supabase
       .from('users')
-      .select('id, email, full_name, phone, company, role, is_active, created_at')
+      .select('id, email, full_name, phone, company, role, permissions, is_active, created_at')
       .eq('id', decoded.userId)
       .is('deleted_at', null)
       .single()
@@ -265,6 +268,7 @@ async function handleMe(req, res) {
         phone: user.phone,
         company: user.company,
         role: user.role,
+        permissions: user.permissions || [],
         created_at: user.created_at,
         is_active: user.is_active
       },
@@ -276,6 +280,7 @@ async function handleMe(req, res) {
           phone: user.phone,
           company: user.company,
           role: user.role,
+          permissions: user.permissions || [],
           created_at: user.created_at,
           is_active: user.is_active
         }

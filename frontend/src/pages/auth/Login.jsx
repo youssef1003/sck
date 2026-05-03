@@ -49,18 +49,29 @@ const Login = () => {
           throw new Error('Invalid response format from server')
         }
         
-        // Store new tokens
+        // Store new tokens and user data WITH PERMISSIONS
         localStorage.setItem('access_token', access_token)
         if (refresh_token) {
           localStorage.setItem('refresh_token', refresh_token)
         }
-        localStorage.setItem('user_data', JSON.stringify(user))
+        // Ensure permissions are stored
+        const userData = {
+          id: user.id,
+          email: user.email,
+          full_name: user.full_name,
+          role: user.role,
+          permissions: user.permissions || [],
+          phone: user.phone,
+          company: user.company,
+          is_active: user.is_active
+        }
+        localStorage.setItem('user_data', JSON.stringify(userData))
         
         // Show success message
         toast.success(isRTL ? 'تم تسجيل الدخول بنجاح' : 'Login successful')
         
-        // Redirect based on role
-        if (user.role === 'admin' || user.role === 'subadmin') {
+        // Redirect based on role - support both super_admin and admin
+        if (user.role === 'super_admin' || user.role === 'admin' || user.role === 'subadmin') {
           navigate('/admin/dashboard')
         } else if (user.role === 'employer') {
           navigate('/employer/dashboard')

@@ -9,6 +9,10 @@ import Preloader from './components/Preloader'
 import Home from './pages/Home'
 import About from './pages/About'
 import Services from './pages/Services'
+import ServiceDetails from './pages/ServiceDetails'
+import RecruitmentPackages from './pages/RecruitmentPackages'
+import QuoteRequest from './pages/QuoteRequest'
+import CandidateRegister from './pages/CandidateRegister'
 import Careers from './pages/Careers'
 import Contact from './pages/Contact'
 import Blog from './pages/Blog'
@@ -26,15 +30,21 @@ import AdminRoute from './components/admin/AdminRoute'
 import AdminDashboard from './pages/admin/Dashboard'
 import CareersManagement from './pages/admin/CareersManagement'
 import EmployersManagement from './pages/admin/EmployersManagement'
-import HomeEditor from './pages/admin/HomeEditor'
 import ContactsManagement from './pages/admin/ContactsManagement'
 import UsersManagement from './pages/admin/UsersManagement'
 import BookingsManagement from './pages/admin/BookingsManagement'
 import BlogManagement from './pages/admin/BlogManagement'
-import SubAdminsManagement from './pages/admin/SubAdminsManagement'
-import ServicesManagement from './pages/admin/ServicesManagement'
 import AboutManagement from './pages/admin/AboutManagement'
 import ContactManagement from './pages/admin/ContactManagement'
+
+// New Admin Pages (Supabase-backed, replacing localStorage versions)
+import ServicesManagementNew from './pages/admin/ServicesManagementNew'
+import PackagesManagement from './pages/admin/PackagesManagement'
+import QuoteRequestsManagement from './pages/admin/QuoteRequestsManagement'
+import CandidatesManagement from './pages/admin/CandidatesManagement'
+import SubAdminsManagementNew from './pages/admin/SubAdminsManagementNew'
+import HomeContentEditor from './pages/admin/HomeContentEditor'
+import AuditLogs from './pages/admin/AuditLogs'
 
 function App() {
   const [loading, setLoading] = useState(() => {
@@ -72,13 +82,19 @@ function App() {
           <Route path="/admin/bookings" element={<AdminRoute anyOf={['bookings_view', 'bookings_edit']}><BookingsManagement /></AdminRoute>} />
           <Route path="/admin/careers" element={<AdminRoute anyOf={['careers_view', 'careers_edit']}><CareersManagement /></AdminRoute>} />
           <Route path="/admin/employers" element={<AdminRoute anyOf={['employers_view', 'employers_approve']}><EmployersManagement /></AdminRoute>} />
-          <Route path="/admin/home" element={<AdminRoute permission="home_edit"><HomeEditor /></AdminRoute>} />
           <Route path="/admin/contacts" element={<AdminRoute anyOf={['messages_view', 'messages_edit']}><ContactsManagement /></AdminRoute>} />
           <Route path="/admin/blog" element={<AdminRoute anyOf={['blog_view', 'blog_create', 'blog_edit']}><BlogManagement /></AdminRoute>} />
-          <Route path="/admin/subadmins" element={<AdminRoute superAdminOnly><SubAdminsManagement /></AdminRoute>} />
-          <Route path="/admin/services" element={<AdminRoute permission="home_edit"><ServicesManagement /></AdminRoute>} />
           <Route path="/admin/about" element={<AdminRoute permission="home_edit"><AboutManagement /></AdminRoute>} />
           <Route path="/admin/contact-page" element={<AdminRoute permission="home_edit"><ContactManagement /></AdminRoute>} />
+          
+          {/* New Recruitment System Admin Routes (Supabase-backed) */}
+          <Route path="/admin/services" element={<AdminRoute anyOf={['services_view', 'services_edit']}><ServicesManagementNew /></AdminRoute>} />
+          <Route path="/admin/packages" element={<AdminRoute anyOf={['packages_view', 'packages_edit']}><PackagesManagement /></AdminRoute>} />
+          <Route path="/admin/quote-requests" element={<AdminRoute anyOf={['quote_requests_view', 'quote_requests_edit']}><QuoteRequestsManagement /></AdminRoute>} />
+          <Route path="/admin/candidates" element={<AdminRoute anyOf={['candidates_view', 'candidates_edit']}><CandidatesManagement /></AdminRoute>} />
+          <Route path="/admin/subadmins" element={<AdminRoute anyOf={['subadmins_view', 'subadmins_edit']}><SubAdminsManagementNew /></AdminRoute>} />
+          <Route path="/admin/home-content" element={<AdminRoute anyOf={['content_view', 'content_edit', 'home_edit']}><HomeContentEditor /></AdminRoute>} />
+          <Route path="/admin/audit-logs" element={<AdminRoute permission="audit_logs_view"><AuditLogs /></AdminRoute>} />
 
           {/* Public Routes - With Navbar/Footer */}
           <Route path="/" element={
@@ -113,6 +129,53 @@ function App() {
               <AIChat />
             </div>
           } />
+          
+          <Route path="/services/:slug" element={
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-grow">
+                <ServiceDetails />
+              </main>
+              <Footer />
+              <AIChat />
+            </div>
+          } />
+          
+          <Route path="/recruitment-packages" element={
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-grow">
+                <RecruitmentPackages />
+              </main>
+              <Footer />
+              <AIChat />
+            </div>
+          } />
+          
+          <Route path="/quote-request" element={
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-grow">
+                <QuoteRequest />
+              </main>
+              <Footer />
+              <AIChat />
+            </div>
+          } />
+          
+          <Route path="/candidate/register" element={
+            <div className="min-h-screen flex flex-col">
+              <Navbar />
+              <main className="flex-grow">
+                <CandidateRegister />
+              </main>
+              <Footer />
+              <AIChat />
+            </div>
+          } />
+          
+          {/* Backward compatibility redirect */}
+          <Route path="/candidate-register" element={<Navigate to="/candidate/register" replace />} />
           
           <Route path="/careers" element={
             <div className="min-h-screen flex flex-col">
