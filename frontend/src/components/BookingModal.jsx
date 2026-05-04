@@ -28,11 +28,23 @@ export default function BookingModal({ isOpen, onClose }) {
     setSubmitStatus(null)
 
     try {
+      // Map form fields to API expected format
+      const bookingData = {
+        name: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        company: formData.company,
+        serviceType: formData.service_type,
+        preferredDate: formData.preferred_date,
+        preferredTime: formData.preferred_time,
+        notes: formData.notes
+      }
+
       const apiUrl = '' // Force Vercel API
-      const response = await fetch(`${apiUrl}/api/consultation/book`, {
+      const response = await fetch(`${apiUrl}/api/bookings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(bookingData)
       })
 
       const data = await response.json()

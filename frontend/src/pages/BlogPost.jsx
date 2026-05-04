@@ -183,7 +183,7 @@ const BlogPost = () => {
                   className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-secondary to-secondary/90 text-white rounded-xl font-semibold text-lg hover:shadow-lg transition-all"
                 >
                   <CalendarCheck size={24} />
-                  <span>احجز استشارة</span>
+                  <span>{post.button_text || 'احجز استشارة'}</span>
                 </Link>
               </div>
             </div>

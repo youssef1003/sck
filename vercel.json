@@ -1,15 +1,12 @@
 {
-  "buildCommand": "cd frontend && npm install && npm run build",
-  "outputDirectory": "frontend/dist",
-  "installCommand": "npm install",
   "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/index.html"
-    }
+    { "source": "/api/contact", "destination": "/api/index?route=contact" },
+    { "source": "/api/bookings", "destination": "/api/index?route=bookings" },
+    { "source": "/api/services", "destination": "/api/index?route=services" },
+    { "source": "/api/recruitment-packages", "destination": "/api/index?route=recruitment-packages" },
+    { "source": "/api/quote-requests", "destination": "/api/index?route=quote-requests" },
+    { "source": "/api/candidates", "destination": "/api/index?route=candidates" },
+    { "source": "/api/blog", "destination": "/api/index?route=blog" },
+    { "source": "/api/page-content", "destination": "/api/index?route=page-content" }
   ]
 }

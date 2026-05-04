@@ -12,33 +12,40 @@ const Contact = () => {
     message: ''
   })
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
     setSubmitStatus('sending')
     
-    // Simulate form submission
-    setTimeout(() => {
-      // Store in localStorage
-      const contacts = JSON.parse(localStorage.getItem('scq_contacts') || '[]')
-      contacts.push({
-        ...formData,
-        id: Date.now(),
-        date: new Date().toISOString(),
-        status: 'new'
+    try {
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
       })
-      localStorage.setItem('scq_contacts', JSON.stringify(contacts))
-      
-      setSubmitStatus('success')
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        businessType: '',
-        message: ''
-      })
-      
-      setTimeout(() => setSubmitStatus(null), 3000)
-    }, 1000)
+
+      const result = await response.json()
+
+      if (response.ok && result.success) {
+        setSubmitStatus('success')
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          businessType: '',
+          message: ''
+        })
+        setTimeout(() => setSubmitStatus(null), 5000)
+      } else {
+        setSubmitStatus('error')
+        setTimeout(() => setSubmitStatus(null), 5000)
+      }
+    } catch (error) {
+      console.error('Contact form error:', error)
+      setSubmitStatus('error')
+      setTimeout(() => setSubmitStatus(null), 5000)
+    }
   }
 
   const handleChange = (e) => {
@@ -235,6 +242,16 @@ const Contact = () => {
                       className="p-4 bg-green-50 border-2 border-green-200 rounded-xl text-green-600 text-center"
                     >
                       ✅ تم إرسال رسالتك بنجاح! سنتواصل معك قريباً
+                    </motion.div>
+                  )}
+                  
+                  {submitStatus === 'error' && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 bg-red-50 border-2 border-red-200 rounded-xl text-red-600 text-center"
+                    >
+                      ❌ حدث خطأ أثناء إرسال الرسالة. يرجى المحاولة مرة أخرى.
                     </motion.div>
                   )}
                 </form>

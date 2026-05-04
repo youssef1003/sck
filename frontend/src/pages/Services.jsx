@@ -1,128 +1,144 @@
+import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { Briefcase, Users, Building2, Target, Check } from 'lucide-react'
+import axios from 'axios'
+import { 
+  Building, 
+  Target, 
+  DollarSign, 
+  FileText, 
+  BarChart, 
+  Users, 
+  Briefcase, 
+  Settings,
+  ArrowLeft,
+  Loader
+} from 'lucide-react'
+
+const iconMap = {
+  'building': Building,
+  'target': Target,
+  'dollar-sign': DollarSign,
+  'file-text': FileText,
+  'bar-chart': BarChart,
+  'users': Users,
+  'briefcase': Briefcase,
+  'settings': Settings
+}
 
 const Services = () => {
-  const services = [
-    {
-      icon: Briefcase,
-      title: 'الاستشارات الإدارية',
-      description: 'نساعدك في بناء استراتيجية عمل قوية ومستدامة',
-      features: [
-        'تحليل السوق والمنافسين',
-        'نمذجة الأعمال وتطوير المنتجات',
-        'استراتيجيات النمو والتوسع',
-        'تحسين العمليات التشغيلية',
-        'إدارة المشاريع الاستراتيجية'
-      ],
-      color: 'from-blue-500 to-blue-600'
-    },
-    {
-      icon: Users,
-      title: 'استشارات الموارد البشرية',
-      description: 'بناء فريق قوي ومتحفز لتحقيق أهداف شركتك',
-      features: [
-        'تصميم أنظمة التوظيف والاختيار',
-        'تقييم الأداء وإدارة المواهب',
-        'برامج التدريب والتطوير',
-        'هيكلة الرواتب والحوافز',
-        'تطوير ثقافة الشركة'
-      ],
-      color: 'from-secondary to-yellow-600'
-    },
-    {
-      icon: Building2,
-      title: 'التطوير التنظيمي',
-      description: 'تحسين هيكل وعمليات شركتك لتحقيق أقصى كفاءة',
-      features: [
-        'تصميم الهيكل التنظيمي',
-        'تحسين سير العمل والعمليات',
-        'إدارة التغيير التنظيمي',
-        'تطوير السياسات والإجراءات',
-        'تحسين التواصل الداخلي'
-      ],
-      color: 'from-green-500 to-green-600'
-    },
-    {
-      icon: Target,
-      title: 'التخطيط الاستراتيجي',
-      description: 'رسم خارطة طريق واضحة لمستقبل شركتك',
-      features: [
-        'وضع الرؤية والرسالة والأهداف',
-        'تحليل SWOT الشامل',
-        'بناء مؤشرات الأداء الرئيسية',
-        'تحليل وإدارة المخاطر',
-        'خطط التنفيذ والمتابعة'
-      ],
-      color: 'from-purple-500 to-purple-600'
+  const [services, setServices] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    fetchServices()
+  }, [])
+
+  const fetchServices = async () => {
+    try {
+      const response = await axios.get('/api/services')
+      setServices(response.data.data || [])
+    } catch (error) {
+      console.error('Error fetching services:', error)
+      setError('فشل في تحميل الخدمات')
+    } finally {
+      setLoading(false)
     }
-  ]
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader className="w-12 h-12 animate-spin text-blue-600" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 text-xl mb-4">{error}</p>
+          <button
+            onClick={fetchServices}
+            className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition"
+          >
+            إعادة المحاولة
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
-    <div className="pt-20">
-      {/* Hero Section */}
-      <section className="py-24 bg-gradient-to-br from-primary to-primary/90 text-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-5xl md:text-6xl font-bold mb-6"
-          >
-            خدماتنا
-          </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="text-xl text-gray-200 max-w-3xl mx-auto"
-          >
-            حلول استشارية شاملة مصممة خصيصاً لتلبية احتياجات عملك
-          </motion.p>
-        </div>
-      </section>
+    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pt-24 pb-24">
+      <div className="container mx-auto px-6">
+        {/* Header */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
+        >
+          <h1 className="text-5xl md:text-6xl font-bold text-slate-900 mb-6">
+            خدماتنا الاستشارية
+          </h1>
+          <p className="text-xl text-slate-600 max-w-3xl mx-auto">
+            نقدم مجموعة متكاملة من الخدمات الاستشارية في مجال الموارد البشرية وهندسة الأعمال
+          </p>
+        </motion.div>
 
-      {/* Services Details */}
-      <section className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-20">
-            {services.map((service, index) => (
+        {/* Services Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          {services.map((service, index) => {
+            const IconComponent = iconMap[service.icon] || Building
+
+            return (
               <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                className={`flex flex-col ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'} gap-12 items-center`}
+                key={service.id}
+                initial={{ opacity: 0, y: 50 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
               >
-                {/* Icon & Title */}
-                <div className="flex-1">
-                  <div className={`w-20 h-20 bg-gradient-to-br ${service.color} rounded-2xl flex items-center justify-center mb-6 shadow-lg`}>
-                    <service.icon className="text-white" size={40} />
-                  </div>
-                  <h2 className="text-4xl font-bold text-primary mb-4">{service.title}</h2>
-                  <p className="text-xl text-gray-600 mb-8">{service.description}</p>
-                  <button className="px-8 py-3 bg-gradient-to-r from-secondary to-yellow-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all">
-                    احجز استشارة
-                  </button>
-                </div>
+                <Link
+                  to={`/services/${service.slug}`}
+                  className="group block h-full"
+                >
+                  <motion.div
+                    whileHover={{ y: -10, scale: 1.02 }}
+                    className="relative h-full bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-100"
+                  >
+                    {/* Icon */}
+                    <div className="inline-flex p-4 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 mb-6 shadow-md">
+                      <IconComponent className="w-8 h-8 text-white" />
+                    </div>
 
-                {/* Features */}
-                <div className="flex-1 bg-gray-50 p-8 rounded-2xl">
-                  <h3 className="text-2xl font-bold text-primary mb-6">ما نقدمه:</h3>
-                  <ul className="space-y-4">
-                    {service.features.map((feature, idx) => (
-                      <li key={idx} className="flex items-start space-x-3 space-x-reverse">
-                        <div className="w-6 h-6 bg-secondary/20 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Check className="text-secondary" size={16} />
-                        </div>
-                        <span className="text-gray-700">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
+                    {/* Title */}
+                    <h3 className="text-2xl font-bold text-slate-900 mb-4 group-hover:text-blue-600 transition-colors">
+                      {service.title_ar}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-slate-600 mb-6 leading-relaxed">
+                      {service.short_description_ar}
+                    </p>
+
+                    {/* CTA */}
+                    <div className="flex items-center gap-2 text-blue-600 font-semibold group-hover:gap-3 transition-all">
+                      <span>اعرف المزيد</span>
+                      <ArrowLeft className="w-5 h-5 rotate-180" />
+                    </div>
+
+                    {/* Decorative Corner */}
+                    <div className="absolute top-0 left-0 w-24 h-24 bg-gradient-to-br from-blue-500/5 to-transparent rounded-br-full" />
+                  </motion.div>
+                </Link>
               </motion.div>
-            ))}
-          </div>
+            )
+          })}
         </div>
-      </section>
+      </div>
     </div>
   )
 }

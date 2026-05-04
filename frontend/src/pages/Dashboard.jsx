@@ -45,29 +45,11 @@ const Dashboard = () => {
       email: user.email || ''
     })
 
-    // Load user data
-    loadUserBookings(user.email)
-    loadUserMessages(user.email)
-    loadUserApplications(user.email)
+    // Show empty states - backend APIs not yet implemented
+    setBookings([])
+    setMessages([])
+    setApplications([])
   }, [navigate])
-
-  const loadUserBookings = (email) => {
-    const allBookings = JSON.parse(localStorage.getItem('scq_bookings') || '[]')
-    const userBookings = allBookings.filter(b => b.email === email)
-    setBookings(userBookings)
-  }
-
-  const loadUserMessages = (email) => {
-    const allMessages = JSON.parse(localStorage.getItem('scq_contacts') || '[]')
-    const userMessages = allMessages.filter(m => m.email === email)
-    setMessages(userMessages)
-  }
-
-  const loadUserApplications = (email) => {
-    const allApplications = JSON.parse(localStorage.getItem('scq_applications') || '[]')
-    const userApps = allApplications.filter(app => app.email === email)
-    setApplications(userApps)
-  }
 
   const handleLogout = () => {
     localStorage.removeItem('scq_user_token')
@@ -76,15 +58,8 @@ const Dashboard = () => {
   }
 
   const handleUpdateProfile = () => {
-    const users = JSON.parse(localStorage.getItem('scq_users') || '[]')
-    const updatedUsers = users.map(u => 
-      u.id === userData.id 
-        ? { ...u, ...editForm }
-        : u
-    )
-    localStorage.setItem('scq_users', JSON.stringify(updatedUsers))
-    localStorage.setItem('scq_user_data', JSON.stringify({ ...userData, ...editForm }))
-    setUserData({ ...userData, ...editForm })
+    // Profile updates temporarily disabled - need backend API
+    alert('تحديث الملف الشخصي غير متاح حالياً. يرجى التواصل مع الإدارة.')
     setIsEditing(false)
   }
 

@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken')
 // Initialize Supabase with error checking and safe trimming
 const SUPABASE_URL = process.env.SUPABASE_URL?.trim().replace(/^["']|["']$/g, '') || ''
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY?.trim().replace(/^["']|["']$/g, '') || ''
-const JWT_SECRET = process.env.JWT_SECRET?.trim().replace(/^["']|["']$/g, '') || 'sck_super_secret_key_2025_production'
+const JWT_SECRET = process.env.JWT_SECRET?.trim().replace(/^["']|["']$/g, '')
 
 console.log('AUTH INIT:', {
   hasUrl: !!SUPABASE_URL,
@@ -15,19 +15,13 @@ console.log('AUTH INIT:', {
   hasJwtSecret: !!JWT_SECRET
 })
 
-if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
-  console.error('CRITICAL: Missing Supabase credentials:', {
-    hasUrl: !!SUPABASE_URL,
-    hasKey: !!SUPABASE_SERVICE_KEY
-  })
+// Validate critical environment variables
+if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !JWT_SECRET) {
+  console.error('CRITICAL: Missing required environment variables')
 }
 
-if (!SUPABASE_URL.startsWith('https://') || !SUPABASE_URL.includes('.supabase.co')) {
-  console.error('CRITICAL: Invalid SUPABASE_URL format:', {
-    url: SUPABASE_URL.substring(0, 30) + '...',
-    startsWithHttps: SUPABASE_URL.startsWith('https://'),
-    includesSupabase: SUPABASE_URL.includes('.supabase.co')
-  })
+if (SUPABASE_URL && (!SUPABASE_URL.startsWith('https://') || !SUPABASE_URL.includes('.supabase.co'))) {
+  console.error('CRITICAL: Invalid SUPABASE_URL format')
 }
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, {
@@ -60,6 +54,14 @@ module.exports = async function handler(req, res) {
     bodyKeys: req.body ? Object.keys(req.body) : []
   })
 
+  // Check configuration
+  if (!JWT_SECRET) {
+    return res.status(500).json({
+      success: false,
+      message: 'Server configuration error. Please contact administrator.'
+    })
+  }
+
   try {
     switch (action) {
       case 'login':
@@ -75,10 +77,10 @@ module.exports = async function handler(req, res) {
         })
     }
   } catch (error) {
-    console.error('Auth error:', error)
+    console.error('Auth error:', error.message)
     return res.status(500).json({ 
       success: false,
-      message: error.message || 'Internal server error' 
+      message: 'Internal server error' 
     })
   }
 }
@@ -95,20 +97,9 @@ async function handleLogin(req, res) {
   const identifier = req.body.email || req.body.username || req.body.identifier
   const password = req.body.password
 
-  console.log('=== LOGIN DEBUG START ===')
-  console.log('AUTH DEBUG:', {
-    method: req.method,
-    rawAction: req.query.action,
-    normalizedAction: req.query.action ? String(req.query.action).trim().replace(/[\\/\s]/g, '').toLowerCase() : '',
-    bodyKeys: Object.keys(req.body || {}),
-    hasIdentifier: !!identifier,
-    identifierValue: identifier,
-    hasPassword: !!password,
-    passwordLength: password ? password.length : 0
-  })
+  // Removed sensitive logging for production
 
   if (!identifier || !password) {
-    console.log('ERROR: Missing credentials')
     return res.status(400).json({ 
       success: false,
       message: 'Email and password are required' 
@@ -117,54 +108,23 @@ async function handleLogin(req, res) {
 
   try {
     // Call login_user function from database
-    // This function uses crypt() to verify password against password_hash
-    console.log('Calling Supabase RPC login_user with:', {
-      p_email: identifier,
-      passwordProvided: true
-    })
-    
     const { data: result, error } = await supabase.rpc('login_user', {
       p_email: identifier,
       p_password: password
     })
 
-    console.log('SUPABASE RPC DEBUG:', {
-      rpcName: 'login_user',
-      hasData: !!result,
-      isArray: Array.isArray(result),
-      dataLength: Array.isArray(result) ? result.length : (result ? 1 : 0),
-      hasError: !!error,
-      errorMessage: error?.message,
-      errorCode: error?.code,
-      errorDetails: error?.details,
-      errorHint: error?.hint,
-      resultType: typeof result,
-      resultKeys: result ? Object.keys(result) : []
-    })
-
     if (error) {
-      console.error('Login RPC error:', {
-        message: error.message,
-        code: error.code,
-        details: error.details,
-        hint: error.hint
-      })
+      console.error('Login error:', error.code)
       return res.status(401).json({ 
         success: false,
-        message: 'Invalid email or password',
-        debug: process.env.NODE_ENV !== 'production' ? {
-          error: error.message,
-          code: error.code
-        } : undefined
+        message: 'Invalid email or password'
       })
     }
 
     // Handle both array and single object responses
     let user = null
     if (Array.isArray(result)) {
-      console.log('Result is array with length:', result.length)
       if (result.length === 0) {
-        console.log('ERROR: No user found - empty array')
         return res.status(401).json({ 
           success: false,
           message: 'Invalid email or password' 
@@ -172,26 +132,16 @@ async function handleLogin(req, res) {
       }
       user = result[0]
     } else if (result && typeof result === 'object') {
-      console.log('Result is object')
       user = result
     } else {
-      console.log('ERROR: No user found - invalid result type:', typeof result)
       return res.status(401).json({ 
         success: false,
         message: 'Invalid email or password' 
       })
     }
 
-    console.log('User found:', {
-      id: user.id,
-      email: user.email,
-      role: user.role,
-      is_active: user.is_active
-    })
-
     // Check if user is active
     if (!user.is_active) {
-      console.log('ERROR: User is inactive')
       return res.status(403).json({ 
         success: false,
         message: 'Account is inactive. Please contact support.' 
@@ -224,10 +174,8 @@ async function handleLogin(req, res) {
       { expiresIn: '30d' }
     )
 
-    console.log('Login successful for:', user.email, 'role:', user.role)
-    console.log('=== LOGIN DEBUG END ===')
-
     // Return FULLY backward compatible response with ALL possible token/user locations
+    // CRITICAL: Include permissions in user object
     return res.status(200).json({
       success: true,
       message: 'Login successful',
@@ -239,6 +187,7 @@ async function handleLogin(req, res) {
         email: user.email,
         full_name: user.full_name,
         role: user.role,
+        permissions: user.permissions || [],
         phone: user.phone,
         company: user.company,
         is_active: user.is_active
@@ -252,6 +201,7 @@ async function handleLogin(req, res) {
           email: user.email,
           full_name: user.full_name,
           role: user.role,
+          permissions: user.permissions || [],
           phone: user.phone,
           company: user.company,
           is_active: user.is_active
@@ -259,12 +209,10 @@ async function handleLogin(req, res) {
       }
     })
   } catch (error) {
-    console.error('Login exception:', error)
-    console.log('=== LOGIN DEBUG END (ERROR) ===')
+    console.error('Login exception:', error.message)
     return res.status(500).json({ 
       success: false,
-      message: 'Internal server error. Please try again later.',
-      debug: process.env.NODE_ENV !== 'production' ? error.message : undefined
+      message: 'Internal server error. Please try again later.'
     })
   }
 }
@@ -292,7 +240,7 @@ async function handleMe(req, res) {
     
     const { data: user, error } = await supabase
       .from('users')
-      .select('id, email, full_name, phone, company, role, is_active, created_at')
+      .select('id, email, full_name, phone, company, role, permissions, is_active, created_at')
       .eq('id', decoded.userId)
       .is('deleted_at', null)
       .single()
@@ -320,6 +268,7 @@ async function handleMe(req, res) {
         phone: user.phone,
         company: user.company,
         role: user.role,
+        permissions: user.permissions || [],
         created_at: user.created_at,
         is_active: user.is_active
       },
@@ -331,6 +280,7 @@ async function handleMe(req, res) {
           phone: user.phone,
           company: user.company,
           role: user.role,
+          permissions: user.permissions || [],
           created_at: user.created_at,
           is_active: user.is_active
         }

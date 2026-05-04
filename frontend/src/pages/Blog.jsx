@@ -154,7 +154,7 @@ const Blog = () => {
                         className="flex items-center justify-center gap-2 w-full px-4 py-3 bg-gradient-to-r from-secondary to-secondary/90 text-white rounded-xl font-semibold hover:shadow-lg transition-all mb-3"
                       >
                         <CalendarCheck size={18} />
-                        <span>احجز استشارة</span>
+                        <span>{post.button_text || 'احجز استشارة'}</span>
                       </Link>
                     )}
 

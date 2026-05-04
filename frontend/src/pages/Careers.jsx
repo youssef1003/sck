@@ -1,43 +1,12 @@
 import { motion } from 'framer-motion'
-import { TrendingUp, Users, Award, Target, Upload, CheckCircle, LogIn } from 'lucide-react'
-import { useState, useEffect } from 'react'
+import { TrendingUp, Users, Award, Target, Briefcase } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 
 const Careers = () => {
   const { t, i18n } = useTranslation()
-  const navigate = useNavigate()
   const isRTL = i18n.language === 'ar'
-  const [isLoggedIn, setIsLoggedIn] = useState(false)
-  const [currentUser, setCurrentUser] = useState(null)
-  
-  useEffect(() => {
-    // Check if user is logged in
-    const userData = localStorage.getItem('scq_user_data')
-    if (userData) {
-      setIsLoggedIn(true)
-      setCurrentUser(JSON.parse(userData))
-    }
-  }, [])
-  
-  const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    phone: '',
-    position: '',
-    experience: '',
-    education: '',
-    currentCompany: '',
-    expectedSalary: '',
-    noticePeriod: '',
-    linkedin: '',
-    portfolio: '',
-    coverLetter: '',
-    resume: null
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
-  const [employeeCode, setEmployeeCode] = useState('')
 
   const benefits = [
     {
@@ -99,46 +68,13 @@ const Careers = () => {
     e.preventDefault()
     setIsSubmitting(true)
 
-    // Simulate API call
+    // Applications temporarily disabled - need backend API
     setTimeout(() => {
-      const code = generateEmployeeCode()
-      const applicationData = {
-        id: Date.now(),
-        ...formData,
-        employeeCode: code,
-        status: 'pending',
-        submittedAt: new Date().toISOString()
-      }
-
-      // Save to localStorage (temporary - will be replaced with API)
-      const existing = JSON.parse(localStorage.getItem('scq_applications') || '[]')
-      existing.push(applicationData)
-      localStorage.setItem('scq_applications', JSON.stringify(existing))
-
-      setEmployeeCode(code)
-      setSubmitSuccess(true)
       setIsSubmitting(false)
-      
-      // Reset form after 5 seconds
-      setTimeout(() => {
-        setSubmitSuccess(false)
-        setFormData({
-          fullName: '',
-          email: '',
-          phone: '',
-          position: '',
-          experience: '',
-          education: '',
-          currentCompany: '',
-          expectedSalary: '',
-          noticePeriod: '',
-          linkedin: '',
-          portfolio: '',
-          coverLetter: '',
-          resume: null
-        })
-      }, 5000)
-    }, 2000)
+      alert(isRTL 
+        ? 'عذراً، نظام التقديم على الوظائف قيد التطوير حالياً. يرجى التواصل معنا مباشرة عبر صفحة "تواصل معنا".'
+        : 'Sorry, the job application system is currently under development. Please contact us directly via the "Contact Us" page.')
+    }, 1000)
   }
 
   return (
@@ -214,322 +150,36 @@ const Careers = () => {
             viewport={{ once: true }}
             className="max-w-4xl mx-auto"
           >
-            {!isLoggedIn ? (
-              /* Login Required Message - Only when trying to apply */
-              <div className="bg-white rounded-2xl shadow-xl p-12 border-2 border-blue-100 text-center">
-                <div className="inline-flex p-6 rounded-full bg-blue-100 mb-6">
-                  <LogIn className="w-16 h-16 text-blue-600" />
-                </div>
-                <h2 className="text-3xl font-bold text-slate-900 mb-4">
-                  {isRTL ? 'للتقديم على الوظائف' : 'To Apply for Jobs'}
-                </h2>
-                <p className="text-lg text-slate-600 mb-8">
-                  {isRTL 
-                    ? 'يجب عليك إنشاء حساب أو تسجيل الدخول أولاً للتقديم على الوظائف'
-                    : 'You need to create an account or login first to apply for jobs'}
-                </p>
-                <div className="bg-blue-50 rounded-xl p-6 mb-8">
-                  <p className="text-sm text-slate-600 mb-2">
-                    {isRTL ? '💡 ملاحظة' : '💡 Note'}
-                  </p>
-                  <p className="text-slate-700">
-                    {isRTL 
-                      ? 'يمكنك تصفح المنصة ومشاهدة الخدمات بدون تسجيل، لكن للتقديم على الوظائف يجب إنشاء حساب'
-                      : 'You can browse the platform and view services without registration, but to apply for jobs you need to create an account'}
-                  </p>
-                </div>
-                <div className="flex gap-4 justify-center">
-                  <button
-                    onClick={() => navigate('/login')}
-                    className="px-8 py-4 bg-white text-blue-600 border-2 border-blue-600 rounded-xl font-bold text-lg hover:bg-blue-50 transition-all"
-                  >
-                    {isRTL ? 'تسجيل الدخول' : 'Login'}
-                  </button>
-                  <button
-                    onClick={() => navigate('/register')}
-                    className="px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl font-bold text-lg hover:from-blue-700 hover:to-cyan-600 transition-all shadow-lg"
-                  >
-                    {isRTL ? 'إنشاء حساب جديد' : 'Create Account'}
-                  </button>
-                </div>
+            {/* Applications temporarily unavailable */}
+            <div className="bg-white rounded-2xl shadow-xl p-12 border-2 border-blue-100 text-center">
+              <div className="inline-flex p-6 rounded-full bg-blue-100 mb-6">
+                <Briefcase className="w-16 h-16 text-blue-600" />
               </div>
-            ) : (
-            <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12 border-2 border-blue-100">
-              <div className="text-center mb-10">
-                <h2 className="text-3xl font-bold text-slate-900 mb-3">
-                  {t('careers.application.title')}
-                </h2>
-                <p className="text-slate-600">
+              <h2 className="text-3xl font-bold text-slate-900 mb-4">
+                {isRTL ? 'التقديم على الوظائف' : 'Job Applications'}
+              </h2>
+              <p className="text-lg text-slate-600 mb-8">
+                {isRTL 
+                  ? 'نظام التقديم على الوظائف قيد التطوير حالياً. للتقديم على الوظائف، يرجى التواصل معنا مباشرة.'
+                  : 'The job application system is currently under development. To apply for jobs, please contact us directly.'}
+              </p>
+              <div className="bg-blue-50 rounded-xl p-6 mb-8">
+                <p className="text-sm text-slate-600 mb-2">
+                  {isRTL ? '💡 كيف تتقدم؟' : '💡 How to Apply?'}
+                </p>
+                <p className="text-slate-700">
                   {isRTL 
-                    ? 'املأ النموذج أدناه وسنتواصل معك قريباً' 
-                    : 'Fill out the form below and we will contact you soon'}
+                    ? 'يمكنك إرسال سيرتك الذاتية ومعلومات التواصل عبر صفحة "تواصل معنا" وسنتواصل معك قريباً.'
+                    : 'You can send your CV and contact information via the "Contact Us" page and we will get back to you soon.'}
                 </p>
               </div>
-
-              {submitSuccess ? (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="text-center py-12"
-                >
-                  <div className="inline-flex p-6 rounded-full bg-green-100 mb-6">
-                    <CheckCircle className="w-16 h-16 text-green-600" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-slate-900 mb-4">
-                    {t('careers.application.success')}
-                  </h3>
-                  <div className="bg-blue-50 rounded-xl p-6 mb-4 max-w-md mx-auto">
-                    <p className="text-sm text-slate-600 mb-2">
-                      {isRTL ? 'كود المتقدم الخاص بك:' : 'Your Application Code:'}
-                    </p>
-                    <p className="text-2xl font-bold text-blue-600 font-mono">
-                      {employeeCode}
-                    </p>
-                    <p className="text-xs text-slate-500 mt-2">
-                      {isRTL 
-                        ? 'احتفظ بهذا الكود للمتابعة' 
-                        : 'Keep this code for follow-up'}
-                    </p>
-                  </div>
-                </motion.div>
-              ) : (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  {/* Personal Information */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        {t('careers.application.name')} *
-                      </label>
-                      <input
-                        type="text"
-                        name="fullName"
-                        value={formData.fullName}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        {t('careers.application.email')} *
-                      </label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        {t('careers.application.phone')} *
-                      </label>
-                      <input
-                        type="tel"
-                        name="phone"
-                        value={formData.phone}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        {t('careers.application.position')} *
-                      </label>
-                      <input
-                        type="text"
-                        name="position"
-                        value={formData.position}
-                        onChange={handleInputChange}
-                        placeholder={isRTL ? 'مثال: مستشار أعمال' : 'e.g., Business Consultant'}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        {isRTL ? 'سنوات الخبرة' : 'Years of Experience'} *
-                      </label>
-                      <select
-                        name="experience"
-                        value={formData.experience}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
-                        required
-                      >
-                        <option value="">{isRTL ? 'اختر...' : 'Select...'}</option>
-                        <option value="0-1">{isRTL ? 'أقل من سنة' : 'Less than 1 year'}</option>
-                        <option value="1-3">1-3 {t('careers.years')}</option>
-                        <option value="3-5">3-5 {t('careers.years')}</option>
-                        <option value="5-7">5-7 {t('careers.years')}</option>
-                        <option value="7-10">7-10 {t('careers.years')}</option>
-                        <option value="10+">{isRTL ? 'أكثر من 10 سنوات' : '10+ years'}</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        {isRTL ? 'المؤهل الدراسي' : 'Education'}
-                      </label>
-                      <select
-                        name="education"
-                        value={formData.education}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
-                      >
-                        <option value="">{isRTL ? 'اختر...' : 'Select...'}</option>
-                        <option value="high-school">{isRTL ? 'ثانوية عامة' : 'High School'}</option>
-                        <option value="diploma">{isRTL ? 'دبلوم' : 'Diploma'}</option>
-                        <option value="bachelor">{isRTL ? 'بكالوريوس' : 'Bachelor\'s Degree'}</option>
-                        <option value="master">{isRTL ? 'ماجستير' : 'Master\'s Degree'}</option>
-                        <option value="phd">{isRTL ? 'دكتوراه' : 'PhD'}</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        {isRTL ? 'الشركة الحالية' : 'Current Company'}
-                      </label>
-                      <input
-                        type="text"
-                        name="currentCompany"
-                        value={formData.currentCompany}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        {isRTL ? 'الراتب المتوقع' : 'Expected Salary'}
-                      </label>
-                      <input
-                        type="text"
-                        name="expectedSalary"
-                        value={formData.expectedSalary}
-                        onChange={handleInputChange}
-                        placeholder={isRTL ? 'مثال: 10000 ريال' : 'e.g., 10000 SAR'}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        {isRTL ? 'فترة الإشعار' : 'Notice Period'}
-                      </label>
-                      <select
-                        name="noticePeriod"
-                        value={formData.noticePeriod}
-                        onChange={handleInputChange}
-                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
-                      >
-                        <option value="">{isRTL ? 'اختر...' : 'Select...'}</option>
-                        <option value="immediate">{isRTL ? 'فوري' : 'Immediate'}</option>
-                        <option value="1-week">{isRTL ? 'أسبوع' : '1 Week'}</option>
-                        <option value="2-weeks">{isRTL ? 'أسبوعين' : '2 Weeks'}</option>
-                        <option value="1-month">{isRTL ? 'شهر' : '1 Month'}</option>
-                        <option value="2-months">{isRTL ? 'شهرين' : '2 Months'}</option>
-                        <option value="3-months">{isRTL ? '3 أشهر' : '3 Months'}</option>
-                      </select>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        LinkedIn {isRTL ? 'الملف الشخصي' : 'Profile'}
-                      </label>
-                      <input
-                        type="url"
-                        name="linkedin"
-                        value={formData.linkedin}
-                        onChange={handleInputChange}
-                        placeholder="https://linkedin.com/in/..."
-                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-slate-700 mb-2">
-                        {isRTL ? 'رابط معرض الأعمال' : 'Portfolio Link'}
-                      </label>
-                      <input
-                        type="url"
-                        name="portfolio"
-                        value={formData.portfolio}
-                        onChange={handleInputChange}
-                        placeholder="https://..."
-                        className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Resume Upload */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      {t('careers.application.resume')} *
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="file"
-                        accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                        onChange={handleFileChange}
-                        className="hidden"
-                        id="resume-upload"
-                        required
-                      />
-                      <label
-                        htmlFor="resume-upload"
-                        className="flex items-center justify-center gap-3 w-full px-4 py-6 rounded-xl border-2 border-dashed border-slate-300 hover:border-blue-500 cursor-pointer transition-colors bg-slate-50 hover:bg-blue-50"
-                      >
-                        <Upload className="w-6 h-6 text-slate-400" />
-                        <span className="text-slate-600">
-                          {formData.resume 
-                            ? formData.resume.name 
-                            : (isRTL ? 'اضغط لرفع السيرة الذاتية (PDF, Word, صورة)' : 'Click to upload resume (PDF, Word, Image)')}
-                        </span>
-                      </label>
-                    </div>
-                  </div>
-
-                  {/* Cover Letter */}
-                  <div>
-                    <label className="block text-sm font-medium text-slate-700 mb-2">
-                      {t('careers.application.cover_letter')}
-                    </label>
-                    <textarea
-                      name="coverLetter"
-                      value={formData.coverLetter}
-                      onChange={handleInputChange}
-                      rows="6"
-                      placeholder={isRTL 
-                        ? 'أخبرنا عن نفسك ولماذا تريد الانضمام إلى فريقنا...' 
-                        : 'Tell us about yourself and why you want to join our team...'}
-                      className="w-full px-4 py-3 rounded-xl border-2 border-slate-200 focus:border-blue-500 focus:outline-none transition-colors resize-none"
-                    ></textarea>
-                  </div>
-
-                  {/* Submit Button */}
-                  <div className="flex gap-4 pt-6">
-                    <button
-                      type="submit"
-                      disabled={isSubmitting}
-                      className="flex-1 px-8 py-4 rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isSubmitting 
-                        ? t('careers.application.submitting') 
-                        : t('careers.application.submit')}
-                    </button>
-                  </div>
-                </form>
-              )}
+              <Link
+                to="/contact"
+                className="inline-block px-8 py-4 bg-gradient-to-r from-blue-600 to-cyan-500 text-white rounded-xl font-bold text-lg hover:from-blue-700 hover:to-cyan-600 transition-all shadow-lg"
+              >
+                {isRTL ? 'تواصل معنا' : 'Contact Us'}
+              </Link>
             </div>
-            )}
           </motion.div>
         </div>
       </section>

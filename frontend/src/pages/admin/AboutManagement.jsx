@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Save, Image as ImageIcon, Loader } from 'lucide-react'
 import toast from 'react-hot-toast'
-import axios from 'axios'
+import { getPageContent, savePageContent } from '../../utils/adminApi'
 
 const AboutManagement = () => {
   const [aboutData, setAboutData] = useState({
@@ -41,12 +41,7 @@ const AboutManagement = () => {
   const loadContent = async () => {
     setIsLoading(true)
     try {
-      const token = localStorage.getItem('access_token')
-      const response = await axios.get('/api/admin?action=page-content&page_key=about', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      })
+      const response = await getPageContent('about')
 
       if (response.data.success && response.data.data && response.data.data.content) {
         // Load from database
@@ -85,17 +80,7 @@ const AboutManagement = () => {
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      const token = localStorage.getItem('access_token')
-      
-      const response = await axios.post('/api/admin?action=page-content', {
-        page_key: 'about',
-        content: aboutData
-      }, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      })
+      const response = await savePageContent('about', aboutData)
 
       if (response.data.success) {
         toast.success('تم حفظ التغييرات بنجاح! ✅')
